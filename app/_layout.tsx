@@ -1,12 +1,36 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Slot, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+//import { User, onAuthStateChanged } from 'firebase/auth';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import * as SecureStore from 'expo-secure-store';
+//import { FIREBASE_AUTH } from '@/firebaseConfig';
+import { AuthProvider, useAuth } from '@/contexts/authContext';
+//import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
+/*
+const CLERK_PUBLISHABLE_KEY = 'pk_test_cHJvcGVyLWphY2thbC04My5jbGVyay5hY2NvdW50cy5kZXYk';
 
+const tokenCache = {
+  async getToken(key: string) {
+    try {
+      return SecureStore.getItemAsync(key);
+    } catch (err) {
+      return null;
+    }
+  },
+  async saveToken(key: string, value: string) {
+    try {
+      return SecureStore.setItemAsync(key, value);
+    } catch (err) {
+      return;
+    }
+  }
+};
+*/
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
@@ -44,15 +68,30 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
-function RootLayoutNav() {
+const InitialLayout = () => {
+  //const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useAuth();
   const colorScheme = useColorScheme();
+  //const segments = useSegments();
+  const router = useRouter();
 
+  useEffect(() => {
+    if (user) {
+      router.replace('/')
+    } else {
+      router.replace('/(auth)/login')
+    }
+  }, [user]);
+
+  return <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Slot />
+    </ThemeProvider>;
+};
+
+function RootLayoutNav() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
-    </ThemeProvider>
+    <AuthProvider>
+      <InitialLayout />
+    </AuthProvider>
   );
 }

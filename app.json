@@ -30,10 +30,20 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "716a13e4-5087-48c5-bb1a-5e3c8efe9379"
+      }
+    },
+    "owner": "wburriswells"
   }
 }
