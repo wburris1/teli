@@ -21,7 +21,6 @@ const ItemDetails = ({item}: Props) => {
     const releaseYear = item.release_date.slice(0, 4);
     const colorScheme = useColorScheme();
     const movie = useMovieDetails(item.id);
-    const [modalVisible, setModalVisible] = useState(false);
 
     return (
         <View style={styles.container}>
@@ -33,32 +32,8 @@ const ItemDetails = ({item}: Props) => {
                 </View>
             </View>
             <Text style={styles.overview}>{item.overview}</Text>
-            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
-                <Ionicons
-                    name="add-circle"
-                    size={85}
-                    color={Colors[colorScheme ?? 'light'].text}
-                />
-            </TouchableOpacity>
 
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
-            >
-                
-                <BlurView intensity={100} style={styles.blurContainer}>
-                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
-                <Ionicons
-                    name="close-circle"
-                    size={45}
-                    color={Colors[colorScheme ?? 'light'].text}
-                />
-                </TouchableOpacity>
-                <Rank item={item} />
-                </BlurView>
-            </Modal>
+            <Rank item={item} />
         </View>
     )
 };
@@ -71,12 +46,6 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         backgroundColor: '#fff'
     },
-    blurContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingTop: 50
-      },
     info: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -114,15 +83,6 @@ const styles = StyleSheet.create({
         paddingRight: 10,
         fontSize: 14,
     },
-    addButton: {
-        position: 'absolute',
-        bottom: 10,
-    },
-    cancelButton: {
-        position: 'absolute',
-        right: 10,
-        top: 55,
-    }
 });
 
 export default ItemDetails;

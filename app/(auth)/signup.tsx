@@ -3,8 +3,9 @@ import { Button, TextInput, View, StyleSheet, KeyboardAvoidingView, Text } from 
 import Spinner from 'react-native-loading-spinner-overlay';
 import { useState } from 'react';
 import { Stack } from 'expo-router';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { FIREBASE_AUTH } from '@/firebaseConfig';
+import { User, createUserWithEmailAndPassword } from 'firebase/auth';
+import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
+import { doc, setDoc } from 'firebase/firestore';
 
 const Register = () => {
   //const { isLoaded, signUp, setActive } = useSignUp();
@@ -28,8 +29,9 @@ const Register = () => {
 
     try {
       // Create the user on Clerk
-      await createUserWithEmailAndPassword(auth, emailAddress, password);
-
+      const userCred = await createUserWithEmailAndPassword(auth, emailAddress, password);
+      const user = userCred.user;
+      await addUserToDB(user);
       // Send verification Email
       //await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
 
@@ -41,6 +43,23 @@ const Register = () => {
       setLoading(false);
     }
   };
+
+  const addUserToDB = async (user: User) => {
+    const userRef = doc(FIREBASE_DB, "users", user.uid);
+    const userData = {
+      user_id: user.uid,
+      first_name: firstName,
+      last_name: lastName,
+      email: user.email,
+      // MORE INITIAL USER DATA HERE
+    };
+
+    try {
+      await setDoc(userRef, userData);
+    } catch (err: any) {
+      alert(err.message);
+    }
+  }
 
   /* Verify the email address
   const onPressVerify = async () => {
