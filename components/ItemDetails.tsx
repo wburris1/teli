@@ -18,16 +18,24 @@ type Props = {
 };
 
 const ItemDetails = ({item}: Props) => {
-    const releaseYear = item.release_date.slice(0, 4);
+    var releaseYear = "";
+    var title = "";
+    if ('title' in item) {
+        title = item.title;
+        releaseYear = item.release_date.slice(0, 4);
+    } else if ('name' in item) {
+        title = item.name;
+        releaseYear = item.first_air_date.slice(0, 4);
+    }
     const colorScheme = useColorScheme();
-    const movie = useMovieDetails(item.id);
+    //const movie = useMovieDetails(item.id);
 
     return (
         <View style={styles.container}>
             <View style={styles.info}>
                 <Image source={{ uri: imgUrl + item.poster_path }} style={styles.image} />
                 <View style={styles.titleInfo}>
-                    <Text style={styles.title}>{item.title}</Text>
+                    <Text style={styles.title}>{title}</Text>
                     <Text style={styles.date}>{releaseYear}</Text>
                 </View>
             </View>

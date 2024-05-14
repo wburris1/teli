@@ -1,0 +1,102 @@
+import { View, Text, StyleSheet, TouchableOpacity, Animated, useColorScheme, LayoutChangeEvent } from 'react-native';
+import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import Colors from '@/constants/Colors';
+import Dimensions from '@/constants/Dimensions';
+
+const screenHeight = Dimensions.screenHeight;
+
+type Props = {
+  title: string;
+  children: React.ReactNode;
+};
+
+interface Layout {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const ListTab = ({ title, children }: Props) => {
+  const [buttonLayout, setButtonLayout] = useState<Layout | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [dropdownHeight, setDropdownHeight] = useState(new Animated.Value(0));
+  const colorScheme = useColorScheme();
+
+  const onButtonLayout = (event: LayoutChangeEvent) => {
+    const layout = event.nativeEvent.layout;
+    setButtonLayout({
+      x: layout.x,
+      y: layout.y,
+      width: layout.width,
+      height: layout.height
+    });
+  };
+
+  const toggleOpen = () => {
+    if (!buttonLayout) return;
+
+    const distanceToBottom = screenHeight - (buttonLayout.y + buttonLayout.height);
+
+    if (isOpen) {
+      Animated.timing(dropdownHeight, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: false
+      }).start();
+    } else {
+      Animated.timing(dropdownHeight, {
+          toValue: distanceToBottom - 170,
+          duration: 300,
+          useNativeDriver: false
+      }).start();
+    }
+    setIsOpen(!isOpen);
+  };
+
+  return (
+    <View onLayout={onButtonLayout}>
+      <TouchableOpacity style={styles.tab} onPress={toggleOpen}>
+        <Text style={styles.tabText}>{title}</Text>
+        <Ionicons
+          name={isOpen ? "chevron-up" : "chevron-down"}
+          size={25}
+          color={Colors[colorScheme ?? 'light'].text}
+          style={styles.dropdownIcon}
+        />
+      </TouchableOpacity>
+      <Animated.View style={{ height: dropdownHeight }}>
+        <View style={{ flex: 1 }}>
+          {children}
+        </View>
+      </Animated.View>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  tab: {
+      padding: 10,
+      backgroundColor: '#ffff',
+      borderBottomWidth: 2,
+      borderBottomColor: '#000000',
+      flexDirection: 'row',
+      alignItems: 'center',
+  },
+  tabText: {
+      fontSize: 24,
+      paddingVertical: 20,
+      paddingHorizontal: 10,
+  },
+  content: {
+      overflow: 'hidden',
+      backgroundColor: '#fff',
+  },
+  dropdownIcon: {
+    position: 'absolute',
+    right: 10
+  }
+});
+
+export default ListTab;

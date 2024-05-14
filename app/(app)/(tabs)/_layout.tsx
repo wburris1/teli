@@ -26,7 +26,7 @@ export const LogoutButton = () => {
     </Pressable>
   );
 };
-
+  
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
@@ -52,8 +52,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Home',
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
@@ -68,6 +68,15 @@ export default function TabLayout() {
               </Pressable>
             </Link>
           ),
+        }}
+        redirect={false}
+      />
+      <Tabs.Screen
+        name="lists"
+        options={{
+          headerTitle: 'Lists',
+          tabBarIcon: ({ color, size }) => <Ionicons name="list" size={size} color={color} />,
+          tabBarLabel: 'Lists',
         }}
         redirect={false}
       />
