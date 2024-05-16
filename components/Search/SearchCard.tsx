@@ -59,11 +59,13 @@ const ItemScreen = ({movieList}: Props) => {
         return (
             <Link href={{pathname: "/item", params: item}} asChild>
                 <TouchableOpacity onPress={handleItemPress} style={styles.container}>
+                    <View style={styles.imageBorder}>
                     <Image
                         source={{ uri: imgUrl + item.poster_path }}
                         style={styles.image}
                         onLoad={() => setImgsLoaded((prevNumImgsLoaded) => prevNumImgsLoaded + 1)}
                     />
+                    </View>
                     <View style={{ flex: 1 }} />
                     <Text style={styles.title}>{title}</Text>
                     <View style={{ flex: 1 }} />
@@ -132,6 +134,10 @@ const styles = StyleSheet.create({
     image: {
         width: '100%',
         aspectRatio: 1 / 1.5,
+    },
+    imageBorder: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#000',
     },
     title: {
         textAlign: 'center',

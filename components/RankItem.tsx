@@ -85,7 +85,8 @@ const Rank = ({item}: Props) => {
       item_id: item.id,
       title: isMovie ? item.title : item.name,
       poster_path: item.poster_path,
-      score: newScore
+      score: newScore,
+      release_date: isMovie ? item.release_date : item.first_air_date,
     };
 
     if (user) {

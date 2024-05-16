@@ -1,8 +1,7 @@
-import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image } from 'react-native';
-
-import { Text, View } from '@/components/Themed';
+import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View } from 'react-native';
+import { Text } from '@/components/Themed';
 import SearchTabs from '@/components/Search/SearchTabs';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ContextType, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import ListTab from '@/components/ListTab';
 import { Link } from 'expo-router';
 import { useUserItemsSeenSearch } from '@/data/userData';
@@ -10,11 +9,19 @@ import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
 import { useData } from '@/contexts/dataContext';
+import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, PanGestureHandlerGestureEvent, Swipeable } from 'react-native-gesture-handler';
+import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 type Props = {
     seen: React.ReactNode;
     want: React.ReactNode;
     recs: React.ReactNode;
+};
+
+type RowProps = {
+  item: UserItem;
+  index: number;
+  //onDelete: (item: UserItem) => void;
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
@@ -30,35 +37,88 @@ const ListTabs = ({seen, want, recs}: Props) => {
     );
 }
 
-const renderItem = ({ item, index }: { item: UserItem, index: number }) => {    
+const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
+    const [isSwiped, setSwiped] = useState(false);
     const score = item.score.toFixed(1);
+    var date = "";
+
+    const handleSetSwiped = (value: boolean) => {
+      setSwiped(value);
+    };
+
+    if ('release_date' in item) {
+      date = item.release_date;
+    } else {
+      date = item.first_air_date;
+    }
+    date = date.slice(0,4);
+
+    const transX = useSharedValue(0);
+
+    const panGesture = Gesture.Pan()
+    .activeOffsetX([-10, 10])
+    .failOffsetY([-5, 5])
+    .onStart(() => {
+      if (isSwiped) {
+        transX.value = withSpring(0);
+      }
+    })
+    .onUpdate((event) => {
+      if (!isSwiped) {
+        transX.value = event.translationX;
+      }
+      console.log(transX.value);
+    })
+    .onEnd(() => {
+      if (transX.value > 100) { // Threshold for triggering delete
+        //transX.value = withSpring(1000); // Move item out of screen
+        runOnJS(handleSetSwiped)(true);
+        transX.value = withSpring(100);
+        //setTimeout(() => onDelete(item.id), 500); // Delay deletion for the animation
+      } else {
+        runOnJS(handleSetSwiped)(false);
+        transX.value = withSpring(0);
+      }
+    });
+
+    const animatedStyle = useAnimatedStyle(() => {
+      return {
+        transform: [{ translateX: transX.value }]
+      }
+    }, [transX.value]);
+    
 
     return (
-        <Link href={{pathname: "/lists"}} asChild>
-            <TouchableOpacity>
-                <View style={styles.itemContainer}>
-                    <Image
-                        source={{ uri: imgUrl + item.poster_path }}
-                        style={styles.image}
-                    />
-                    <View style={{ flex: 1 }} />
-                    <Text style={styles.itemText}>{item.title}</Text>
-                    <View style={{ flex: 1 }} />
-                    <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
-                    <View style={styles.score}><View style={styles.scoreCircle}><Text style={styles.text}>{score}</Text></View></View>
+          <GestureDetector gesture={panGesture}>
+            <Animated.View style={[styles.itemContainer, animatedStyle]}>
+                <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
+                <Image
+                    source={{ uri: imgUrl + item.poster_path }}
+                    style={styles.image}
+                />
+                <View style={styles.textContainer}>
+                  <Text style={styles.itemText}>{item.title}</Text>
+                  <Text style={styles.dateText}>{date}</Text>
                 </View>
-            </TouchableOpacity>
-        </Link>
+                
+                <View style={styles.score}><View style={styles.scoreCircle}><Text style={styles.text}>{score}</Text></View></View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={15}
+                  color={Colors['light'].text}
+                />
+            </Animated.View>
+          </GestureDetector>
     );
-}
+});
 
 const makeList = (items: UserItem[]) => {
     return (
         <FlatList
             data={items}
-            renderItem={renderItem}
+            renderItem={({ item, index }) => <RenderItem item={item} index={index} />}
             keyExtractor={item => item.item_id}
-            numColumns={3}
+            numColumns={1}
         />
     )
 }
@@ -103,11 +163,13 @@ export default function TabOneScreen() {
     ];
 
     return (
+      <GestureHandlerRootView>
         <View style={{ backgroundColor: '#fff', flex: 1 }}>
             <SafeAreaView style={styles.container}>
                 <SearchTabs tabs={searchTabs} />
             </SafeAreaView>
         </View>
+      </GestureHandlerRootView>
     );
 }
 
@@ -127,9 +189,10 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   itemText: {
-    fontSize: 14,
-    padding: 5,
-    textAlign: 'center'
+    flex: 1,
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'left',
   },
   itemLabel: {
     alignItems: 'center',
@@ -139,15 +202,17 @@ const styles = StyleSheet.create({
     fontSize: 16
   },
   rank: {
-    position: 'absolute',
-    left: 10,
-    top: 5,
+    //position: 'absolute',
+    //left: 10,
+    //top: 5,
+    paddingHorizontal: 5,
     backgroundColor: 'transparent'
   },
   score: {
-    position: 'absolute',
-    right: 10,
-    top: 5,
+    //position: 'absolute',
+    //right: 10,
+    //top: 5,
+    paddingHorizontal: 5,
     backgroundColor: 'transparent'
   },
   scoreCircle: {
@@ -165,17 +230,32 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
-    marginTop: 10,
-    marginLeft: 5,
-    marginRight: 5,
-    width: (screenWidth / 3) - 10,
-    borderWidth: 1,
-    borderColor: '#000',
-    borderRadius: 25,
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomColor: '#000',
     overflow: 'hidden',
   },
   image: {
-    width: '100%',
+    width: '20%',
     aspectRatio: 1 / 1.5,
+    paddingHorizontal: 5,
+    marginVertical: 10,
+    borderWidth: 0.5,
+    borderColor: '#000',
+    borderRadius: 10,
   },
+  textContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    padding: 10,
+  },
+  dateText: {
+    fontSize: 14,
+    fontWeight: '200',
+  }
 });
