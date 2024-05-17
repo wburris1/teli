@@ -37,13 +37,9 @@ const Rank = ({item}: Props) => {
 
   async function checkDupe() {
     if (user) {
-      var itemRef;
+      const itemRef = collection(db, "users", user.uid, isMovie ? "movies": "shows");
       var exists = true;
-      if (isMovie) {
-        itemRef = collection(db, "users", user.uid, "movies");
-      } else {
-        itemRef = collection(db, "users", user.uid, "shows");
-      }
+      
       const itemQuery = query(itemRef,
         where("item_id", "==", item.id),
       )
@@ -59,12 +55,7 @@ const Rank = ({item}: Props) => {
 
   async function fetchNext(minScore: number, maxScore: number) {
     if (user) {
-      var itemRef;
-      if (isMovie) {
-        itemRef = collection(db, "users", user.uid, "movies");
-      } else {
-        itemRef = collection(db, "users", user.uid, "shows");
-      }
+      const itemRef = collection(db, "users", user.uid, isMovie ? "movies": "shows");
       const itemQuery = query(itemRef,
         where("score", ">", minScore),
         where("score", "<", maxScore),
@@ -81,17 +72,27 @@ const Rank = ({item}: Props) => {
   }
 
   async function addToDB(newScore: number) {
-    const newItem = {
-      item_id: item.id,
-      title: isMovie ? item.title : item.name,
-      poster_path: item.poster_path,
-      score: newScore,
-      release_date: isMovie ? item.release_date : item.first_air_date,
-    };
+    var newItem;
+    if (isMovie) {
+      newItem = {
+        item_id: item.id,
+        title: item.title,
+        poster_path: item.poster_path,
+        score: newScore,
+        release_date: item.release_date,
+      };
+    } else {
+      newItem = {
+        item_id: item.id,
+        name: item.name,
+        poster_path: item.poster_path,
+        score: newScore,
+        first_air_date: item.first_air_date,
+      };
+    }
 
     if (user) {
-      const itemRef = isMovie ? doc(collection(db, "users", user.uid, "movies")) : 
-                                doc(collection(db, "users", user.uid, "shows"));
+      const itemRef = doc(collection(db, "users", user.uid, isMovie ? "movies" : "shows"));
       try {
         await setDoc(itemRef, newItem);
         setDupe(true);
@@ -102,8 +103,7 @@ const Rank = ({item}: Props) => {
   }
 
   async function adjustScores(minScore: number, maxScore: number, range: number) {
-    const userItemRef = isMovie ? collection(db, "users", user!.uid, "movies") :
-                                  collection(db, "users", user!.uid, "shows");
+    const userItemRef = collection(db, "users", user!.uid, isMovie ? "movies" : "shows");
       const itemQuery = query(userItemRef,
         where("score", ">=", minScore),
         where("score", "<=", maxScore),
@@ -118,8 +118,7 @@ const Rank = ({item}: Props) => {
 
       for (let i = 0; i < count; i++) {
         const newScore = minScore + scoreIncrement * i;
-        const itemRef = isMovie ? doc(db, 'users', user!.uid, 'movies', items[i].id) :
-                                  doc(db, 'users', user!.uid, 'shows', items[i].id);
+        const itemRef = doc(db, 'users', user!.uid, isMovie ? 'movies' : 'shows', items[i].id);
         await updateDoc(itemRef, { score: newScore });
       }
   }
@@ -282,7 +281,7 @@ const Rank = ({item}: Props) => {
                     source={{ uri: imgUrl + compItem.poster_path }}
                     style={styles.movieImage}
                   />
-                  <Text style={styles.movieTitle}>{compItem.title}</Text>                 
+                  <Text style={styles.movieTitle}>{'title' in compItem ? compItem.title : compItem.name}</Text>                 
                 </>
               )}
             </View>

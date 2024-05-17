@@ -24,7 +24,6 @@ type Item = Movie | Show;
 
 type BaseUserItem = {
     item_id: string,
-    title: string,
     poster_path: string,
     score: number
 }

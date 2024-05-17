@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View } from 'react-native';
+import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert } from 'react-native';
 import { Text } from '@/components/Themed';
 import SearchTabs from '@/components/Search/SearchTabs';
 import React, { ContextType, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
@@ -11,6 +11,9 @@ import Dimensions from '@/constants/Dimensions';
 import { useData } from '@/contexts/dataContext';
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, PanGestureHandlerGestureEvent, Swipeable } from 'react-native-gesture-handler';
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { arrayUnion, collection, doc, getDoc, getDocs, query, where, deleteDoc, writeBatch } from 'firebase/firestore';
+import { FIREBASE_DB } from '@/firebaseConfig';
+import { useAuth } from '@/contexts/authContext';
 
 type Props = {
     seen: React.ReactNode;
@@ -26,6 +29,8 @@ type RowProps = {
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
+const DELETE_WIDTH = 100;
+const db = FIREBASE_DB;
 
 const ListTabs = ({seen, want, recs}: Props) => {
     return (
@@ -38,6 +43,8 @@ const ListTabs = ({seen, want, recs}: Props) => {
 }
 
 const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
+    const { requestRefresh } = useData();
+    const { user } = useAuth();
     const [isSwiped, setSwiped] = useState(false);
     const score = item.score.toFixed(1);
     var date = "";
@@ -46,11 +53,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
       setSwiped(value);
     };
 
-    if ('release_date' in item) {
-      date = item.release_date;
-    } else {
-      date = item.first_air_date;
-    }
+    date = 'release_date' in item ? item.release_date : item.first_air_date;
     date = date.slice(0,4);
 
     const transX = useSharedValue(0);
@@ -67,13 +70,12 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
       if (!isSwiped) {
         transX.value = event.translationX;
       }
-      console.log(transX.value);
     })
     .onEnd(() => {
-      if (transX.value > 100) { // Threshold for triggering delete
+      if (transX.value > DELETE_WIDTH) { // Threshold for triggering delete
         //transX.value = withSpring(1000); // Move item out of screen
         runOnJS(handleSetSwiped)(true);
-        transX.value = withSpring(100);
+        transX.value = withSpring(DELETE_WIDTH);
         //setTimeout(() => onDelete(item.id), 500); // Delay deletion for the animation
       } else {
         runOnJS(handleSetSwiped)(false);
@@ -86,10 +88,71 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
         transform: [{ translateX: transX.value }]
       }
     }, [transX.value]);
+
+    const deleteButtonStyle = useAnimatedStyle(() => ({
+      opacity: interpolate(transX.value, [0, DELETE_WIDTH], [0, 1]),
+      transform: [{ translateX: transX.value - screenWidth }],
+      width: transX.value > 0 ? transX.value : DELETE_WIDTH,
+    }));
+
+    const deleteItem = async (item_id: string, collection_name: string): Promise<void> => {
+      if (user) {
+        const collRef = collection(db, "users", user.uid, collection_name);
+        const itemQuery = query(collRef,
+          where("item_id", "==", item_id)
+        );
+        const snapshot = await getDocs(itemQuery);
+        
+        try {
+          const snapshot = await getDocs(itemQuery);
+          const batch = writeBatch(db);
+
+          snapshot.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+
+          await batch.commit();
+          console.log("Item successfully deleted: ", item_id);
+        } catch (error) {
+          console.error("Error removing document: ", error);
+        }
+      }
+    };
     
+    const onDelete = (item_id: string, isMovie: boolean) => {
+      Alert.alert(
+        "Confirm Delete",
+        "Are you sure you want to delete this item?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel"
+          },
+          {
+            text: "Delete",
+            onPress: () => {
+              console.log("Delete Pressed, deleting item with ID:", item_id);
+              deleteItem(item_id, isMovie ? "movies" : "shows").then(() => {
+                requestRefresh();
+              });
+            }
+          }
+        ]
+      );
+    };
 
     return (
           <GestureDetector gesture={panGesture}>
+            <View>
+            <Animated.View style={[styles.deleteButtonContainer, deleteButtonStyle]}>
+              <TouchableOpacity style={styles.fullSize} onPress={() => onDelete(item.item_id, 'title' in item ? true : false)}>
+                <Ionicons
+                  name="trash"
+                  size={40}
+                  color={'#fff'}
+                />
+              </TouchableOpacity>
+            </Animated.View>
             <Animated.View style={[styles.itemContainer, animatedStyle]}>
                 <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
                 <Image
@@ -97,7 +160,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
                     style={styles.image}
                 />
                 <View style={styles.textContainer}>
-                  <Text style={styles.itemText}>{item.title}</Text>
+                  <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
                   <Text style={styles.dateText}>{date}</Text>
                 </View>
                 
@@ -108,6 +171,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
                   color={Colors['light'].text}
                 />
             </Animated.View>
+            </View>
           </GestureDetector>
     );
 });
@@ -205,7 +269,7 @@ const styles = StyleSheet.create({
     //position: 'absolute',
     //left: 10,
     //top: 5,
-    paddingHorizontal: 5,
+    paddingHorizontal: 10,
     backgroundColor: 'transparent'
   },
   score: {
@@ -257,5 +321,27 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 14,
     fontWeight: '200',
-  }
+  },
+  deleteButtonContainer: {
+    flexDirection: 'row',
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: screenWidth,
+    backgroundColor: 'red',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  fullSize: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomColor: '#000',
+  },
 });
