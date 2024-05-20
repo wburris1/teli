@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/authContext';
 import { useData } from '@/contexts/dataContext';
 import { FIREBASE_DB } from '@/firebaseConfig';
 import { setItem } from 'expo-secure-store';
-import { arrayUnion, collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore';
+import { arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 const db = FIREBASE_DB;
@@ -43,30 +43,17 @@ export const useUserItemsSeenSearch = (isMovies: boolean) => {
 
 export const useUserItemDelete = (item_id: string, score: number, collection_name: string) => {
     const { user } = useAuth();
-    const { requestRefresh } = useData();
     const adjustScoreFunc = useUserAdjustScores();
 
     async function deleteItem() {
         if (user) {
-          const collRef = collection(db, "users", user.uid, collection_name);
-          const itemQuery = query(collRef,
-            where("item_id", "==", item_id)
-          );
-          const snapshot = await getDocs(itemQuery);
-          
-          try {
-            const snapshot = await getDocs(itemQuery);
-            const batch = writeBatch(db);
-    
-            snapshot.forEach(doc => {
-              batch.delete(doc.ref);
-            });
-    
-            await batch.commit();
-            console.log("Item successfully deleted: ", item_id);
-          } catch (error) {
-            console.error("Error removing document: ", error);
-          }
+            const itemRef  = doc(db, "users", user.uid, collection_name, item_id);  
+            try {
+                await deleteDoc(itemRef);
+                console.log("Item successfully deleted: ", item_id);
+            } catch (error) {
+                console.error("Error removing document: ", error);
+            }
         }
     };
 

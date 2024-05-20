@@ -26,7 +26,7 @@ type RowProps = {
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
-const DELETE_WIDTH = 100;
+const DELETE_WIDTH = 80;
 
 const ListTabs = ({seen, want, recs}: Props) => {
     return (
@@ -39,7 +39,6 @@ const ListTabs = ({seen, want, recs}: Props) => {
 }
 
 const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
-    const { user } = useAuth();
     const [isSwiped, setSwiped] = useState(false);
     const score = item.score.toFixed(1);
     var date = "";
@@ -68,10 +67,10 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
       }
     })
     .onEnd(() => {
-      if (transX.value > DELETE_WIDTH) { // Threshold for triggering delete
+      if (transX.value > DELETE_WIDTH || transX.value < -DELETE_WIDTH) { // Threshold for triggering delete
         //transX.value = withSpring(1000); // Move item out of screen
         runOnJS(handleSetSwiped)(true);
-        transX.value = withSpring(DELETE_WIDTH);
+        transX.value = transX.value > 0 ? withSpring(DELETE_WIDTH) : withSpring(-DELETE_WIDTH);
         //setTimeout(() => onDelete(item.id), 500); // Delay deletion for the animation
       } else {
         runOnJS(handleSetSwiped)(false);
@@ -89,6 +88,12 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
       opacity: interpolate(transX.value, [0, DELETE_WIDTH], [0, 1]),
       transform: [{ translateX: transX.value - screenWidth }],
       width: transX.value > 0 ? transX.value : DELETE_WIDTH,
+    }));
+
+    const redoButtonStyle = useAnimatedStyle(() => ({
+      opacity: interpolate(transX.value, [0, -DELETE_WIDTH], [0, 1]),
+      transform: [{ translateX: 0 }],
+      width: transX.value < 0 ? Math.abs(transX.value) : DELETE_WIDTH,
     }));
     
     const onDelete = (item_id: string, isMovie: boolean) => {
@@ -140,6 +145,15 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
                   size={15}
                   color={Colors['light'].text}
                 />
+            </Animated.View>
+            <Animated.View style={[styles.redoButtonContainer, redoButtonStyle]}>
+              <TouchableOpacity style={styles.fullSize} onPress={() => {}}>
+                <Ionicons
+                  name="refresh"
+                  size={40}
+                  color={'#fff'}
+                />
+              </TouchableOpacity>
             </Animated.View>
             </View>
           </GestureDetector>
@@ -275,6 +289,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderBottomColor: '#000',
     overflow: 'hidden',
+    paddingRight: 5,
   },
   image: {
     width: '20%',
@@ -318,4 +333,15 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     borderBottomColor: '#000',
   },
+  redoButtonContainer: {
+    flexDirection: 'row',
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: screenWidth,
+    backgroundColor: 'blue',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  }
 });

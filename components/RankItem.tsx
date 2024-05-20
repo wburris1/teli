@@ -25,7 +25,7 @@ const initialDislikeScore = 4;
 
 const Rank = ({item}: Props) => {
   const [isDupe, setDupe] = useState(true);
-  const { refreshFlag, requestRefresh } = useData();
+  const { requestRefresh } = useData();
   const { user } = useAuth();
   const [compItem, setCompItem] = useState<UserItem | null>(null);
   const colorScheme = useColorScheme();
@@ -39,17 +39,16 @@ const Rank = ({item}: Props) => {
 
   async function checkDupe() {
     if (user) {
-      const itemRef = collection(db, "users", user.uid, isMovie ? "movies": "shows");
+      //const itemRef = collection(db, "users", user.uid, isMovie ? "movies": "shows");
+      const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id);
+
       var exists = true;
       
-      const itemQuery = query(itemRef,
-        where("item_id", "==", item.id),
-      )
       try {
-        const snapshot = await getDocs(itemQuery);
-        exists = !snapshot.empty;
+        const snapshot = await getDoc(itemRef);
+        exists = snapshot.exists();
       } catch (err: any) {
-        console.error("Failed to check for dupe: ",err);
+        console.error("Failed to check for dupe: ", err);
       }
       return exists;
     }
@@ -94,7 +93,7 @@ const Rank = ({item}: Props) => {
     }
 
     if (user) {
-      const itemRef = doc(collection(db, "users", user.uid, isMovie ? "movies" : "shows"));
+      const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id);
       try {
         await setDoc(itemRef, newItem);
         setDupe(true);
