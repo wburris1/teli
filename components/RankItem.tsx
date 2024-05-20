@@ -9,6 +9,7 @@ import { FIREBASE_DB } from '@/firebaseConfig';
 import { arrayUnion, collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import Colors from '@/constants/Colors';
 import { useData } from '@/contexts/dataContext';
+import { useUserAdjustScores } from '@/data/userData';
 
 type Props = {
     item: Item
@@ -31,6 +32,7 @@ const Rank = ({item}: Props) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [upperScore, setUpperScore] = useState(10.1);
   const [lowerScore, setLowerScore] = useState(0);
+  const adjustScoreFunc = useUserAdjustScores();
 
   const db = FIREBASE_DB;
   const isMovie = 'title' in item ? true : false;
@@ -102,27 +104,6 @@ const Rank = ({item}: Props) => {
     }
   }
 
-  async function adjustScores(minScore: number, maxScore: number, range: number) {
-    const userItemRef = collection(db, "users", user!.uid, isMovie ? "movies" : "shows");
-      const itemQuery = query(userItemRef,
-        where("score", ">=", minScore),
-        where("score", "<=", maxScore),
-      );
-
-      const snapshot = await getDocs(itemQuery);
-      const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  
-      // Distribute scores evenly between minScore and maxScore
-      const count = items.length;
-      const scoreIncrement = range / (count - 1);
-
-      for (let i = 0; i < count; i++) {
-        const newScore = minScore + scoreIncrement * i;
-        const itemRef = doc(db, 'users', user!.uid, isMovie ? 'movies' : 'shows', items[i].id);
-        await updateDoc(itemRef, { score: newScore });
-      }
-  }
-
   const handleFeedback = async (minScore: number, maxScore: number, initialScore: number) => {
     setLowerScore(minScore);
     setUpperScore(maxScore);
@@ -181,14 +162,9 @@ const Rank = ({item}: Props) => {
           } else {
             topScore = 4;
           }
-
-          adjustScores(bottomScore, topScore, range).then(() => {
-            console.log("Scores adjusted");
-          }).catch(error => {
-            console.error("Failed to adjust scores:", error);
-          })
+          
+          adjustScoreFunc(newScore, isMovie);
           console.log("Item added!");
-          requestRefresh();
         }).catch(error => {
           console.error("Failed to add item:", error);
         });

@@ -4,15 +4,13 @@ import SearchTabs from '@/components/Search/SearchTabs';
 import React, { ContextType, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import ListTab from '@/components/ListTab';
 import { Link } from 'expo-router';
-import { useUserItemsSeenSearch } from '@/data/userData';
+import { useUserItemDelete, useUserItemsSeenSearch } from '@/data/userData';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
 import { useData } from '@/contexts/dataContext';
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, PanGestureHandlerGestureEvent, Swipeable } from 'react-native-gesture-handler';
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { arrayUnion, collection, doc, getDoc, getDocs, query, where, deleteDoc, writeBatch } from 'firebase/firestore';
-import { FIREBASE_DB } from '@/firebaseConfig';
 import { useAuth } from '@/contexts/authContext';
 
 type Props = {
@@ -24,13 +22,11 @@ type Props = {
 type RowProps = {
   item: UserItem;
   index: number;
-  //onDelete: (item: UserItem) => void;
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
 const DELETE_WIDTH = 100;
-const db = FIREBASE_DB;
 
 const ListTabs = ({seen, want, recs}: Props) => {
     return (
@@ -43,7 +39,6 @@ const ListTabs = ({seen, want, recs}: Props) => {
 }
 
 const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
-    const { requestRefresh } = useData();
     const { user } = useAuth();
     const [isSwiped, setSwiped] = useState(false);
     const score = item.score.toFixed(1);
@@ -55,6 +50,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
 
     date = 'release_date' in item ? item.release_date : item.first_air_date;
     date = date.slice(0,4);
+    const deleteItem = useUserItemDelete(item.item_id, item.score, 'title' in item ? "movies" : "shows");
 
     const transX = useSharedValue(0);
 
@@ -94,30 +90,6 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
       transform: [{ translateX: transX.value - screenWidth }],
       width: transX.value > 0 ? transX.value : DELETE_WIDTH,
     }));
-
-    const deleteItem = async (item_id: string, collection_name: string): Promise<void> => {
-      if (user) {
-        const collRef = collection(db, "users", user.uid, collection_name);
-        const itemQuery = query(collRef,
-          where("item_id", "==", item_id)
-        );
-        const snapshot = await getDocs(itemQuery);
-        
-        try {
-          const snapshot = await getDocs(itemQuery);
-          const batch = writeBatch(db);
-
-          snapshot.forEach(doc => {
-            batch.delete(doc.ref);
-          });
-
-          await batch.commit();
-          console.log("Item successfully deleted: ", item_id);
-        } catch (error) {
-          console.error("Error removing document: ", error);
-        }
-      }
-    };
     
     const onDelete = (item_id: string, isMovie: boolean) => {
       Alert.alert(
@@ -132,9 +104,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
             text: "Delete",
             onPress: () => {
               console.log("Delete Pressed, deleting item with ID:", item_id);
-              deleteItem(item_id, isMovie ? "movies" : "shows").then(() => {
-                requestRefresh();
-              });
+              deleteItem();
             }
           }
         ]
@@ -177,19 +147,24 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
 });
 
 const makeList = (items: UserItem[]) => {
+  if (items.length > 0) {
     return (
-        <FlatList
-            data={items}
-            renderItem={({ item, index }) => <RenderItem item={item} index={index} />}
-            keyExtractor={item => item.item_id}
-            numColumns={1}
-        />
+      <FlatList
+        data={items}
+        renderItem={({ item, index }) => <RenderItem item={item} index={index} />}
+        keyExtractor={item => item.item_id}
+        numColumns={1}
+      />
     )
+  } else {
+    return (
+      <Text>Rank something!</Text>
+    )
+  }
 }
 
 const MoviesTabContent = () => {
-    const { refreshFlag } = useData();
-    const items = useUserItemsSeenSearch(true, refreshFlag);
+    const items = useUserItemsSeenSearch(true);
     items.sort((a: UserItem, b: UserItem) => b.score - a.score);
     const seen = makeList(items);
     const want = makeList(items);
@@ -198,8 +173,7 @@ const MoviesTabContent = () => {
 };
 
 const ShowsTabContent = () => {
-  const { refreshFlag } = useData();
-  const items = useUserItemsSeenSearch(false, refreshFlag);
+  const items = useUserItemsSeenSearch(false);
   items.sort((a: UserItem, b: UserItem) => b.score - a.score);
   const seen = makeList(items);
   const want = makeList(items);
@@ -210,7 +184,7 @@ const ShowsTabContent = () => {
 export default function TabOneScreen() {
     const { refreshFlag } = useData();
 
-    var moviesTabContent = useCallback(() => 
+    var moviesTabContent = useCallback(() =>  
         <MoviesTabContent />, [refreshFlag]);
     var showsTabContent = useCallback(() => 
         <ShowsTabContent />, [refreshFlag]);
