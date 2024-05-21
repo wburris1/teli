@@ -9,7 +9,7 @@ import { FIREBASE_DB } from '@/firebaseConfig';
 import { arrayUnion, collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import Colors from '@/constants/Colors';
 import { useData } from '@/contexts/dataContext';
-import { useUserAdjustScores } from '@/data/userData';
+import { useUserAdjustScores, useUserItemsSeenSearch } from '@/data/userData';
 
 type Props = {
     item: Item
@@ -18,28 +18,29 @@ type Props = {
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenHeight = Dimensions.screenHeight;
 const screenWidth = Dimensions.screenWidth;
+const db = FIREBASE_DB;
 
 const initialLikeScore = 6;
 const initialMehScore = 5;
 const initialDislikeScore = 4;
+const smallAssNumber = 0.0000001; // Used to make mid inclusive of 4 and 6 scores
 
 const Rank = ({item}: Props) => {
+  const isMovie = 'title' in item ? true : false;
+
   const [isDupe, setDupe] = useState(true);
   const { requestRefresh } = useData();
   const { user } = useAuth();
   const [compItem, setCompItem] = useState<UserItem | null>(null);
   const colorScheme = useColorScheme();
   const [modalVisible, setModalVisible] = useState(false);
-  const [upperScore, setUpperScore] = useState(10.1);
+  const [upperScore, setUpperScore] = useState(0);
   const [lowerScore, setLowerScore] = useState(0);
   const adjustScoreFunc = useUserAdjustScores();
-
-  const db = FIREBASE_DB;
-  const isMovie = 'title' in item ? true : false;
+  const items = useUserItemsSeenSearch(isMovie);
 
   async function checkDupe() {
     if (user) {
-      //const itemRef = collection(db, "users", user.uid, isMovie ? "movies": "shows");
       const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id);
 
       var exists = true;
@@ -54,26 +55,8 @@ const Rank = ({item}: Props) => {
     }
   }
 
-  async function fetchNext(minScore: number, maxScore: number) {
-    if (user) {
-      const itemRef = collection(db, "users", user.uid, isMovie ? "movies": "shows");
-      const itemQuery = query(itemRef,
-        where("score", ">", minScore),
-        where("score", "<", maxScore),
-      );
-      const snapshot = await getDocs(itemQuery);
-      if (!snapshot.empty) {
-        const validItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserItem }));
-        const randIndex = Math.floor(Math.random() * validItems.length);
-        return validItems[randIndex];
-      } else {
-        return null;
-      }
-    }
-  }
-
   async function addToDB(newScore: number) {
-    var newItem;
+    var newItem: UserItem;
     if (isMovie) {
       newItem = {
         item_id: item.id,
@@ -100,29 +83,46 @@ const Rank = ({item}: Props) => {
       } catch (err: any) {
         console.error("Error adding new item: ", err);
       }
+      return newItem;
+    }
+    return null;
+  }
+
+  const onRankStart = async () => {
+    setModalVisible(true);
+  }
+
+  const getNext = (minScore: number, maxScore: number) => {
+    console.log("min: " + minScore);
+    console.log("max: " + maxScore);
+    const newItems = items.filter(filterItem => filterItem.score > minScore && filterItem.score < maxScore);
+    const count = newItems.length;
+
+    if (count > 0) {
+      const randIndex = Math.floor(Math.random() * count);
+      return newItems[randIndex];
+    } else {
+      return null;
     }
   }
 
   const handleFeedback = async (minScore: number, maxScore: number, initialScore: number) => {
     setLowerScore(minScore);
     setUpperScore(maxScore);
-    fetchNext(minScore, maxScore).then(item => {
-      if (item) {
-        setCompItem(item);
-      } else {
-        // Add curr item to database, with score of 10?
-        const newScore = initialScore;
-        addToDB(newScore).then(() => {
-          setModalVisible(false);
-          console.log("Item added!");
-          requestRefresh();
-        }).catch(error => {
-          console.error("Failed to add item:", error);
-        });
-      }
-    }).catch(error => {
-      console.error("Failed to fetch next item:", error);
-    });
+
+    const newItem = getNext(minScore, maxScore);
+    if (newItem) {
+      setCompItem(newItem);
+    } else {
+      const newScore = initialScore;
+      addToDB(newScore).then(() => {
+        setModalVisible(false);
+        console.log("Item added!");
+        requestRefresh();
+      }).catch(error => {
+        console.error("Failed to add item:", error);
+      });
+    }
   }
 
   const handleComp = async (minScore: number, maxScore: number) => {
@@ -131,50 +131,32 @@ const Rank = ({item}: Props) => {
     if (minScore == maxScore) {
       addToDB(minScore).then(() => {
         setModalVisible(false);
-        console.log("Item added!");
         requestRefresh();
+        console.log("Item added! No score adjust necessary");
       }).catch(error => {
         console.error("Failed to add item:", error);
       });
-      return;
-    }
+    } else {
+      const newItem = getNext(minScore, maxScore);
 
-    fetchNext(minScore, maxScore).then(item => {
-      if (item) {
-        setCompItem(item);
+      if (newItem) {
+        setCompItem(newItem);
       } else {
-        // Add curr movie to database, with score in between movie score and upper score
-        const newScore = maxScore;
-        addToDB(newScore).then(() => {
-          setModalVisible(false);
-          var bottomScore = 0;
-          var topScore = 11;
-          var range = 4;
-          if (newScore >= 6) {
-            bottomScore = 6;
-            topScore = 11;
-            range = 4;
-          } else if (newScore >= 4) {
-            bottomScore = 4;
-            topScore = 6;
-            range = 2;
-          } else {
-            topScore = 4;
+        const newScore = maxScore == initialLikeScore + smallAssNumber ? initialLikeScore : maxScore;
+        addToDB(newScore).then(addItem => {
+          if (addItem) {
+            setModalVisible(false);
+            adjustScoreFunc([...items, addItem], newScore, isMovie);
+            console.log("Item added!");
           }
-          
-          adjustScoreFunc(newScore, isMovie);
-          console.log("Item added!");
         }).catch(error => {
           console.error("Failed to add item:", error);
         });
       }
-    }).catch(error => {
-      console.error("Failed to fetch next item:", error);
-    });
+    }
   }
 
   useEffect(() => {
-    console.log("check dupe");
     checkDupe().then(exists => {
       if (exists) {
         setDupe(true);
@@ -187,7 +169,7 @@ const Rank = ({item}: Props) => {
   return (
     <>
       {!isDupe && 
-      <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
+      <TouchableOpacity onPress={onRankStart} style={styles.addButton}>
         <Ionicons
           name="add-circle"
           size={85}
@@ -232,7 +214,7 @@ const Rank = ({item}: Props) => {
                         color={'#00ff00'}
                       />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.feedbackButton} onPress={() => handleFeedback(initialDislikeScore, initialLikeScore, initialMehScore)}>
+                    <TouchableOpacity style={styles.feedbackButton} onPress={() => handleFeedback(initialDislikeScore - smallAssNumber, initialLikeScore + smallAssNumber, initialMehScore)}>
                       <Ionicons
                         name="remove-circle"
                         size={60}

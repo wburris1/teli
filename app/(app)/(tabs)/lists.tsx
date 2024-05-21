@@ -11,7 +11,6 @@ import Dimensions from '@/constants/Dimensions';
 import { useData } from '@/contexts/dataContext';
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, PanGestureHandlerGestureEvent, Swipeable } from 'react-native-gesture-handler';
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { useAuth } from '@/contexts/authContext';
 
 type Props = {
     seen: React.ReactNode;
@@ -22,6 +21,7 @@ type Props = {
 type RowProps = {
   item: UserItem;
   index: number;
+  items: UserItem[];
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
@@ -30,15 +30,15 @@ const DELETE_WIDTH = 80;
 
 const ListTabs = ({seen, want, recs}: Props) => {
     return (
-        <>
-            <ListTab title="Seen" children={seen} />
-            <ListTab title="Want To See" children={want} />
-            <ListTab title="Recommendations" children={recs}  />
-        </>
+      <>
+        <ListTab title="Seen" children={seen} />
+        <ListTab title="Want To See" children={want} />
+        <ListTab title="Recommendations" children={recs}  />
+      </>
     );
 }
 
-const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
+const RenderItem = forwardRef<View, RowProps>(({ item, index, items }, ref) => {
     const [isSwiped, setSwiped] = useState(false);
     const score = item.score.toFixed(1);
     var date = "";
@@ -67,11 +67,9 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
       }
     })
     .onEnd(() => {
-      if (transX.value > DELETE_WIDTH || transX.value < -DELETE_WIDTH) { // Threshold for triggering delete
-        //transX.value = withSpring(1000); // Move item out of screen
+      if (transX.value > DELETE_WIDTH || transX.value < -DELETE_WIDTH) {
         runOnJS(handleSetSwiped)(true);
         transX.value = transX.value > 0 ? withSpring(DELETE_WIDTH) : withSpring(-DELETE_WIDTH);
-        //setTimeout(() => onDelete(item.id), 500); // Delay deletion for the animation
       } else {
         runOnJS(handleSetSwiped)(false);
         transX.value = withSpring(0);
@@ -109,7 +107,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
             text: "Delete",
             onPress: () => {
               console.log("Delete Pressed, deleting item with ID:", item_id);
-              deleteItem();
+              deleteItem(items.filter(filterItem => filterItem.item_id !== item.item_id));
             }
           }
         ]
@@ -117,46 +115,46 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index }, ref) => {
     };
 
     return (
-          <GestureDetector gesture={panGesture}>
-            <View>
-            <Animated.View style={[styles.deleteButtonContainer, deleteButtonStyle]}>
-              <TouchableOpacity style={styles.fullSize} onPress={() => onDelete(item.item_id, 'title' in item ? true : false)}>
-                <Ionicons
-                  name="trash"
-                  size={40}
-                  color={'#fff'}
-                />
-              </TouchableOpacity>
-            </Animated.View>
-            <Animated.View style={[styles.itemContainer, animatedStyle]}>
-                <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
-                <Image
-                    source={{ uri: imgUrl + item.poster_path }}
-                    style={styles.image}
-                />
-                <View style={styles.textContainer}>
-                  <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
-                  <Text style={styles.dateText}>{date}</Text>
-                </View>
-                
-                <View style={styles.score}><View style={styles.scoreCircle}><Text style={styles.text}>{score}</Text></View></View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={15}
-                  color={Colors['light'].text}
-                />
-            </Animated.View>
-            <Animated.View style={[styles.redoButtonContainer, redoButtonStyle]}>
-              <TouchableOpacity style={styles.fullSize} onPress={() => {}}>
-                <Ionicons
-                  name="refresh"
-                  size={40}
-                  color={'#fff'}
-                />
-              </TouchableOpacity>
-            </Animated.View>
+      <GestureDetector gesture={panGesture}>
+        <View>
+        <Animated.View style={[styles.deleteButtonContainer, deleteButtonStyle]}>
+          <TouchableOpacity style={styles.fullSize} onPress={() => onDelete(item.item_id, 'title' in item ? true : false)}>
+            <Ionicons
+              name="trash"
+              size={40}
+              color={'#fff'}
+            />
+          </TouchableOpacity>
+        </Animated.View>
+        <Animated.View style={[styles.itemContainer, animatedStyle]}>
+            <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
+            <Image
+                source={{ uri: imgUrl + item.poster_path }}
+                style={styles.image}
+            />
+            <View style={styles.textContainer}>
+              <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
+              <Text style={styles.dateText}>{date}</Text>
             </View>
-          </GestureDetector>
+            
+            <View style={styles.score}><View style={styles.scoreCircle}><Text style={styles.text}>{score}</Text></View></View>
+            <Ionicons
+              name="chevron-forward"
+              size={15}
+              color={Colors['light'].text}
+            />
+        </Animated.View>
+        <Animated.View style={[styles.redoButtonContainer, redoButtonStyle]}>
+          <TouchableOpacity style={styles.fullSize} onPress={() => {}}>
+            <Ionicons
+              name="add"
+              size={40}
+              color={'#fff'}
+            />
+          </TouchableOpacity>
+        </Animated.View>
+        </View>
+      </GestureDetector>
     );
 });
 
@@ -165,7 +163,7 @@ const makeList = (items: UserItem[]) => {
     return (
       <FlatList
         data={items}
-        renderItem={({ item, index }) => <RenderItem item={item} index={index} />}
+        renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} />}
         keyExtractor={item => item.item_id}
         numColumns={1}
       />
@@ -178,12 +176,12 @@ const makeList = (items: UserItem[]) => {
 }
 
 const MoviesTabContent = () => {
-    const items = useUserItemsSeenSearch(true);
-    items.sort((a: UserItem, b: UserItem) => b.score - a.score);
-    const seen = makeList(items);
-    const want = makeList(items);
-    const recs = <Text>Empty</Text>;
-    return <ListTabs seen={seen} want={want} recs={recs}/>;
+  const items = useUserItemsSeenSearch(true);
+  items.sort((a: UserItem, b: UserItem) => b.score - a.score);
+  const seen = makeList(items);
+  const want = makeList(items);
+  const recs = <Text>Empty</Text>;
+  return <ListTabs seen={seen} want={want} recs={recs}/>;
 };
 
 const ShowsTabContent = () => {
@@ -196,33 +194,33 @@ const ShowsTabContent = () => {
 };
 
 export default function TabOneScreen() {
-    const { refreshFlag } = useData();
+  const { refreshFlag } = useData();
 
-    var moviesTabContent = useCallback(() =>  
-        <MoviesTabContent />, [refreshFlag]);
-    var showsTabContent = useCallback(() => 
-        <ShowsTabContent />, [refreshFlag]);
+  var moviesTabContent = useCallback(() =>  
+      <MoviesTabContent />, [refreshFlag]);
+  var showsTabContent = useCallback(() => 
+      <ShowsTabContent />, [refreshFlag]);
 
-    const searchTabs = [
-        {
-            title: 'Movies',
-            content: moviesTabContent
-        },
-        {
-            title: 'Shows',
-            content: showsTabContent
-        }
-    ];
+  const searchTabs = [
+    {
+      title: 'Movies',
+      content: moviesTabContent
+    },
+    {
+      title: 'Shows',
+      content: showsTabContent
+    }
+  ];
 
-    return (
-      <GestureHandlerRootView>
-        <View style={{ backgroundColor: '#fff', flex: 1 }}>
-            <SafeAreaView style={styles.container}>
-                <SearchTabs tabs={searchTabs} />
-            </SafeAreaView>
-        </View>
-      </GestureHandlerRootView>
-    );
+  return (
+    <GestureHandlerRootView>
+      <View style={{ backgroundColor: '#fff', flex: 1 }}>
+        <SafeAreaView style={styles.container}>
+          <SearchTabs tabs={searchTabs} />
+        </SafeAreaView>
+      </View>
+    </GestureHandlerRootView>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -254,16 +252,10 @@ const styles = StyleSheet.create({
     fontSize: 16
   },
   rank: {
-    //position: 'absolute',
-    //left: 10,
-    //top: 5,
     paddingHorizontal: 10,
     backgroundColor: 'transparent'
   },
   score: {
-    //position: 'absolute',
-    //right: 10,
-    //top: 5,
     paddingHorizontal: 5,
     backgroundColor: 'transparent'
   },
@@ -340,7 +332,7 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: screenWidth,
-    backgroundColor: 'blue',
+    backgroundColor: '#32CD32',
     justifyContent: 'flex-end',
     alignItems: 'center',
   }

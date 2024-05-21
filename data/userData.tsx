@@ -41,13 +41,13 @@ export const useUserItemsSeenSearch = (isMovies: boolean) => {
     return itemList;
 }
 
-export const useUserItemDelete = (item_id: string, score: number, collection_name: string) => {
+export const useUserItemDelete = (item_id: string, score: number, collectionName: string) => {
     const { user } = useAuth();
     const adjustScoreFunc = useUserAdjustScores();
 
     async function deleteItem() {
         if (user) {
-            const itemRef  = doc(db, "users", user.uid, collection_name, item_id);  
+            const itemRef  = doc(db, "users", user.uid, collectionName, item_id);  
             try {
                 await deleteDoc(itemRef);
                 console.log("Item successfully deleted: ", item_id);
@@ -57,9 +57,9 @@ export const useUserItemDelete = (item_id: string, score: number, collection_nam
         }
     };
 
-    function reactToDelete() {
+    function reactToDelete(items: UserItem[]) {
         deleteItem().then(() => {
-            adjustScoreFunc(score, collection_name == "movies");
+            adjustScoreFunc(items, score, collectionName == "movies");
         })
     }
 
@@ -70,50 +70,68 @@ export const useUserAdjustScores = () => {
     const { requestRefresh } = useData();
     const { user } = useAuth();
 
-    async function adjustScores(minScore: number, maxScore: number, range: number, isMovie: boolean) {
-        const userItemRef = collection(db, "users", user!.uid, isMovie ? "movies" : "shows");
-        const itemQuery = query(userItemRef,
-          where("score", ">=", minScore),
-          where("score", "<=", maxScore),
-        );
-    
-        const snapshot = await getDocs(itemQuery);
-        const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    
+    async function adjustScores(items: UserItem[], minScore: number, maxScore: number, range: number, isMovie: boolean) {
         // Distribute scores evenly between minScore and maxScore
-        const count = items.length;
-        var scoreIncrement = range;
-
-        if (count - 1 > 0) {
-            scoreIncrement = range / (count - 1);
+        var filteredItems: UserItem[] = [];
+        if (minScore == 0) {
+            // Bad items - include 0, exclude 4
+            filteredItems = items.filter(item => item.score >= minScore && item.score < maxScore)
+        } else if (minScore == 4) {
+            // Mid items (includes 4 and 6)
+            filteredItems = items.filter(item => item.score >= minScore && item.score <= maxScore)
+        } else {
+            // Good items, exclude 6
+            filteredItems = items.filter(item => item.score > minScore && item.score <= maxScore)
         }
-    
-        for (let i = 0; i < count; i++) {
-          var newScore = minScore + scoreIncrement * i;
-          if (items.length == 1) {
-            newScore = minScore + scoreIncrement;
-          }
-          const itemRef = doc(db, 'users', user!.uid, isMovie ? 'movies' : 'shows', items[i].id);
-          await updateDoc(itemRef, { score: newScore });
+        filteredItems.sort((a: UserItem, b: UserItem) => a.score - b.score);
+        const scores = new Set();
+        filteredItems.forEach(item => scores.add(item.score));
+
+        const count = scores.size + 1;
+        var scoreIncrement = range / count;
+
+        const batch = writeBatch(db);
+
+        var lastScore = -1;
+        var lastNewScoreIndex = 0;
+        for (let i = 0; i < filteredItems.length; i++) {
+            console.log(lastNewScoreIndex);
+            var newScore = minScore + scoreIncrement * (lastNewScoreIndex + 1);
+            if (filteredItems[i].score != lastScore && lastScore > 0) {
+                lastNewScoreIndex++;
+                newScore = minScore + scoreIncrement * (lastNewScoreIndex + 1);
+                lastScore = filteredItems[i].score;
+            } else if (lastScore < 0) {
+                lastScore = filteredItems[i].score;
+            }
+            const itemRef = doc(db, 'users', user!.uid, isMovie ? 'movies' : 'shows', filteredItems[i].item_id);
+            batch.update(itemRef, { score: newScore });
+        }
+
+        try {
+            await batch.commit();
+            console.log('Score update successful');
+        } catch (error) {
+            console.error('Score update failed: ', error);
         }
     }
 
-    function reactToScoresAdjust(score: number, isMovie: boolean) {
+    function reactToScoresAdjust(items: UserItem[], score: number, isMovie: boolean) {
         var minScore = 0;
         var maxScore = 10;
         var range = 4;
-        if (score >= 6) {
+        if (score > 6) {
             minScore = 6;
             maxScore = 11;
             range = 4;
-        } else if (score >= 4) {
+        } else if (score > 4) {
             minScore = 4;
             maxScore = 6;
             range = 2;
         } else {
             maxScore = 4;
         }
-        adjustScores(minScore, maxScore, range, isMovie).then(() => {
+        adjustScores(items, minScore, maxScore, range, isMovie).then(() => {
             requestRefresh();
         })
     }
