@@ -13,9 +13,9 @@ import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, Pa
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 
 type Props = {
-    seen: React.ReactNode;
-    want: React.ReactNode;
-    recs: React.ReactNode;
+  seen: React.ReactNode;
+  want: React.ReactNode;
+  recs: React.ReactNode;
 };
 
 type RowProps = {
@@ -29,133 +29,133 @@ const screenWidth = Dimensions.screenWidth;
 const DELETE_WIDTH = 80;
 
 const ListTabs = ({seen, want, recs}: Props) => {
-    return (
-      <>
-        <ListTab title="Seen" children={seen} />
-        <ListTab title="Want To See" children={want} />
-        <ListTab title="Recommendations" children={recs}  />
-      </>
-    );
+  return (
+    <>
+      <ListTab title="Seen" children={seen} />
+      <ListTab title="Want To See" children={want} />
+      <ListTab title="Recommendations" children={recs}  />
+    </>
+  );
 }
 
 const RenderItem = forwardRef<View, RowProps>(({ item, index, items }, ref) => {
-    const [isSwiped, setSwiped] = useState(false);
-    const score = item.score.toFixed(1);
-    var date = "";
+  const [isSwiped, setSwiped] = useState(false);
+  const score = item.score.toFixed(1);
+  var date = "";
 
-    const handleSetSwiped = (value: boolean) => {
-      setSwiped(value);
-    };
+  const handleSetSwiped = (value: boolean) => {
+    setSwiped(value);
+  };
 
-    date = 'release_date' in item ? item.release_date : item.first_air_date;
-    date = date.slice(0,4);
-    const deleteItem = useUserItemDelete(item.item_id, item.score, 'title' in item ? "movies" : "shows");
+  date = 'release_date' in item ? item.release_date : item.first_air_date;
+  date = date.slice(0,4);
+  const deleteItem = useUserItemDelete(item.item_id, item.score, 'title' in item ? "movies" : "shows");
 
-    const transX = useSharedValue(0);
+  const transX = useSharedValue(0);
 
-    const panGesture = Gesture.Pan()
-    .activeOffsetX([-10, 10])
-    .failOffsetY([-5, 5])
-    .onStart(() => {
-      if (isSwiped) {
-        transX.value = withSpring(0);
-      }
-    })
-    .onUpdate((event) => {
-      if (!isSwiped) {
-        transX.value = event.translationX;
-      }
-    })
-    .onEnd(() => {
-      if (transX.value > DELETE_WIDTH || transX.value < -DELETE_WIDTH) {
-        runOnJS(handleSetSwiped)(true);
-        transX.value = transX.value > 0 ? withSpring(DELETE_WIDTH) : withSpring(-DELETE_WIDTH);
-      } else {
-        runOnJS(handleSetSwiped)(false);
-        transX.value = withSpring(0);
-      }
-    });
+  const panGesture = Gesture.Pan()
+  .activeOffsetX([-10, 10])
+  .failOffsetY([-5, 5])
+  .onStart(() => {
+    if (isSwiped) {
+      transX.value = withSpring(0);
+    }
+  })
+  .onUpdate((event) => {
+    if (!isSwiped) {
+      transX.value = event.translationX;
+    }
+  })
+  .onEnd(() => {
+    if (transX.value > DELETE_WIDTH || transX.value < -DELETE_WIDTH) {
+      runOnJS(handleSetSwiped)(true);
+      transX.value = transX.value > 0 ? withSpring(DELETE_WIDTH) : withSpring(-DELETE_WIDTH);
+    } else {
+      runOnJS(handleSetSwiped)(false);
+      transX.value = withSpring(0);
+    }
+  });
 
-    const animatedStyle = useAnimatedStyle(() => {
-      return {
-        transform: [{ translateX: transX.value }]
-      }
-    }, [transX.value]);
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: transX.value }]
+    }
+  }, [transX.value]);
 
-    const deleteButtonStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(transX.value, [0, DELETE_WIDTH], [0, 1]),
-      transform: [{ translateX: transX.value - screenWidth }],
-      width: transX.value > 0 ? transX.value : DELETE_WIDTH,
-    }));
+  const deleteButtonStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(transX.value, [0, DELETE_WIDTH], [0, 1]),
+    transform: [{ translateX: transX.value - screenWidth }],
+    width: transX.value > 0 ? transX.value : DELETE_WIDTH,
+  }));
 
-    const redoButtonStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(transX.value, [0, -DELETE_WIDTH], [0, 1]),
-      transform: [{ translateX: 0 }],
-      width: transX.value < 0 ? Math.abs(transX.value) : DELETE_WIDTH,
-    }));
-    
-    const onDelete = (item_id: string, isMovie: boolean) => {
-      Alert.alert(
-        "Confirm Delete",
-        "Are you sure you want to delete this item?",
-        [
-          {
-            text: "Cancel",
-            style: "cancel"
-          },
-          {
-            text: "Delete",
-            onPress: () => {
-              console.log("Delete Pressed, deleting item with ID:", item_id);
-              deleteItem(items.filter(filterItem => filterItem.item_id !== item.item_id));
-            }
+  const redoButtonStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(transX.value, [0, -DELETE_WIDTH], [0, 1]),
+    transform: [{ translateX: 0 }],
+    width: transX.value < 0 ? Math.abs(transX.value) : DELETE_WIDTH,
+  }));
+  
+  const onDelete = (item_id: string, isMovie: boolean) => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this item?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          onPress: () => {
+            console.log("Delete Pressed, deleting item with ID:", item_id);
+            deleteItem(items.filter(filterItem => filterItem.item_id !== item.item_id));
           }
-        ]
-      );
-    };
-
-    return (
-      <GestureDetector gesture={panGesture}>
-        <View>
-        <Animated.View style={[styles.deleteButtonContainer, deleteButtonStyle]}>
-          <TouchableOpacity style={styles.fullSize} onPress={() => onDelete(item.item_id, 'title' in item ? true : false)}>
-            <Ionicons
-              name="trash"
-              size={40}
-              color={'#fff'}
-            />
-          </TouchableOpacity>
-        </Animated.View>
-        <Animated.View style={[styles.itemContainer, animatedStyle]}>
-            <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
-            <Image
-                source={{ uri: imgUrl + item.poster_path }}
-                style={styles.image}
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
-              <Text style={styles.dateText}>{date}</Text>
-            </View>
-            
-            <View style={styles.score}><View style={styles.scoreCircle}><Text style={styles.text}>{score}</Text></View></View>
-            <Ionicons
-              name="chevron-forward"
-              size={15}
-              color={Colors['light'].text}
-            />
-        </Animated.View>
-        <Animated.View style={[styles.redoButtonContainer, redoButtonStyle]}>
-          <TouchableOpacity style={styles.fullSize} onPress={() => {}}>
-            <Ionicons
-              name="add"
-              size={40}
-              color={'#fff'}
-            />
-          </TouchableOpacity>
-        </Animated.View>
-        </View>
-      </GestureDetector>
+        }
+      ]
     );
+  };
+
+  return (
+    <GestureDetector gesture={panGesture}>
+      <View>
+      <Animated.View style={[styles.deleteButtonContainer, deleteButtonStyle]}>
+        <TouchableOpacity style={styles.fullSize} onPress={() => onDelete(item.item_id, 'title' in item ? true : false)}>
+          <Ionicons
+            name="trash"
+            size={40}
+            color={'#fff'}
+          />
+        </TouchableOpacity>
+      </Animated.View>
+      <Animated.View style={[styles.itemContainer, animatedStyle]}>
+          <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
+          <Image
+              source={{ uri: imgUrl + item.poster_path }}
+              style={styles.image}
+          />
+          <View style={styles.textContainer}>
+            <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
+            <Text style={styles.dateText}>{date}</Text>
+          </View>
+          
+          <View style={styles.score}><View style={styles.scoreCircle}><Text style={styles.text}>{score}</Text></View></View>
+          <Ionicons
+            name="chevron-forward"
+            size={15}
+            color={Colors['light'].text}
+          />
+      </Animated.View>
+      <Animated.View style={[styles.redoButtonContainer, redoButtonStyle]}>
+        <TouchableOpacity style={styles.fullSize} onPress={() => {}}>
+          <Ionicons
+            name="add"
+            size={40}
+            color={'#fff'}
+          />
+        </TouchableOpacity>
+      </Animated.View>
+      </View>
+    </GestureDetector>
+  );
 });
 
 const makeList = (items: UserItem[]) => {

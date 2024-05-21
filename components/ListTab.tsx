@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, Animated, useColorScheme, LayoutChangeEvent } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
@@ -22,6 +22,8 @@ const ListTab = ({ title, children }: Props) => {
   const [buttonLayout, setButtonLayout] = useState<Layout | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownHeight, setDropdownHeight] = useState(new Animated.Value(0));
+  const [animationInProgress, setAnimationInProgress] = useState(false);
+
   const colorScheme = useColorScheme();
 
   const onButtonLayout = (event: LayoutChangeEvent) => {
@@ -34,26 +36,26 @@ const ListTab = ({ title, children }: Props) => {
     });
   };
 
-  const toggleOpen = () => {
-    if (!buttonLayout) return;
-
-    const distanceToBottom = screenHeight - (buttonLayout.y + buttonLayout.height);
-
-    if (isOpen) {
-      Animated.timing(dropdownHeight, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: false
-      }).start();
-    } else {
-      Animated.timing(dropdownHeight, {
-          toValue: distanceToBottom - 170,
-          duration: 300,
-          useNativeDriver: false
-      }).start();
-    }
-    setIsOpen(!isOpen);
+  const calculateDistance = () => {
+    return screenHeight - (buttonLayout!.y + buttonLayout!.height) - 170;
   };
+
+  const toggleOpen = () => {
+    if (!buttonLayout || animationInProgress) return;
+
+    setAnimationInProgress(true); // Lock further interactions
+
+    const finalValue = isOpen ? 0 : calculateDistance(); // Use a function to calculate this based on stable values
+
+    Animated.timing(dropdownHeight, {
+        toValue: finalValue,
+        duration: 300,
+        useNativeDriver: false
+    }).start(() => {
+        setIsOpen(!isOpen);
+        setAnimationInProgress(false); // Unlock after animation
+    });
+};
 
   return (
     <View onLayout={onButtonLayout}>
