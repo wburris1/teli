@@ -142,7 +142,7 @@ const Rank = ({item}: Props) => {
       if (newItem) {
         setCompItem(newItem);
       } else {
-        const newScore = maxScore == initialLikeScore + smallAssNumber ? initialLikeScore : maxScore;
+        const newScore = maxScore - smallAssNumber;
         addToDB(newScore).then(addItem => {
           if (addItem) {
             setModalVisible(false);
