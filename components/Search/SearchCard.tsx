@@ -57,7 +57,7 @@ const ItemScreen = ({movieList}: Props) => {
         };
 
         return (
-            <Link href={{pathname: "/item", params: item}} asChild>
+            <Link href={{pathname: "/search_item", params: item}} asChild>
                 <TouchableOpacity onPress={handleItemPress} style={styles.container}>
                     <View style={styles.imageBorder}>
                     <Image

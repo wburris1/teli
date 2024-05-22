@@ -72,11 +72,12 @@ export default function TabLayout() {
         redirect={false}
       />
       <Tabs.Screen
-        name="lists"
+        name="(lists)"
         options={{
           headerTitle: 'Lists',
           tabBarIcon: ({ color, size }) => <Ionicons name="list" size={size} color={color} />,
           tabBarLabel: 'Lists',
+          headerShown: false,
         }}
         redirect={false}
       />

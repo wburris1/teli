@@ -3,7 +3,7 @@ import { Text } from '@/components/Themed';
 import SearchTabs from '@/components/Search/SearchTabs';
 import React, { ContextType, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
 import ListTab from '@/components/ListTab';
-import { Link } from 'expo-router';
+import { Link, useNavigation } from 'expo-router';
 import { useUserItemDelete, useUserItemsSeenSearch } from '@/data/userData';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
@@ -42,6 +42,13 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items }, ref) => {
   const [isSwiped, setSwiped] = useState(false);
   const score = item.score.toFixed(1);
   var date = "";
+  const placeholderItem: Item = {
+    id: "12345",
+    title: "Movie",
+    release_date: "1-23-2024",
+    overview: "Good movie",
+    poster_path: ""
+  }
 
   const handleSetSwiped = (value: boolean) => {
     setSwiped(value);
@@ -127,22 +134,26 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items }, ref) => {
         </TouchableOpacity>
       </Animated.View>
       <Animated.View style={[styles.itemContainer, animatedStyle]}>
-          <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
-          <Image
-              source={{ uri: imgUrl + item.poster_path }}
-              style={styles.image}
-          />
-          <View style={styles.textContainer}>
-            <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
-            <Text style={styles.dateText}>{date}</Text>
+        <Link href={{pathname: "/list_item", params: placeholderItem}} style={styles.linkStyle}>
+          <View style={styles.innerContainer}>
+            <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
+            <Image
+                source={{ uri: imgUrl + item.poster_path }}
+                style={styles.image}
+            />
+            <View style={styles.textContainer}>
+              <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
+              <Text style={styles.dateText}>{date}</Text>
+            </View>
+            
+            <View style={styles.score}><View style={styles.scoreCircle}><Text style={styles.text}>{score}</Text></View></View>
+            <Ionicons
+              name="chevron-forward"
+              size={15}
+              color={Colors['light'].text}
+            />
           </View>
-          
-          <View style={styles.score}><View style={styles.scoreCircle}><Text style={styles.text}>{score}</Text></View></View>
-          <Ionicons
-            name="chevron-forward"
-            size={15}
-            color={Colors['light'].text}
-          />
+        </Link>
       </Animated.View>
       <Animated.View style={[styles.redoButtonContainer, redoButtonStyle]}>
         <TouchableOpacity style={styles.fullSize} onPress={() => {}}>
@@ -271,7 +282,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   itemContainer: {
-    flex: 1,
+    //flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
     flexDirection: 'row',
@@ -282,6 +293,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#000',
     overflow: 'hidden',
     paddingRight: 5,
+    width: '100%',
   },
   image: {
     width: '20%',
@@ -309,7 +321,6 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    width: screenWidth,
     backgroundColor: 'red',
     justifyContent: 'flex-end',
     alignItems: 'center',
@@ -331,9 +342,22 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    width: screenWidth,
     backgroundColor: '#32CD32',
     justifyContent: 'flex-end',
     alignItems: 'center',
-  }
+  },
+  linkStyle: {
+    flex: 1,  // Ensure it takes up the full container
+    alignItems: 'stretch',  // Stretch to fill the container
+    justifyContent: 'center',  // Center the contents vertically
+    padding: 0,
+    margin: 0,
+  },
+  innerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',  // Adjust according to your layout needs
+    width: '100%',
+    height: '100%',  // Ensure full height
+  },
 });
