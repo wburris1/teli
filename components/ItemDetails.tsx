@@ -4,7 +4,6 @@ import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
-import { useMovieDetails } from '@/data/movieData';
 import { Link } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import Rank from './RankItem';

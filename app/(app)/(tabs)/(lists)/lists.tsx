@@ -41,22 +41,16 @@ const ListTabs = ({seen, want, recs}: Props) => {
 const RenderItem = forwardRef<View, RowProps>(({ item, index, items }, ref) => {
   const [isSwiped, setSwiped] = useState(false);
   const score = item.score.toFixed(1);
+  const isMovie = 'title' in item;
   var date = "";
-  const placeholderItem: Item = {
-    id: "12345",
-    title: "Movie",
-    release_date: "1-23-2024",
-    overview: "Good movie",
-    poster_path: ""
-  }
 
   const handleSetSwiped = (value: boolean) => {
     setSwiped(value);
   };
 
-  date = 'release_date' in item ? item.release_date : item.first_air_date;
+  date = isMovie ? item.release_date : item.first_air_date;
   date = date.slice(0,4);
-  const deleteItem = useUserItemDelete(item.item_id, item.score, 'title' in item ? "movies" : "shows");
+  const deleteItem = useUserItemDelete(item.item_id, item.score, isMovie ? "movies" : "shows");
 
   const transX = useSharedValue(0);
 
@@ -125,7 +119,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items }, ref) => {
     <GestureDetector gesture={panGesture}>
       <View>
       <Animated.View style={[styles.deleteButtonContainer, deleteButtonStyle]}>
-        <TouchableOpacity style={styles.fullSize} onPress={() => onDelete(item.item_id, 'title' in item ? true : false)}>
+        <TouchableOpacity style={styles.fullSize} onPress={() => onDelete(item.item_id, isMovie ? true : false)}>
           <Ionicons
             name="trash"
             size={40}
@@ -134,7 +128,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items }, ref) => {
         </TouchableOpacity>
       </Animated.View>
       <Animated.View style={[styles.itemContainer, animatedStyle]}>
-        <Link href={{pathname: "/list_item", params: placeholderItem}} style={styles.linkStyle}>
+        <Link href={{pathname: "/list_item", params: { id: item.item_id, groupKey: isMovie ? "movie" : "tv" }}} style={styles.linkStyle}>
           <View style={styles.innerContainer}>
             <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
             <Image

@@ -1,14 +1,16 @@
 import { View, Text } from "react-native";
 import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
 import ItemDetails from "@/components/ItemDetails";
+import { useItemDetails } from "@/data/itemData";
 
 export default function ItemPage() {
-  const params = useLocalSearchParams();
-  const item = Array.isArray(params) ? params[0] : params;
+  const { id, groupKey } = useLocalSearchParams();
+  const item: Item = useItemDetails(id as string, groupKey == "movie");
 
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <ItemDetails item={item} />
+      {item &&
+      <ItemDetails item={item} />}
     </View>
   );
 }

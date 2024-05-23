@@ -15,8 +15,7 @@ interface Show extends BaseItem {
     first_air_date: string,
 }
 
-type MovieInfo = {
-    id: string,
+interface ItemInfo extends BaseItem {
     genres: { id: string, name: string }[]
 };
 

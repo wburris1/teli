@@ -34,9 +34,10 @@ const ItemScreen = ({movieList}: Props) => {
 
     const renderItem = ({ item, index }: { item: Item, index: number }) => {
         var title = "";
-        if ('title' in item) {
+        const isMovie = 'title' in item;
+        if (isMovie) {
             title = item.title;
-        } else if ('name' in item) {
+        } else {
             title = item.name;
         }
 
@@ -57,7 +58,7 @@ const ItemScreen = ({movieList}: Props) => {
         };
 
         return (
-            <Link href={{pathname: "/search_item", params: item}} asChild>
+            <Link href={{pathname: "/search_item", params: { id: item.id, groupKey: isMovie ? "movie" : "tv" }}} asChild>
                 <TouchableOpacity onPress={handleItemPress} style={styles.container}>
                     <View style={styles.imageBorder}>
                     <Image

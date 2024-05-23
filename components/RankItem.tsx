@@ -40,10 +40,11 @@ const Rank = ({item}: Props) => {
   const items = useUserItemsSeenSearch(isMovie);
 
   async function checkDupe() {
-    if (user) {
-      const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id);
+    var exists = true;
 
-      var exists = true;
+    if (user && item) {
+      console.log(item);
+      const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id.toString());
       
       try {
         const snapshot = await getDoc(itemRef);
@@ -51,8 +52,8 @@ const Rank = ({item}: Props) => {
       } catch (err: any) {
         console.error("Failed to check for dupe: ", err);
       }
-      return exists;
     }
+    return exists;
   }
 
   async function addToDB(newScore: number) {
@@ -89,7 +90,9 @@ const Rank = ({item}: Props) => {
   }
 
   const onRankStart = async () => {
-    setModalVisible(true);
+    if (item) {
+      setModalVisible(true);
+    }
   }
 
   const getNext = (minScore: number, maxScore: number) => {
@@ -157,14 +160,18 @@ const Rank = ({item}: Props) => {
   }
 
   useEffect(() => {
-    checkDupe().then(exists => {
-      if (exists) {
-        setDupe(true);
-      } else {
-        setDupe(false);
-      }
-    })
-  }, [])
+    if (item) {
+      checkDupe().then(exists => {
+        if (exists) {
+          setDupe(true);
+        } else {
+          setDupe(false);
+        }
+      }).catch(error => {
+        console.error("Error in checkDupe:", error);
+      });
+    }
+  }, [item])
 
   return (
     <>
@@ -176,7 +183,7 @@ const Rank = ({item}: Props) => {
           color={Colors[colorScheme ?? 'light'].text}
         />
       </TouchableOpacity>}
-
+      {item &&
       <Modal
         animationType="fade"
         transparent={true}
@@ -274,9 +281,8 @@ const Rank = ({item}: Props) => {
             )}
           </View>
         </BlurView>
-      </Modal>
+      </Modal>}
     </>
-    
   );
 };
 

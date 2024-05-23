@@ -4,8 +4,8 @@ import { Text, View } from '@/components/Themed';
 import ItemScreen from '@/components/Search/SearchCard';
 import SearchInput from '@/components/Search/SearchInput';
 import SearchTabs from '@/components/Search/SearchTabs';
-import { useMovieSearch } from '@/data/movieData';
-import { useTVSearch } from '@/data/showData';
+import { useItemSearch } from '@/data/itemData';
+//import { useTVSearch } from '@/data/showData';
 import { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -15,12 +15,12 @@ type Props = {
 };
   
 const MoviesTabContent = ({query}: Props) => {
-    const movieList = useMovieSearch(query);
+    const movieList = useItemSearch(query, true);
     return <ItemScreen movieList={movieList} />;
 };
   
 const ShowsTabContent = ({query}: Props) => {
-    const tvList = useTVSearch(query);
+    const tvList = useItemSearch(query, false);
     return <ItemScreen movieList={tvList} />;
 };
 
