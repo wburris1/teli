@@ -60,7 +60,7 @@ const Rank = ({item}: Props) => {
     var newItem: UserItem;
     if (isMovie) {
       newItem = {
-        item_id: item.id,
+        item_id: item.id.toString(),
         title: item.title,
         poster_path: item.poster_path,
         score: newScore,
@@ -68,7 +68,7 @@ const Rank = ({item}: Props) => {
       };
     } else {
       newItem = {
-        item_id: item.id,
+        item_id: item.id.toString(),
         name: item.name,
         poster_path: item.poster_path,
         score: newScore,
@@ -77,7 +77,7 @@ const Rank = ({item}: Props) => {
     }
 
     if (user) {
-      const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id);
+      const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id.toString());
       try {
         await setDoc(itemRef, newItem);
         setDupe(true);

@@ -27,7 +27,6 @@ const ItemDetails = ({item}: Props) => {
         releaseYear = item.first_air_date.slice(0, 4);
     }
     const colorScheme = useColorScheme();
-    //const movie = useMovieDetails(item.id);
 
     return (
         <View style={styles.container}>
