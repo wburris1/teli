@@ -6,6 +6,10 @@ import { arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc,
 import { useEffect, useState } from 'react';
 
 const db = FIREBASE_DB;
+const maxMidScore = 6;
+const minMidScore = 4;
+const maxLikeScore = 11;
+const minBadScore = 0;
 
 export const useUserItemsSeenSearch = (isMovies: boolean) => {
     const { refreshFlag } = useData();
@@ -117,19 +121,19 @@ export const useUserAdjustScores = () => {
     }
 
     function reactToScoresAdjust(items: UserItem[], score: number, isMovie: boolean) {
-        var minScore = 0;
+        var minScore = minBadScore;
         var maxScore = 10;
-        var range = 4;
-        if (score > 6) {
-            minScore = 6;
-            maxScore = 11;
-            range = 4;
-        } else if (score > 4) {
-            minScore = 4;
-            maxScore = 6;
-            range = 2;
+        var range = minMidScore;
+        if (score > maxMidScore) {
+            minScore = maxMidScore;
+            maxScore = maxLikeScore;
+            range = 10 - maxMidScore;
+        } else if (score > minMidScore) {
+            minScore = minMidScore;
+            maxScore = maxMidScore;
+            range = maxMidScore - minMidScore;
         } else {
-            maxScore = 4;
+            maxScore = minMidScore;
         }
         adjustScores(items, minScore, maxScore, range, isMovie).then(() => {
             requestRefresh();

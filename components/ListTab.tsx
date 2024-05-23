@@ -5,6 +5,7 @@ import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
 
 const screenHeight = Dimensions.screenHeight;
+const offset = 130;
 
 type Props = {
   title: string;
@@ -37,7 +38,7 @@ const ListTab = ({ title, children }: Props) => {
   };
 
   const calculateDistance = () => {
-    return screenHeight - (buttonLayout!.y + buttonLayout!.height) - 170;
+    return screenHeight - (buttonLayout!.y + buttonLayout!.height) - offset;
   };
 
   const toggleOpen = () => {
