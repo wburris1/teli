@@ -3,6 +3,7 @@ type BaseItem = {
     id: string,
     poster_path: string,
     overview: string,
+    genres: { id: string, name: string }[]
 };
 
 interface Movie extends BaseItem {
@@ -14,10 +15,6 @@ interface Show extends BaseItem {
     name: string,
     first_air_date: string,
 }
-
-interface ItemInfo extends BaseItem {
-    genres: { id: string, name: string }[]
-};
 
 type Item = Movie | Show;
 
