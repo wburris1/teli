@@ -13,8 +13,9 @@ const minBadScore = 0;
 
 export const useUserItemsSeenSearch = (isMovies: boolean) => {
     const { refreshFlag } = useData();
-    const [itemList, setItemList] = useState<UserItem[]>([]);
+    const [items, setItems] = useState<UserItem[]>([]);
     const { user } = useAuth();
+    const [loaded, setLoaded] = useState(false);
 
     async function fetchItems() {
         if (user) {
@@ -33,16 +34,17 @@ export const useUserItemsSeenSearch = (isMovies: boolean) => {
     useEffect(() => {
         fetchItems().then(items => {
             if (items) {
-                setItemList(items);
+                setLoaded(true);
+                setItems(items);
             } else {
-                setItemList([]);
+                setItems([]);
             }
         }).catch(error => {
             console.error("Error fetching seen items: " + error);
         });
     }, [refreshFlag]);
     
-    return itemList;
+    return { items, loaded };
 }
 
 export const useUserItemDelete = (item_id: string, score: number, collectionName: string) => {
@@ -99,7 +101,6 @@ export const useUserAdjustScores = () => {
         var lastScore = -1;
         var lastNewScoreIndex = 0;
         for (let i = 0; i < filteredItems.length; i++) {
-            console.log(lastNewScoreIndex);
             var newScore = minScore + scoreIncrement * (lastNewScoreIndex + 1);
             if (filteredItems[i].score != lastScore && lastScore > 0) {
                 lastNewScoreIndex++;

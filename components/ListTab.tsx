@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   dropdownIcon: {
     position: 'absolute',
     right: 10
-  }
+  },
 });
 
 export default ListTab;

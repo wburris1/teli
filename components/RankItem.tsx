@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, Modal, StyleSheet, Image, TextInput, TouchableOpacity, useColorScheme } from 'react-native';
+import { View, Text, Button, Modal, StyleSheet, Image, TextInput, TouchableOpacity, useColorScheme, ActivityIndicator } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useLocalSearchParams } from 'expo-router';
 import Dimensions from '@/constants/Dimensions';
@@ -37,21 +37,18 @@ const Rank = ({item}: Props) => {
   const [upperScore, setUpperScore] = useState(0);
   const [lowerScore, setLowerScore] = useState(0);
   const adjustScoreFunc = useUserAdjustScores();
-  const items = useUserItemsSeenSearch(isMovie);
+  const { items, loaded } = useUserItemsSeenSearch(isMovie);
+  const { refreshFlag } = useData();
+  const [rankButtonLoading, setRankButtonLoading] = useState(true);
 
   async function checkDupe() {
-    var exists = true;
-
-    if (user && item) {
-      console.log(item);
-      const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id.toString());
-      
-      try {
-        const snapshot = await getDoc(itemRef);
-        exists = snapshot.exists();
-      } catch (err: any) {
-        console.error("Failed to check for dupe: ", err);
-      }
+    var exists = false;
+    if (user && item && items) {
+      items.forEach(seenItem => {
+        if (seenItem.item_id == item.id) {
+          exists = true;
+        }
+      });
     }
     return exists;
   }
@@ -78,13 +75,36 @@ const Rank = ({item}: Props) => {
 
     if (user) {
       const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id.toString());
-      try {
-        await setDoc(itemRef, newItem);
-        setDupe(true);
-      } catch (err: any) {
-        console.error("Error adding new item: ", err);
+
+      if (isDupe) {
+        const updateData = isMovie
+        ? {
+            title: (newItem as UserMovie).title,
+            poster_path: newItem.poster_path,
+            score: newScore,
+            release_date: (newItem as UserMovie).release_date,
+          }
+        : {
+            name: (newItem as UserShow).name,
+            poster_path: newItem.poster_path,
+            score: newScore,
+            first_air_date: (newItem as UserShow).first_air_date,
+          };
+          try {
+            await updateDoc(itemRef, updateData);
+          } catch (err: any) {
+            console.error("Error updating item: ", err);
+          }
+          return newItem;
+      } else {
+        try {
+          await setDoc(itemRef, newItem);
+          setDupe(true);
+        } catch (err: any) {
+          console.error("Error adding new item: ", err);
+        }
+        return newItem;
       }
-      return newItem;
     }
     return null;
   }
@@ -96,9 +116,8 @@ const Rank = ({item}: Props) => {
   }
 
   const getNext = (minScore: number, maxScore: number) => {
-    console.log("min: " + minScore);
-    console.log("max: " + maxScore);
-    const newItems = items.filter(filterItem => filterItem.score > minScore && filterItem.score < maxScore);
+    const newItems = items.filter(filterItem => filterItem.score > minScore && 
+      filterItem.score < maxScore && filterItem.item_id != item.id);
     const count = newItems.length;
 
     if (count > 0) {
@@ -149,7 +168,16 @@ const Rank = ({item}: Props) => {
         addToDB(newScore).then(addItem => {
           if (addItem) {
             setModalVisible(false);
-            adjustScoreFunc([...items, addItem], newScore, isMovie);
+            if (isDupe) {
+              items.forEach(seenItem => {
+                if (seenItem.item_id == item.id) {
+                  seenItem.score = newScore;
+                }
+              });
+              adjustScoreFunc(items, newScore, isMovie);
+            } else {
+              adjustScoreFunc([...items, addItem], newScore, isMovie);
+            }
             console.log("Item added!");
           }
         }).catch(error => {
@@ -160,25 +188,32 @@ const Rank = ({item}: Props) => {
   }
 
   useEffect(() => {
-    if (item) {
+    setRankButtonLoading(true);
+    if (item && items) {
       checkDupe().then(exists => {
         if (exists) {
           setDupe(true);
         } else {
           setDupe(false);
         }
+        if (loaded) {
+          setRankButtonLoading(false);
+        }
       }).catch(error => {
         console.error("Error in checkDupe:", error);
       });
     }
-  }, [item])
+  }, [items, refreshFlag])
 
   return (
     <>
-      {!isDupe && 
+      {rankButtonLoading && <View style={styles.rankButtonLoadContainer}>
+        <ActivityIndicator size="large" color="#fff" />
+      </View>}
+      {!rankButtonLoading &&
       <TouchableOpacity onPress={onRankStart} style={styles.addButton}>
         <Ionicons
-          name="add-circle"
+          name={isDupe ? "refresh-circle" : "add-circle"}
           size={85}
           color={Colors[colorScheme ?? 'light'].text}
         />
@@ -378,6 +413,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     width: screenWidth * 2/3
+  },
+  rankButtonLoadContainer: {
+    position: 'absolute',
+    bottom: 17,
+    backgroundColor: '#000',
+    borderRadius: 50,
+    width: 70,
+    height: 70,
+    justifyContent: 'center',
   }
 });
 

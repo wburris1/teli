@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert } from 'react-native';
+import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Modal } from 'react-native';
 import { Text } from '@/components/Themed';
 import SearchTabs from '@/components/Search/SearchTabs';
 import React, { ContextType, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
@@ -26,6 +26,7 @@ type RowProps = {
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
+const screenHeight = Dimensions.screenHeight;
 const DELETE_WIDTH = 80;
 
 const ListTabs = ({seen, want, recs}: Props) => {
@@ -181,7 +182,7 @@ const makeList = (items: UserItem[]) => {
 }
 
 const MoviesTabContent = () => {
-  const items = useUserItemsSeenSearch(true);
+  const { items } = useUserItemsSeenSearch(true);
   items.sort((a: UserItem, b: UserItem) => b.score - a.score);
   const seen = makeList(items);
   const want = makeList(items);
@@ -190,7 +191,7 @@ const MoviesTabContent = () => {
 };
 
 const ShowsTabContent = () => {
-  const items = useUserItemsSeenSearch(false);
+  const { items } = useUserItemsSeenSearch(false);
   items.sort((a: UserItem, b: UserItem) => b.score - a.score);
   const seen = makeList(items);
   const want = makeList(items);
@@ -198,13 +199,61 @@ const ShowsTabContent = () => {
   return <ListTabs seen={seen} want={want} recs={recs}/>;
 };
 
+const ReorderScreen = ({ isMovie }: { isMovie: boolean }) => {
+  const colorScheme = useColorScheme();
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const onReorderPress = (isMovie: boolean) => {
+    setModalVisible(true);
+  }
+  
+  return (
+    <>
+      <TouchableOpacity onPress={() => onReorderPress(isMovie)} style={styles.reorderIcon}>
+        <Ionicons
+          name={"list-circle"}
+          size={75}
+          color={Colors[colorScheme ?? 'light'].text}
+        />
+      </TouchableOpacity>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalView}>
+              <Text style={styles.text}>Hello World!</Text>
+              <TouchableOpacity
+                style={styles.closeModalButton}
+                onPress={() => setModalVisible(false)}
+              >
+                {isMovie ? <Text style={styles.text}>Movies</Text> : <Text style={styles.text}>Shows</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
+    
+  );
+}
+
 export default function TabOneScreen() {
   const { refreshFlag } = useData();
 
   var moviesTabContent = useCallback(() =>  
-      <MoviesTabContent />, [refreshFlag]);
+      <>
+        <MoviesTabContent />
+        <ReorderScreen isMovie={true} />
+      </>, [refreshFlag]);
   var showsTabContent = useCallback(() => 
-      <ShowsTabContent />, [refreshFlag]);
+    <>
+      <ShowsTabContent />
+      <ReorderScreen isMovie={false} />
+    </>, [refreshFlag]);
 
   const searchTabs = [
     {
@@ -353,5 +402,47 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',  // Adjust according to your layout needs
     width: '100%',
     height: '100%',  // Ensure full height
+  },
+  reorderIcon: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    backgroundColor: '#fff',
+    borderRadius: 50,
+    overflow: 'hidden',
+  },
+  modalContainer: {
+    width: screenWidth,
+    height: screenHeight - 60,
+    position: 'absolute',
+    bottom: 0,
+  },
+  modalView: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  closeModalButton: {
+    backgroundColor: '#F194FF',
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
   },
 });

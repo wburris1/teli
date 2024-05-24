@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
-import React, { ReactElement, useRef, useState } from 'react';
+import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import { LoadingProvider } from '@/contexts/loading';
 
 const screenWidth = Dimensions.get('window').width;
@@ -17,14 +17,17 @@ const SearchTabs = ({tabs}: Props) => {
     const [tabIndex, setTabIndex] = useState(0);
     const indicatorPosition = useRef(new Animated.Value(0)).current;
 
-    const handleTabPress = (index: number) => {
-        setTabIndex(index);
+    useEffect(() => {
         Animated.timing(indicatorPosition, {
-          toValue: index * (screenWidth / tabs.length), // Assuming each tab is equal width
-          duration: 200, // Animation duration in milliseconds
-          useNativeDriver: false, // Use native driver for better performance
+          toValue: tabIndex * (screenWidth / tabs.length),
+          duration: 200,
+          useNativeDriver: false,
         }).start();
-      }; 
+      }, [tabIndex]);
+    
+      const handleTabPress = (index: number) => {
+        setTabIndex(index);
+      };
 
     return (
         <View style={styles.container}>
