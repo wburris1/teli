@@ -181,63 +181,56 @@ const makeList = (items: UserItem[]) => {
   }
 }
 
-const MoviesTabContent = () => {
-  const { items } = useUserItemsSeenSearch(true);
-  items.sort((a: UserItem, b: UserItem) => b.score - a.score);
-  const seen = makeList(items);
-  const want = makeList(items);
-  const recs = <Text>Empty</Text>;
-  return <ListTabs seen={seen} want={want} recs={recs}/>;
-};
-
-const ShowsTabContent = () => {
-  const { items } = useUserItemsSeenSearch(false);
-  items.sort((a: UserItem, b: UserItem) => b.score - a.score);
-  const seen = makeList(items);
-  const want = makeList(items);
-  const recs = <Text>Empty</Text>;
-  return <ListTabs seen={seen} want={want} recs={recs}/>;
-};
-
-const ReorderScreen = ({ isMovie }: { isMovie: boolean }) => {
+const ListScreen = ({ isMovie }: { isMovie: boolean }) => {
   const colorScheme = useColorScheme();
   const [modalVisible, setModalVisible] = useState(false);
 
   const onReorderPress = (isMovie: boolean) => {
     setModalVisible(true);
   }
-  
-  return (
-    <>
-      <TouchableOpacity onPress={() => onReorderPress(isMovie)} style={styles.reorderIcon}>
-        <Ionicons
-          name={"list-circle"}
-          size={75}
-          color={Colors[colorScheme ?? 'light'].text}
-        />
-      </TouchableOpacity>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalView}>
-              <Text style={styles.text}>Hello World!</Text>
-              <TouchableOpacity
-                style={styles.closeModalButton}
-                onPress={() => setModalVisible(false)}
-              >
-                {isMovie ? <Text style={styles.text}>Movies</Text> : <Text style={styles.text}>Shows</Text>}
-              </TouchableOpacity>
+
+  const TabContent = () => {
+    const { items } = useUserItemsSeenSearch(isMovie);
+    items.sort((a: UserItem, b: UserItem) => b.score - a.score);
+    const seen = makeList(items);
+    const want = makeList(items);
+    const recs = <Text>Empty</Text>;
+    return (
+      <>
+        <ListTabs seen={seen} want={want} recs={recs}/>
+        <TouchableOpacity onPress={() => onReorderPress(isMovie)} style={styles.reorderIcon}>
+          <Ionicons
+            name={"list-circle"}
+            size={75}
+            color={Colors[colorScheme ?? 'light'].text}
+          />
+        </TouchableOpacity>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalView}>
+                <Text style={styles.text}>Hello World!</Text>
+                <TouchableOpacity
+                  style={styles.closeModalButton}
+                  onPress={() => setModalVisible(false)}
+                >
+                  {isMovie ? <Text style={styles.text}>Movies</Text> : <Text style={styles.text}>Shows</Text>}
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </>
-    
+        </Modal>
+      </>
+    );
+  };
+  
+  return (
+      <TabContent />    
   );
 }
 
@@ -245,15 +238,11 @@ export default function TabOneScreen() {
   const { refreshFlag } = useData();
 
   var moviesTabContent = useCallback(() =>  
-      <>
-        <MoviesTabContent />
-        <ReorderScreen isMovie={true} />
-      </>, [refreshFlag]);
+    <ListScreen isMovie={true} />
+  , [refreshFlag]);
   var showsTabContent = useCallback(() => 
-    <>
-      <ShowsTabContent />
-      <ReorderScreen isMovie={false} />
-    </>, [refreshFlag]);
+    <ListScreen isMovie={false} />
+  , [refreshFlag]);
 
   const searchTabs = [
     {
