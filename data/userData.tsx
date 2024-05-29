@@ -1,3 +1,4 @@
+import Values from '@/constants/Values';
 import { useAuth } from '@/contexts/authContext';
 import { useData } from '@/contexts/dataContext';
 import { FIREBASE_DB } from '@/firebaseConfig';
@@ -6,10 +7,6 @@ import { arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc,
 import { useEffect, useState } from 'react';
 
 const db = FIREBASE_DB;
-const maxMidScore = 6;
-const minMidScore = 4;
-const maxLikeScore = 11;
-const minBadScore = 0;
 
 export const useUserItemsSeenSearch = (isMovies: boolean) => {
     const { refreshFlag } = useData();
@@ -122,19 +119,19 @@ export const useUserAdjustScores = () => {
     }
 
     function reactToScoresAdjust(items: UserItem[], score: number, isMovie: boolean) {
-        var minScore = minBadScore;
+        var minScore = Values.minBadScore;
         var maxScore = 10;
-        var range = minMidScore;
-        if (score > maxMidScore) {
-            minScore = maxMidScore;
-            maxScore = maxLikeScore;
-            range = 10 - maxMidScore;
-        } else if (score > minMidScore) {
-            minScore = minMidScore;
-            maxScore = maxMidScore;
-            range = maxMidScore - minMidScore;
+        var range = Values.minMidScore;
+        if (score > Values.maxMidScore) {
+            minScore = Values.maxMidScore;
+            maxScore = Values.maxLikeScore;
+            range = 10 - Values.maxMidScore;
+        } else if (score > Values.minMidScore) {
+            minScore = Values.minMidScore;
+            maxScore = Values.maxMidScore;
+            range = Values.maxMidScore - Values.minMidScore;
         } else {
-            maxScore = minMidScore;
+            maxScore = Values.minMidScore;
         }
         adjustScores(items, minScore, maxScore, range, isMovie).then(() => {
             requestRefresh();
@@ -142,5 +139,85 @@ export const useUserAdjustScores = () => {
     }
 
     return reactToScoresAdjust;
+}
+
+export const AdjustReorderedScores = () => {
+    const { user } = useAuth();
+
+    async function reorderScores(items: UserItem[], isMovie: boolean) {
+        // Count number of good/mid/bad items:
+        var numGood = 0;
+        var numMid = 0;
+        var numBad = 0;
+        var numUniqueGood = 0;
+        var numUniqueMid = 0;
+        var numUniqueBad = 0;
+        var prevScore = -1;
+        items.forEach(item => {
+            if (item.score > Values.maxMidScore) {
+                if (item.score != prevScore) {
+                    numUniqueGood++;
+                }
+                numGood++;
+            } else if (item.score >= Values.minMidScore) {
+                if (item.score != prevScore) {
+                    numUniqueMid++;
+                }
+                numMid++;
+            } else {
+                if (item.score != prevScore) {
+                    numUniqueBad++;
+                }
+                numBad++;
+            }
+            prevScore = item.score;
+        })
+
+        const goodInc = (10 - Values.maxMidScore) / (numUniqueGood + 1);
+        const midInc = (Values.maxMidScore - Values.minMidScore) / (numUniqueMid + 1);
+        const badInc = Values.minMidScore / (numUniqueBad + 1);
+        const batch = writeBatch(db);
+        var index = 0;
+        prevScore = -1;
+        var lastNewScore = -1;
+        
+        for (let i = 0; i < items.length; i++) {
+            var newScore = 0;
+            if (items[i].score != prevScore) {
+                if (i < numGood) {
+                    newScore = Values.maxMidScore + goodInc * (numUniqueGood - index);
+                    if (numUniqueGood == 1) {
+                        newScore = Values.maxMidScore + goodInc;
+                    } 
+                } else if (i - numGood < numMid) {
+                    newScore = Values.minMidScore + midInc * (numUniqueMid - (index - numUniqueGood));
+                    if (numUniqueMid == 1) {
+                        newScore = Values.minMidScore + midInc
+                    } 
+                } else if (i - numGood - numMid < numBad) {
+                    newScore = Values.minBadScore + badInc * (numUniqueBad - (index - numUniqueGood - numUniqueBad));
+                    if (numUniqueBad == 1) {
+                        newScore = Values.minBadScore + badInc
+                    } 
+                }
+                index++;
+                prevScore = items[i].score;
+                lastNewScore = newScore;
+            } else {
+                newScore = lastNewScore;
+            }
+            const itemRef = doc(db, 'users', user!.uid, isMovie ? 'movies' : 'shows', items[i].item_id);
+            batch.update(itemRef, { score: newScore });
+        }
+
+        try {
+            await batch.commit();
+            console.log('Score update successful');
+        } catch (error) {
+            console.error('Score update failed: ', error);
+        }
+    }
+
+    return reorderScores;
 }
 

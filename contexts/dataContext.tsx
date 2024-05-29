@@ -1,10 +1,10 @@
 import React, { createContext, useState, useContext, useEffect, useCallback, ReactNode } from 'react';
 
 type DataContextType = {
-    movies: Item[];
-    setMovies: (items: Item[]) => void;
-    shows: Item[];
-    setShows: (items: Item[]) => void;
+    movies: UserItem[];
+    setMovies: (items: UserItem[]) => void;
+    shows: UserItem[];
+    setShows: (items: UserItem[]) => void;
     refreshFlag: boolean;
     requestRefresh: () => void;
 };
@@ -16,8 +16,8 @@ type Props = {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<Props> = ({ children }: Props) => {
-    const [movies, setMovies] = useState<Item[]>([]);
-    const [shows, setShows] = useState<Item[]>([]);
+    const [movies, setMovies] = useState<UserItem[]>([]);
+    const [shows, setShows] = useState<UserItem[]>([]);
     const [refreshFlag, setRefreshFlag] = useState(false);
 
     const requestRefresh = useCallback(() => {

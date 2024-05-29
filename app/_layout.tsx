@@ -11,6 +11,7 @@ import * as SecureStore from 'expo-secure-store';
 //import { FIREBASE_AUTH } from '@/firebaseConfig';
 import { AuthProvider, useAuth } from '@/contexts/authContext';
 import { DataProvider } from '@/contexts/dataContext';
+import { ListProvider } from '@/contexts/listContext';
 //import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 /*
 const CLERK_PUBLISHABLE_KEY = 'pk_test_cHJvcGVyLWphY2thbC04My5jbGVyay5hY2NvdW50cy5kZXYk';
@@ -93,7 +94,9 @@ function RootLayoutNav() {
   return (
     <AuthProvider>
       <DataProvider>
-        <InitialLayout />
+        <ListProvider>
+          <InitialLayout />
+        </ListProvider>
       </DataProvider>
     </AuthProvider>
   );

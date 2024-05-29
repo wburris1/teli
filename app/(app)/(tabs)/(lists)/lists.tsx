@@ -1,7 +1,7 @@
 import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Modal } from 'react-native';
 import { Text } from '@/components/Themed';
 import SearchTabs from '@/components/Search/SearchTabs';
-import React, { ContextType, forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ContextType, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ListTab from '@/components/ListTab';
 import { Link, useNavigation } from 'expo-router';
 import { useUserItemDelete, useUserItemsSeenSearch } from '@/data/userData';
@@ -11,6 +11,8 @@ import Dimensions from '@/constants/Dimensions';
 import { useData } from '@/contexts/dataContext';
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, PanGestureHandlerGestureEvent, Swipeable } from 'react-native-gesture-handler';
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
+import { useTab } from '@/contexts/listContext';
 
 type Props = {
   seen: React.ReactNode;
@@ -165,83 +167,55 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items }, ref) => {
 });
 
 const makeList = (items: UserItem[]) => {
-  if (items.length > 0) {
+  if (items) {
     return (
-      <FlatList
-        data={items}
-        renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} />}
-        keyExtractor={item => item.item_id}
-        numColumns={1}
-      />
+      <>
+        {items.length > 0 ? 
+        <FlatList
+          data={items}
+          renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} />}
+          keyExtractor={item => item.item_id}
+          numColumns={1}
+        /> : 
+        <Text>Rank something!</Text>}
+      </>
     )
   } else {
     return (
-      <Text>Rank something!</Text>
+      <Text>Loading</Text>
     )
   }
 }
 
-const ListScreen = ({ isMovie }: { isMovie: boolean }) => {
-  const colorScheme = useColorScheme();
-  const [modalVisible, setModalVisible] = useState(false);
+const MovieTabContent = () => {
+  const { items, loaded } = useUserItemsSeenSearch(true);
+  items.sort((a: UserItem, b: UserItem) => b.score - a.score);
 
-  const onReorderPress = (isMovie: boolean) => {
-    setModalVisible(true);
-  }
+  const seen = makeList(items);
+  const want = makeList(items);
+  const recs = makeList([]);
+  return <ListTabs seen={seen} want={want} recs={recs}/>;
+};
 
-  const TabContent = () => {
-    const { items } = useUserItemsSeenSearch(isMovie);
-    items.sort((a: UserItem, b: UserItem) => b.score - a.score);
-    const seen = makeList(items);
-    const want = makeList(items);
-    const recs = <Text>Empty</Text>;
-    return (
-      <>
-        <ListTabs seen={seen} want={want} recs={recs}/>
-        <TouchableOpacity onPress={() => onReorderPress(isMovie)} style={styles.reorderIcon}>
-          <Ionicons
-            name={"list-circle"}
-            size={75}
-            color={Colors[colorScheme ?? 'light'].text}
-          />
-        </TouchableOpacity>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.centeredView}>
-            <View style={styles.modalContainer}>
-              <View style={styles.modalView}>
-                <Text style={styles.text}>Hello World!</Text>
-                <TouchableOpacity
-                  style={styles.closeModalButton}
-                  onPress={() => setModalVisible(false)}
-                >
-                  {isMovie ? <Text style={styles.text}>Movies</Text> : <Text style={styles.text}>Shows</Text>}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-      </>
-    );
-  };
-  
-  return (
-      <TabContent />    
-  );
-}
+const TVTabContent = () => {
+  const { items, loaded } = useUserItemsSeenSearch(false);
+  items.sort((a: UserItem, b: UserItem) => b.score - a.score);
+
+  const seen = makeList(items);
+  const want = makeList(items);
+  const recs = makeList([]);
+  return <ListTabs seen={seen} want={want} recs={recs}/>;
+};
 
 export default function TabOneScreen() {
   const { refreshFlag } = useData();
+  const { setActiveTab } = useTab();
 
   var moviesTabContent = useCallback(() =>  
-    <ListScreen isMovie={true} />
+    <MovieTabContent />
   , [refreshFlag]);
   var showsTabContent = useCallback(() => 
-    <ListScreen isMovie={false} />
+    <TVTabContent />
   , [refreshFlag]);
 
   const searchTabs = [
@@ -256,13 +230,13 @@ export default function TabOneScreen() {
   ];
 
   return (
-    <GestureHandlerRootView>
-      <View style={{ backgroundColor: '#fff', flex: 1 }}>
-        <SafeAreaView style={styles.container}>
-          <SearchTabs tabs={searchTabs} />
-        </SafeAreaView>
-      </View>
-    </GestureHandlerRootView>
+      <GestureHandlerRootView>
+        <View style={{ backgroundColor: '#fff', flex: 1 }}>
+          <SafeAreaView style={styles.container}>
+            <SearchTabs tabs={searchTabs} onTabChange={index => setActiveTab(index)} />
+          </SafeAreaView>
+        </View>
+      </GestureHandlerRootView>
   );
 }
 
@@ -314,7 +288,7 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   itemContainer: {
-    //flex: 1,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
     flexDirection: 'row',
@@ -379,59 +353,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   linkStyle: {
-    flex: 1,  // Ensure it takes up the full container
-    alignItems: 'stretch',  // Stretch to fill the container
-    justifyContent: 'center',  // Center the contents vertically
+    flex: 1,
+    alignItems: 'stretch',
+    justifyContent: 'center',
     padding: 0,
     margin: 0,
   },
   innerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',  // Adjust according to your layout needs
+    justifyContent: 'flex-start',
     width: '100%',
-    height: '100%',  // Ensure full height
-  },
-  reorderIcon: {
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
-    backgroundColor: '#fff',
-    borderRadius: 50,
-    overflow: 'hidden',
-  },
-  modalContainer: {
-    width: screenWidth,
-    height: screenHeight - 60,
-    position: 'absolute',
-    bottom: 0,
-  },
-  modalView: {
-    flex: 1,
-    width: '100%',
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  centeredView: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  closeModalButton: {
-    backgroundColor: '#F194FF',
-    borderRadius: 20,
-    padding: 10,
-    elevation: 2,
+    height: '100%',
   },
 });

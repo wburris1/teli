@@ -10,10 +10,11 @@ type Tab = {
 };
 
 type Props = {
-    tabs: Tab[]
+    tabs: Tab[],
+    onTabChange: (index: number) => void
 };
 
-const SearchTabs = ({tabs}: Props) => {
+const SearchTabs = ({ tabs, onTabChange }: Props) => {
     const [tabIndex, setTabIndex] = useState(0);
     const indicatorPosition = useRef(new Animated.Value(0)).current;
 
@@ -27,6 +28,7 @@ const SearchTabs = ({tabs}: Props) => {
     
       const handleTabPress = (index: number) => {
         setTabIndex(index);
+        onTabChange(index);
       };
 
     return (

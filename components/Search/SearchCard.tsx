@@ -47,7 +47,6 @@ const ItemScreen = ({movieList}: Props) => {
         }
 
         const handleItemPress = () => {
-            console.log(item);
             const animated = animatedValues[index];
             animated.setValue(0.4);
             Animated.timing(animated, {
