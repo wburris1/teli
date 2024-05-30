@@ -1,3 +1,4 @@
+import Values from "@/constants/Values";
 import { useData } from "@/contexts/dataContext";
 import { useTab } from "@/contexts/listContext";
 import { AdjustReorderedScores } from "@/data/userData";
@@ -10,6 +11,7 @@ export default function AppEntry() {
     const { movies, shows, requestRefresh } = useData();
     const { activeTab } = useTab();
     const reorderFunc = AdjustReorderedScores();
+    const listTypeID = activeTab == 0 ? Values.movieListsID : Values.tvListsID;
 
     return (
         <Stack>
@@ -19,7 +21,7 @@ export default function AppEntry() {
                 presentation: 'modal',
                 headerRight: () => (
                     <Pressable onPress={() => {
-                        reorderFunc(activeTab == 0 ? movies : shows, activeTab == 0).then(() => {
+                        reorderFunc(activeTab == 0 ? movies : shows, Values.seenListID, listTypeID).then(() => {
                             requestRefresh();
                             router.back();
                         })

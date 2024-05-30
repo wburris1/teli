@@ -5,11 +5,10 @@ import { useLocalSearchParams } from 'expo-router';
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/authContext';
-import { FIREBASE_DB } from '@/firebaseConfig';
-import { arrayUnion, collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import Colors from '@/constants/Colors';
 import { useData } from '@/contexts/dataContext';
-import { useUserAdjustScores, useUserItemsSeenSearch } from '@/data/userData';
+import { AddToList, useUserAdjustScores, useUserItemsSeenSearch } from '@/data/userData';
+import Values from '@/constants/Values';
 
 type Props = {
     item: Item
@@ -18,7 +17,6 @@ type Props = {
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenHeight = Dimensions.screenHeight;
 const screenWidth = Dimensions.screenWidth;
-const db = FIREBASE_DB;
 
 const initialLikeScore = 6;
 const initialMehScore = 5;
@@ -27,23 +25,25 @@ const smallAssNumber = 0.0000001; // Used to make mid inclusive of 4 and 6 score
 
 const Rank = ({item}: Props) => {
   const isMovie = 'title' in item ? true : false;
+  const listID = Values.seenListID;
+  const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
 
   const [isDupe, setDupe] = useState(true);
   const { requestRefresh } = useData();
-  const { user } = useAuth();
   const [compItem, setCompItem] = useState<UserItem | null>(null);
   const colorScheme = useColorScheme();
   const [modalVisible, setModalVisible] = useState(false);
   const [upperScore, setUpperScore] = useState(0);
   const [lowerScore, setLowerScore] = useState(0);
   const adjustScoreFunc = useUserAdjustScores();
-  const { items, loaded } = useUserItemsSeenSearch(isMovie);
+  const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
   const { refreshFlag } = useData();
   const [rankButtonLoading, setRankButtonLoading] = useState(true);
+  const addToDB = AddToList();
 
   async function checkDupe() {
     var exists = false;
-    if (user && item && items) {
+    if (item && items) {
       items.forEach(seenItem => {
         if (seenItem.item_id == item.id) {
           exists = true;
@@ -51,62 +51,6 @@ const Rank = ({item}: Props) => {
       });
     }
     return exists;
-  }
-
-  async function addToDB(newScore: number) {
-    var newItem: UserItem;
-    if (isMovie) {
-      newItem = {
-        item_id: item.id.toString(),
-        title: item.title,
-        poster_path: item.poster_path,
-        score: newScore,
-        release_date: item.release_date,
-      };
-    } else {
-      newItem = {
-        item_id: item.id.toString(),
-        name: item.name,
-        poster_path: item.poster_path,
-        score: newScore,
-        first_air_date: item.first_air_date,
-      };
-    }
-
-    if (user) {
-      const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id.toString());
-
-      if (isDupe) {
-        const updateData = isMovie
-        ? {
-            title: (newItem as UserMovie).title,
-            poster_path: newItem.poster_path,
-            score: newScore,
-            release_date: (newItem as UserMovie).release_date,
-          }
-        : {
-            name: (newItem as UserShow).name,
-            poster_path: newItem.poster_path,
-            score: newScore,
-            first_air_date: (newItem as UserShow).first_air_date,
-          };
-          try {
-            await updateDoc(itemRef, updateData);
-          } catch (err: any) {
-            console.error("Error updating item: ", err);
-          }
-          return newItem;
-      } else {
-        try {
-          await setDoc(itemRef, newItem);
-          setDupe(true);
-        } catch (err: any) {
-          console.error("Error adding new item: ", err);
-        }
-        return newItem;
-      }
-    }
-    return null;
   }
 
   const onRankStart = async () => {
@@ -137,7 +81,7 @@ const Rank = ({item}: Props) => {
       setCompItem(newItem);
     } else {
       const newScore = initialScore;
-      addToDB(newScore).then(() => {
+      addToDB(newScore, item, listID, isMovie, isDupe).then(() => {
         setModalVisible(false);
         console.log("Item added!");
         requestRefresh();
@@ -150,8 +94,9 @@ const Rank = ({item}: Props) => {
   const handleComp = async (minScore: number, maxScore: number) => {
     setLowerScore(minScore);
     setUpperScore(maxScore);
+
     if (minScore == maxScore) {
-      addToDB(minScore).then(() => {
+      addToDB(minScore, item, listID, isMovie, isDupe).then(() => {
         setModalVisible(false);
         requestRefresh();
         console.log("Item added! No score adjust necessary");
@@ -165,8 +110,9 @@ const Rank = ({item}: Props) => {
         setCompItem(newItem);
       } else {
         const newScore = maxScore - smallAssNumber;
-        addToDB(newScore).then(addItem => {
+        addToDB(newScore, item, listID, isMovie, isDupe).then(addItem => {
           if (addItem) {
+            setDupe(true);
             setModalVisible(false);
             if (isDupe) {
               items.forEach(seenItem => {
@@ -174,9 +120,9 @@ const Rank = ({item}: Props) => {
                   seenItem.score = newScore;
                 }
               });
-              adjustScoreFunc(items, newScore, isMovie);
+              adjustScoreFunc(items, newScore, listID, listTypeID);
             } else {
-              adjustScoreFunc([...items, addItem], newScore, isMovie);
+              adjustScoreFunc([...items, addItem], newScore, listID, listTypeID);
             }
             console.log("Item added!");
           }

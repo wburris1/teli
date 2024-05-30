@@ -40,6 +40,9 @@ export default function SearchLayout() {
                   ),
             }} />
             <Stack.Screen name="list_item" options={{
+                headerShown: true, headerBackTitle: "List", headerTitle: "", headerTintColor: '#000'
+            }} />
+            <Stack.Screen name="list_page" options={{
                 headerShown: true, headerBackTitle: "Lists", headerTitle: "", headerTintColor: '#000'
             }} />
         </Stack>

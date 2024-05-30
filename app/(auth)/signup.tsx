@@ -6,6 +6,7 @@ import { Stack } from 'expo-router';
 import { User, createUserWithEmailAndPassword } from 'firebase/auth';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
+import Values from '@/constants/Values';
 
 const Register = () => {
   //const { isLoaded, signUp, setActive } = useSignUp();
@@ -56,8 +57,50 @@ const Register = () => {
 
     try {
       await setDoc(userRef, userData);
+      createSeenLists(user.uid);
     } catch (err: any) {
       alert(err.message);
+    }
+  }
+
+  const createSeenLists = async (user_id: string) => {
+    const movieSeenRef = doc(FIREBASE_DB, "users", user_id, Values.movieListsID, Values.seenListID);
+    const tvSeenRef = doc(FIREBASE_DB, "users", user_id, Values.tvListsID, Values.seenListID);
+    const movieBookmarkRef = doc(FIREBASE_DB, "users", user_id, Values.movieListsID, Values.bookmarkListID);
+    const tvBookmarkRef = doc(FIREBASE_DB, "users", user_id, Values.tvListsID, Values.bookmarkListID);
+    const seenData = {
+      list_id: Values.seenListID,
+      is_ranked: true,
+      top_poster_path: "",
+      second_poster_path: "",
+      bottom_poster_path: "",
+    }
+    const bookmarkData = {
+      list_id: Values.bookmarkListID,
+      is_ranked: false,
+      top_poster_path: "",
+      second_poster_path: "",
+      bottom_poster_path: "",
+    }
+    try {
+      await setDoc(movieSeenRef, seenData);
+    } catch (err: any) {
+      console.error("Error creating movie seen list: ", err);
+    }
+    try {
+      await setDoc(tvSeenRef, seenData);
+    } catch (err: any) {
+      console.error("Error creating tv seen list: ", err);
+    }
+    try {
+      await setDoc(movieBookmarkRef, bookmarkData);
+    } catch (err: any) {
+      console.error("Error creating movie bookmark list: ", err);
+    }
+    try {
+      await setDoc(tvBookmarkRef, bookmarkData);
+    } catch (err: any) {
+      console.error("Error creating tv bookmark list: ", err);
     }
   }
 

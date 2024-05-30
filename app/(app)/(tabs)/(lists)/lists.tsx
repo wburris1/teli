@@ -1,18 +1,18 @@
-import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Modal } from 'react-native';
+import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Modal, ScrollView } from 'react-native';
 import { Text } from '@/components/Themed';
 import SearchTabs from '@/components/Search/SearchTabs';
 import React, { ContextType, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ListTab from '@/components/ListTab';
 import { Link, useNavigation } from 'expo-router';
-import { useUserItemDelete, useUserItemsSeenSearch } from '@/data/userData';
+import { useUserItemDelete, useUserItemsSeenSearch, useUserListsSearch } from '@/data/userData';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
 import { useData } from '@/contexts/dataContext';
 import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, PanGestureHandlerGestureEvent, Swipeable } from 'react-native-gesture-handler';
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import { useTab } from '@/contexts/listContext';
+import Values from '@/constants/Values';
 
 type Props = {
   seen: React.ReactNode;
@@ -20,16 +20,7 @@ type Props = {
   recs: React.ReactNode;
 };
 
-type RowProps = {
-  item: UserItem;
-  index: number;
-  items: UserItem[];
-};
-
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
-const screenWidth = Dimensions.screenWidth;
-const screenHeight = Dimensions.screenHeight;
-const DELETE_WIDTH = 80;
 
 const ListTabs = ({seen, want, recs}: Props) => {
   return (
@@ -41,140 +32,59 @@ const ListTabs = ({seen, want, recs}: Props) => {
   );
 }
 
-const RenderItem = forwardRef<View, RowProps>(({ item, index, items }, ref) => {
-  const [isSwiped, setSwiped] = useState(false);
-  const score = item.score.toFixed(1);
-  const isMovie = 'title' in item;
-  var date = "";
-
-  const handleSetSwiped = (value: boolean) => {
-    setSwiped(value);
-  };
-
-  date = isMovie ? item.release_date : item.first_air_date;
-  date = date.slice(0,4);
-  const deleteItem = useUserItemDelete(item.item_id, item.score, isMovie ? "movies" : "shows");
-
-  const transX = useSharedValue(0);
-
-  const panGesture = Gesture.Pan()
-  .activeOffsetX([-10, 10])
-  .failOffsetY([-5, 5])
-  .onStart(() => {
-    if (isSwiped) {
-      transX.value = withSpring(0);
-    }
-  })
-  .onUpdate((event) => {
-    if (!isSwiped) {
-      transX.value = event.translationX;
-    }
-  })
-  .onEnd(() => {
-    if (transX.value > DELETE_WIDTH || transX.value < -DELETE_WIDTH) {
-      runOnJS(handleSetSwiped)(true);
-      transX.value = transX.value > 0 ? withSpring(DELETE_WIDTH) : withSpring(-DELETE_WIDTH);
-    } else {
-      runOnJS(handleSetSwiped)(false);
-      transX.value = withSpring(0);
-    }
-  });
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: transX.value }]
-    }
-  }, [transX.value]);
-
-  const deleteButtonStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(transX.value, [0, DELETE_WIDTH], [0, 1]),
-    transform: [{ translateX: transX.value - screenWidth }],
-    width: transX.value > 0 ? transX.value : DELETE_WIDTH,
-  }));
-
-  const redoButtonStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(transX.value, [0, -DELETE_WIDTH], [0, 1]),
-    transform: [{ translateX: 0 }],
-    width: transX.value < 0 ? Math.abs(transX.value) : DELETE_WIDTH,
-  }));
-  
-  const onDelete = (item_id: string, isMovie: boolean) => {
-    Alert.alert(
-      "Confirm Delete",
-      "Are you sure you want to delete this item?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "Delete",
-          onPress: () => {
-            console.log("Delete Pressed, deleting item with ID:", item_id);
-            deleteItem(items.filter(filterItem => filterItem.item_id !== item.item_id));
-          }
-        }
-      ]
-    );
-  };
-
+const RenderListItem = ({ list, listTypeID }: { list: List, listTypeID: string }) => {
+  const posters = [
+    list.top_poster_path != "" ? imgUrl + list.top_poster_path : "/",
+    list.second_poster_path != "" ? imgUrl + list.second_poster_path : "/",
+    list.bottom_poster_path != "" ? imgUrl + list.bottom_poster_path : "/"
+  ];
   return (
-    <GestureDetector gesture={panGesture}>
+    <Link
+      key={list.list_id}
+      href={{pathname: "/list_page", params: { listTypeID: listTypeID, listID: list.list_id }}}
+      style={styles.itemContainer}
+    >
       <View>
-      <Animated.View style={[styles.deleteButtonContainer, deleteButtonStyle]}>
-        <TouchableOpacity style={styles.fullSize} onPress={() => onDelete(item.item_id, isMovie ? true : false)}>
-          <Ionicons
-            name="trash"
-            size={40}
-            color={'#fff'}
-          />
-        </TouchableOpacity>
-      </Animated.View>
-      <Animated.View style={[styles.itemContainer, animatedStyle]}>
-        <Link href={{pathname: "/list_item", params: { id: item.item_id, groupKey: isMovie ? "movie" : "tv" }}} style={styles.linkStyle}>
-          <View style={styles.innerContainer}>
-            <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
-            <Image
-                source={{ uri: imgUrl + item.poster_path }}
-                style={styles.image}
-            />
-            <View style={styles.textContainer}>
-              <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
-              <Text style={styles.dateText}>{date}</Text>
-            </View>
-            
-            <View style={styles.score}><View style={styles.scoreCircle}><Text style={styles.text}>{score}</Text></View></View>
-            <Ionicons
-              name="chevron-forward"
-              size={15}
-              color={Colors['light'].text}
-            />
-          </View>
-        </Link>
-      </Animated.View>
-      <Animated.View style={[styles.redoButtonContainer, redoButtonStyle]}>
-        <TouchableOpacity style={styles.fullSize} onPress={() => {}}>
-          <Ionicons
-            name="add"
-            size={40}
-            color={'#fff'}
-          />
-        </TouchableOpacity>
-      </Animated.View>
+        <OverlappingImages images={posters} />
+        <Text style={styles.title}>{list.list_id}</Text>
       </View>
-    </GestureDetector>
-  );
-});
+    </Link>
+  )
+}
 
-const makeList = (items: UserItem[]) => {
-  if (items) {
+const OverlappingImages = ({ images }: { images: string[] }) => {
+  return (
+    <View style={styles.imageContainer}>
+      {images.map((image, index) => (
+        <Image
+          key={index}
+          source={{ uri: image }}
+          style={[styles.image, { left: index * -90, top: index * 10, zIndex: images.length - index }]}
+        />
+      ))}
+    </View>
+  );
+};
+
+const reorderData = (data: List[], firstId: string, secondId: string) => {
+  const firstItem = data.find(item => item.list_id === firstId);
+  const secondItem = data.find(item => item.list_id === secondId);
+  const restItems = data.filter(item => item.list_id !== firstId && item.list_id !== secondId);
+  if (!firstItem || !secondItem) {
+    return data;
+  }
+  return [firstItem, secondItem, ...restItems];
+};
+
+const makeList = (lists: List[], listTypeID: string) => {
+  if (lists) {
     return (
       <>
-        {items.length > 0 ? 
+        {lists.length > 0 ? 
         <FlatList
-          data={items}
-          renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} />}
-          keyExtractor={item => item.item_id}
+          data={lists}
+          renderItem={({ item }) => <RenderListItem list={item} listTypeID={listTypeID} />}
+          keyExtractor={list => list.list_id}
           numColumns={1}
         /> : 
         <Text>Rank something!</Text>}
@@ -187,23 +97,48 @@ const makeList = (items: UserItem[]) => {
   }
 }
 
-const MovieTabContent = () => {
-  const { items, loaded } = useUserItemsSeenSearch(true);
-  items.sort((a: UserItem, b: UserItem) => b.score - a.score);
+const chunkLists = (lists: List[], size: number) => {
+  const result = [];
+  for (let i = 0; i < lists.length; i += size) {
+    result.push(lists.slice(i, i + size));
+  }
+  return result;
+};
 
-  const seen = makeList(items);
-  const want = makeList(items);
-  const recs = makeList([]);
-  return <ListTabs seen={seen} want={want} recs={recs}/>;
+const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID: string}) => {
+  const numRows = 3;
+  const reorderedLists = reorderData(lists, Values.seenListID, Values.bookmarkListID);
+
+  const numColumns = Math.ceil(reorderedLists.length / numRows);
+  const chunkedData = chunkLists(reorderedLists, numColumns);
+
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      {chunkedData.map((row, rowIndex) => (
+        <View key={rowIndex} style={styles.row}>
+          {row.map(list => (
+            <RenderListItem list={list} listTypeID={listTypeID} />
+          ))}
+        </View>
+      ))}
+    </ScrollView>
+  );
+};
+
+const MovieTabContent = () => {
+  const { lists, loaded } = useUserListsSearch(Values.movieListsID);
+  //const seen = makeList(lists, Values.movieListsID);
+  //const want = makeList(lists, Values.movieListsID);
+  //const recs = makeList([], Values.movieListsID);
+  //return <ListTabs seen={seen} want={want} recs={recs}/>;
+  return <HorizontalListWithRows lists={lists} listTypeID={Values.movieListsID} />
 };
 
 const TVTabContent = () => {
-  const { items, loaded } = useUserItemsSeenSearch(false);
-  items.sort((a: UserItem, b: UserItem) => b.score - a.score);
-
-  const seen = makeList(items);
-  const want = makeList(items);
-  const recs = makeList([]);
+  const { lists, loaded } = useUserListsSearch(Values.tvListsID);
+  const seen = makeList(lists, Values.tvListsID);
+  const want = makeList(lists, Values.tvListsID);
+  const recs = makeList([], Values.tvListsID);
   return <ListTabs seen={seen} want={want} recs={recs}/>;
 };
 
@@ -246,124 +181,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  row: {
+    flexDirection: 'row',
+    padding: 10,
+  },
+  itemContainer: {
+    alignItems: 'center',
+    height: 200,
+  },
+  imageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+    height: 100 * (3/2) + 20,
+    width: 120
+  },
+  image: {
+    width: 100,
+    aspectRatio: 2/3,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: 'black',
+    backgroundColor: 'gray',
+  },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-  itemText: {
-    flex: 1,
+    marginTop: 10,
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'left',
-  },
-  itemLabel: {
-    alignItems: 'center',
-    flexDirection: 'column',
-  },
-  text: {
-    fontSize: 16
-  },
-  rank: {
-    paddingHorizontal: 10,
-    backgroundColor: 'transparent'
-  },
-  score: {
-    paddingHorizontal: 5,
-    backgroundColor: 'transparent'
-  },
-  scoreCircle: {
-    width: 35,
-    height: 35,
-    backgroundColor: '#fff',
-    borderRadius: 35/2,
-    borderWidth: 0.5,
-    borderColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  itemContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
-    borderTopWidth: 0,
-    borderBottomColor: '#000',
-    overflow: 'hidden',
-    paddingRight: 5,
-    width: '100%',
-  },
-  image: {
-    width: '20%',
-    aspectRatio: 1 / 1.5,
-    paddingHorizontal: 5,
-    marginVertical: 10,
-    borderWidth: 0.5,
-    borderColor: '#000',
-    borderRadius: 10,
-  },
-  textContainer: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    padding: 10,
-  },
-  dateText: {
-    fontSize: 14,
-    fontWeight: '200',
-  },
-  deleteButtonContainer: {
-    flexDirection: 'row',
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    bottom: 0,
-    backgroundColor: 'red',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  fullSize: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderBottomWidth: 1,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
-    borderTopWidth: 0,
-    borderBottomColor: '#000',
-  },
-  redoButtonContainer: {
-    flexDirection: 'row',
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    bottom: 0,
-    backgroundColor: '#32CD32',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  linkStyle: {
-    flex: 1,
-    alignItems: 'stretch',
-    justifyContent: 'center',
-    padding: 0,
-    margin: 0,
-  },
-  innerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    width: '100%',
-    height: '100%',
+    width: 120,
+    paddingTop: 3,
   },
 });

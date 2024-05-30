@@ -11,13 +11,15 @@ import { useUserItemsSeenSearch } from '@/data/userData';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTab } from '@/contexts/listContext';
 import { useData } from '@/contexts/dataContext';
+import Values from '@/constants/Values';
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
 
 export default function ReorderScreen() {
   const { activeTab } = useTab();
-  const { items, loaded } = useUserItemsSeenSearch(activeTab == 0);
+  const listTypeID = activeTab == 0 ? Values.movieListsID : Values.tvListsID;
+  const { items, loaded } = useUserItemsSeenSearch(Values.seenListID, listTypeID);
   const [listItems, setListItems] = useState<UserItem[]>([]);
   const { setMovies, setShows } = useData();
 
