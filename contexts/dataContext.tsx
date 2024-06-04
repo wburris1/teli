@@ -5,6 +5,10 @@ type DataContextType = {
     setMovies: (items: UserItem[]) => void;
     shows: UserItem[];
     setShows: (items: UserItem[]) => void;
+    tvLists: List[];
+    setTVLists: (items: List[]) => void;
+    movieLists: List[];
+    setMovieLists: (items: List[]) => void;
     refreshFlag: boolean;
     requestRefresh: () => void;
 };
@@ -18,6 +22,8 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider: React.FC<Props> = ({ children }: Props) => {
     const [movies, setMovies] = useState<UserItem[]>([]);
     const [shows, setShows] = useState<UserItem[]>([]);
+    const [tvLists, setTVLists] = useState<List[]>([]);
+    const [movieLists, setMovieLists] = useState<List[]>([]);
     const [refreshFlag, setRefreshFlag] = useState(false);
 
     const requestRefresh = useCallback(() => {
@@ -25,7 +31,11 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
     }, []);
 
     return (
-        <DataContext.Provider value={{ movies, setMovies, shows, setShows, refreshFlag, requestRefresh }}>
+        <DataContext.Provider
+            value={{ movies, setMovies, shows, setShows,
+                tvLists, setTVLists, movieLists, setMovieLists,
+                refreshFlag, requestRefresh }}
+        >
             {children}
         </DataContext.Provider>
     );

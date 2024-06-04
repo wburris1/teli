@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
         height: 50,
         fontSize: 16,
         // Shadow properties
-        shadowColor: '#2f95dc',
+        shadowColor: 'black',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.23,
         shadowRadius: 2.62,

@@ -35,6 +35,7 @@ const SearchTabs = ({ tabs, onTabChange }: Props) => {
         <View style={styles.container}>
             <View style={styles.tabs}>
                 <Animated.View style={[styles.line, {left: indicatorPosition}]}/>
+                <View style={styles.separatorLine}/>
                 {tabs.map((tab, index) => {
                     const active = index === tabIndex;
                     return (
@@ -63,41 +64,51 @@ const styles = StyleSheet.create({
     },
     tab: {
         alignItems: 'center',
-        backgroundColor: '#ccc',
+        //backgroundColor: '#ccc',
         marginLeft: 5,
         marginRight: 5,
         padding: 5,
-        borderRadius: 10,
-        borderWidth: 0.5,
+        //borderRadius: 10,
+        //borderWidth: 0.5,
         borderColor: '#000',
         width: (screenWidth / 2) - 10
     },
     activeTab: {
         alignItems: 'center',
-        backgroundColor: '#fff',
+        //backgroundColor: '#fff',
         marginLeft: 5,
         marginRight: 5,
         padding: 5,
-        borderRadius: 10,
-        borderWidth: 0.5,
+        //borderRadius: 10,
+        //borderWidth: 0.5,
         borderColor: '#000',
         width: (screenWidth / 2) - 10
     },
     tabText: {
-        color: '#000'
+        fontSize: 16,
+        color: 'gray'
     },
     activeTabText: {
+        fontSize: 16,
         color: '#000'
     },
     line: {
         position: 'absolute',
         bottom: 0,
-        width: (screenWidth / 2) - 10,
+        width: screenWidth / 2,
         height: 3,
         backgroundColor: '#000',
-        borderRadius: 10,
-        marginLeft: 5
-    }
+        borderRadius: 5,
+        zIndex: 1,
+    },
+    separatorLine: {
+        position: 'absolute',
+        bottom: 0,
+        width: screenWidth,
+        height: 1,
+        backgroundColor: '#d3d3d3',
+        borderRadius: 0,
+    },
 });
 
 export default SearchTabs;

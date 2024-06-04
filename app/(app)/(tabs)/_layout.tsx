@@ -88,7 +88,7 @@ export default function TabLayout() {
           headerTitle: 'Search',
           tabBarIcon: ({ color, size }) => <Ionicons name="search" size={size} color={color} />,
           tabBarLabel: 'Search',
-          headerShown: false
+          headerShown: false,
         }}
         redirect={false}
       />

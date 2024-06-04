@@ -38,7 +38,8 @@ type UserItem = UserMovie | UserShow;
 
 type List = {
     list_id: string,
-    is_ranked: boolean,
+    is_custom: boolean,
+    description: string,
     top_poster_path: string,
     second_poster_path: string,
     bottom_poster_path: string,

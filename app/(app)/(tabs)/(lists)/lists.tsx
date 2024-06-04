@@ -13,6 +13,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, Pa
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { useTab } from '@/contexts/listContext';
 import Values from '@/constants/Values';
+import { AddList } from '@/components/AddList';
 
 type Props = {
   seen: React.ReactNode;
@@ -22,31 +23,35 @@ type Props = {
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 
-const ListTabs = ({seen, want, recs}: Props) => {
-  return (
-    <>
-      <ListTab title="Seen" children={seen} />
-      <ListTab title="Want To See" children={want} />
-      <ListTab title="Recommendations" children={recs}  />
-    </>
-  );
-}
-
 const RenderListItem = ({ list, listTypeID }: { list: List, listTypeID: string }) => {
   const posters = [
     list.top_poster_path != "" ? imgUrl + list.top_poster_path : "/",
     list.second_poster_path != "" ? imgUrl + list.second_poster_path : "/",
     list.bottom_poster_path != "" ? imgUrl + list.bottom_poster_path : "/"
   ];
+  const isEmpty = posters[0] == "/";
+  const listName = list.list_id == Values.seenListID ? "All " + (listTypeID == Values.movieListsID ? "Movies" : "Shows") : list.list_id;
+
   return (
     <Link
-      key={list.list_id}
       href={{pathname: "/list_page", params: { listTypeID: listTypeID, listID: list.list_id }}}
       style={styles.itemContainer}
     >
       <View>
-        <OverlappingImages images={posters} />
-        <Text style={styles.title}>{list.list_id}</Text>
+        {isEmpty ? 
+        <View style={styles.emptyList}>
+          <Link href="/search" asChild>
+          <TouchableOpacity>
+            <Ionicons
+              name="add-circle-outline"
+              size={70}
+              color={Colors['light'].text}
+            />
+          </TouchableOpacity>
+          </Link>
+        </View> : 
+        <OverlappingImages images={posters} />}
+        <Text style={!isEmpty ? styles.title : styles.emptyListTitle}>{listName}</Text>
       </View>
     </Link>
   )
@@ -59,7 +64,10 @@ const OverlappingImages = ({ images }: { images: string[] }) => {
         <Image
           key={index}
           source={{ uri: image }}
-          style={[styles.image, { left: index * -90, top: index * 10, zIndex: images.length - index }]}
+          style={[styles.image,
+            { left: index * -90, top: index * 10, zIndex: images.length - index,
+              opacity: image == "/" ? 0 : 100,
+             }]}
         />
       ))}
     </View>
@@ -68,37 +76,23 @@ const OverlappingImages = ({ images }: { images: string[] }) => {
 
 const reorderData = (data: List[], firstId: string, secondId: string) => {
   const firstItem = data.find(item => item.list_id === firstId);
-  const secondItem = data.find(item => item.list_id === secondId);
   const restItems = data.filter(item => item.list_id !== firstId && item.list_id !== secondId);
-  if (!firstItem || !secondItem) {
+  if (!firstItem) {
     return data;
   }
-  return [firstItem, secondItem, ...restItems];
+  return [firstItem, ...restItems];
 };
 
-const makeList = (lists: List[], listTypeID: string) => {
-  if (lists) {
-    return (
-      <>
-        {lists.length > 0 ? 
-        <FlatList
-          data={lists}
-          renderItem={({ item }) => <RenderListItem list={item} listTypeID={listTypeID} />}
-          keyExtractor={list => list.list_id}
-          numColumns={1}
-        /> : 
-        <Text>Rank something!</Text>}
-      </>
-    )
-  } else {
-    return (
-      <Text>Loading</Text>
-    )
-  }
-}
-
 const chunkLists = (lists: List[], size: number) => {
-  const result = [];
+  var result: (List[])[] = [];
+  if (lists.length <= 3) {
+    result = [lists];
+    return result;
+  } else if (lists.length == 4) {
+    result.push(lists.slice(0, 3));
+    result.push(lists.slice(3, 4));
+    return result;
+  }
   for (let i = 0; i < lists.length; i += size) {
     result.push(lists.slice(i, i + size));
   }
@@ -106,40 +100,61 @@ const chunkLists = (lists: List[], size: number) => {
 };
 
 const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID: string}) => {
-  const numRows = 3;
+  const numRows = 2;
   const reorderedLists = reorderData(lists, Values.seenListID, Values.bookmarkListID);
 
   const numColumns = Math.ceil(reorderedLists.length / numRows);
   const chunkedData = chunkLists(reorderedLists, numColumns);
+  
+  const bookmarkList = lists.find(item => item.list_id === Values.bookmarkListID);
+  var unwatchedLists: List[] = [];
+  if (bookmarkList) {
+    unwatchedLists = [bookmarkList];
+  }
+  const chunkedUnwatched = chunkLists(unwatchedLists, numColumns);
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      {chunkedData.map((row, rowIndex) => (
-        <View key={rowIndex} style={styles.row}>
-          {row.map(list => (
-            <RenderListItem list={list} listTypeID={listTypeID} />
+    <ScrollView style={styles.listsContainer} showsVerticalScrollIndicator={false}>
+      <View style={styles.topSeparator}>
+          <Text style={styles.separatorText}>Watched</Text>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={{flexDirection: 'column'}}>
+          {chunkedData.map((row, rowIndex) => (
+            <View key={rowIndex} style={styles.row}>
+              {row.map(list => (
+                <RenderListItem key={list.list_id} list={list} listTypeID={listTypeID} />
+              ))}
+            </View>
           ))}
         </View>
-      ))}
+      </ScrollView>
+      <View style={styles.listSeparator}>
+          <Text style={styles.separatorText}>Unwatched</Text>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={{flexDirection: 'column'}}>
+          {chunkedUnwatched.map((row, rowIndex) => (
+            <View key={rowIndex} style={styles.row}>
+              {row.map(list => (
+                <RenderListItem key={list.list_id} list={list} listTypeID={listTypeID} />
+              ))}
+            </View>
+          ))}
+        </View>
+      </ScrollView>
     </ScrollView>
   );
 };
 
 const MovieTabContent = () => {
   const { lists, loaded } = useUserListsSearch(Values.movieListsID);
-  //const seen = makeList(lists, Values.movieListsID);
-  //const want = makeList(lists, Values.movieListsID);
-  //const recs = makeList([], Values.movieListsID);
-  //return <ListTabs seen={seen} want={want} recs={recs}/>;
   return <HorizontalListWithRows lists={lists} listTypeID={Values.movieListsID} />
 };
 
 const TVTabContent = () => {
   const { lists, loaded } = useUserListsSearch(Values.tvListsID);
-  const seen = makeList(lists, Values.tvListsID);
-  const want = makeList(lists, Values.tvListsID);
-  const recs = makeList([], Values.tvListsID);
-  return <ListTabs seen={seen} want={want} recs={recs}/>;
+  return <HorizontalListWithRows lists={lists} listTypeID={Values.tvListsID} />
 };
 
 export default function TabOneScreen() {
@@ -166,8 +181,9 @@ export default function TabOneScreen() {
 
   return (
       <GestureHandlerRootView>
-        <View style={{ backgroundColor: '#fff', flex: 1 }}>
+        <View style={{ backgroundColor: '#fff', flex: 1, }}>
           <SafeAreaView style={styles.container}>
+            <AddList />
             <SearchTabs tabs={searchTabs} onTabChange={index => setActiveTab(index)} />
           </SafeAreaView>
         </View>
@@ -181,13 +197,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  listsContainer: {
+    flex: 1,
+    flexDirection: 'column',
+  },
   row: {
     flexDirection: 'row',
-    padding: 10,
   },
   itemContainer: {
     alignItems: 'center',
     height: 200,
+    marginLeft: 15,
+    marginTop: 5,
   },
   imageContainer: {
     flexDirection: 'row',
@@ -207,9 +228,44 @@ const styles = StyleSheet.create({
   title: {
     marginTop: 10,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
     textAlign: 'left',
     width: 120,
     paddingTop: 3,
+  },
+  emptyList: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 170,
+    width: 120,
+    borderWidth: 1,
+    borderRadius: 15,
+    marginTop: 10,
+    backgroundColor: '#d3d3d3',
+  },
+  emptyListTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'left',
+    width: 120,
+    paddingTop: 3,
+  },
+  topSeparator: {
+    flex: 1,
+    width: Dimensions.screenWidth,
+    padding: 10,
+  },
+  listSeparator: {
+    flex: 1,
+    width: Dimensions.screenWidth,
+    marginTop: 10,
+    padding: 10,
+    borderTopWidth: 3,
+    borderColor: 'black',
+  },
+  separatorText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'left',
   },
 });

@@ -17,6 +17,7 @@ const ItemScreen = ({movieList}: Props) => {
     const { loading, setLoading } = useLoading();
     const [numImgsLoaded, setImgsLoaded] = useState(0);
     var changed = false;
+
     const [animatedValues, setAnimatedValues] = useState(() =>
         movieList.map(() => new Animated.Value(1))
     );
@@ -35,6 +36,9 @@ const ItemScreen = ({movieList}: Props) => {
     const renderItem = ({ item, index }: { item: Item, index: number }) => {
         var title = "";
         const isMovie = 'title' in item;
+        var date = isMovie ? item.release_date : item.first_air_date;
+        date = date.slice(0,4);
+
         if (isMovie) {
             title = item.title;
         } else {
@@ -66,9 +70,10 @@ const ItemScreen = ({movieList}: Props) => {
                         onLoad={() => setImgsLoaded((prevNumImgsLoaded) => prevNumImgsLoaded + 1)}
                     />
                     </View>
-                    <View style={{ flex: 1 }} />
-                    <Text style={styles.title}>{title}</Text>
-                    <View style={{ flex: 1 }} />
+                    <View style={styles.textContainer}>
+                        <Text style={styles.title}>{title}</Text>
+                        <Text style={{fontWeight: '200'}}>{date}</Text>
+                    </View>
                 </TouchableOpacity>
             </Link>
         );
@@ -128,8 +133,17 @@ const styles = StyleSheet.create({
         width: (screenWidth / 2) - 20,
         borderWidth: 1,
         borderColor: '#000',
-        borderRadius: 25,
-        overflow: 'hidden'
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
+        //overflow: 'hidden',
+        shadowColor: 'black',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.6,
+        shadowRadius: 2,
+        elevation: 4,
+        backgroundColor: 'white',
     },
     image: {
         width: '100%',
@@ -138,12 +152,25 @@ const styles = StyleSheet.create({
     imageBorder: {
         borderBottomWidth: 1,
         borderBottomColor: '#000',
+        overflow: 'hidden',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
     },
     title: {
-        textAlign: 'center',
+        flex: 1,
+        textAlign: 'left',
         paddingVertical: 5,
-        fontSize: 16,
-    }
+        fontSize: 14,
+        fontWeight: '500',
+    },
+    textContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        paddingHorizontal: 5,
+    },
 });
 
 export default ItemScreen;
