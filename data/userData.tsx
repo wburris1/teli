@@ -134,6 +134,7 @@ export const useUserItemDelete = (item_id: string, score: number, listID: string
 
 export const removeFromList = (listID: string, listTypeID: string, item_id: string) => {
     const { user } = useAuth();
+    const { requestListRefresh, requestRefresh } = useData();
     const updatePosterFunc = updateSomeListPosters(listID, listTypeID);
 
     async function removeItem() {
@@ -141,10 +142,6 @@ export const removeFromList = (listID: string, listTypeID: string, item_id: stri
             const itemRef = doc(db, "users", user.uid, listTypeID, listID, "items", item_id);  
             try {
                 await deleteDoc(itemRef);
-                const listItemsRef = collection(db, "users", user!.uid, listTypeID, listID, "items");
-                const snapshot = await getDocs(listItemsRef);
-                const listItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserItem }));
-                storeDataLocally(`items_${user!.uid}_${listTypeID}_${listID}`, listItems);
                 updatePosterFunc();
                 console.log("Item successfully removed: ", item_id);
             } catch (error) {
@@ -155,7 +152,7 @@ export const removeFromList = (listID: string, listTypeID: string, item_id: stri
 
     function reactToRemove() {
         removeItem().then(() => {
-            //requestRefresh();
+            requestListRefresh();
         })
     }
 
@@ -164,7 +161,7 @@ export const removeFromList = (listID: string, listTypeID: string, item_id: stri
 
 export const useUserAdjustScores = () => {
     const { user } = useAuth();
-    const { requestListRefresh } = useData();
+    const { requestListRefresh, requestRefresh } = useData();
 
     async function adjustScores(items: UserItem[], minScore: number, maxScore: number, range: number, listID: string, listTypeID: string) {
         // Distribute scores evenly between minScore and maxScore
@@ -527,7 +524,7 @@ const UpdateListPosters = () => {
 }
 
 export const CreateListDB = () => {
-    const { tvLists, movieLists, requestListRefresh } = useData();
+    const { tvLists, movieLists, requestListRefresh, requestRefresh } = useData();
     const { user } = useAuth();
     // Three steps:
     // 1. Check if list id already exists, give alert if so and don't close modal yet

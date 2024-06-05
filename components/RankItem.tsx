@@ -42,7 +42,7 @@ const Rank = ({item}: Props) => {
   const adjustScoreFunc = useUserAdjustScores();
   const [items, setItems] = useState<UserItem[]>([]);
   //const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
-  const { refreshListFlag } = useData();
+  const { refreshListFlag, refreshFlag } = useData();
   const [rankButtonLoading, setRankButtonLoading] = useState(true);
   const addToDB = AddToList();
 
@@ -139,7 +139,7 @@ const Rank = ({item}: Props) => {
       }
       setRankButtonLoading(false);
     })
-  }, [refreshListFlag])
+  }, [refreshListFlag, refreshFlag])
 
   return (
     <>
