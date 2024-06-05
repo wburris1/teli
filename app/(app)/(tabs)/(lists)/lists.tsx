@@ -101,12 +101,12 @@ const chunkLists = (lists: List[], size: number) => {
 
 const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID: string}) => {
   const numRows = 2;
-  const reorderedLists = reorderData(lists, Values.seenListID, Values.bookmarkListID);
+  const reorderedLists = lists != null ? reorderData(lists, Values.seenListID, Values.bookmarkListID) : [];
 
   const numColumns = Math.ceil(reorderedLists.length / numRows);
   const chunkedData = chunkLists(reorderedLists, numColumns);
   
-  const bookmarkList = lists.find(item => item.list_id === Values.bookmarkListID);
+  const bookmarkList = lists != null ? lists.find(item => item.list_id === Values.bookmarkListID) : null;
   var unwatchedLists: List[] = [];
   if (bookmarkList) {
     unwatchedLists = [bookmarkList];
@@ -158,15 +158,15 @@ const TVTabContent = () => {
 };
 
 export default function TabOneScreen() {
-  const { refreshFlag } = useData();
+  const { refreshFlag, refreshListFlag } = useData();
   const { setActiveTab } = useTab();
 
   var moviesTabContent = useCallback(() =>  
     <MovieTabContent />
-  , [refreshFlag]);
+  , [refreshFlag, refreshListFlag]);
   var showsTabContent = useCallback(() => 
     <TVTabContent />
-  , [refreshFlag]);
+  , [refreshFlag, refreshListFlag]);
 
   const searchTabs = [
     {

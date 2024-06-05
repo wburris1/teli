@@ -1,0 +1,20 @@
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{user_id} {
+    	allow create: if request.auth.uid == user_id && !exists(/databases/$(database)/documents/users/$(user_id));
+      allow read, write, update, delete: if request.auth.uid == user_id;
+      match /movie_lists/{list_id} {
+        allow read, write, update, delete: if request.auth.uid == user_id;
+        match /items/{item_id} {
+        	allow read, write, update, delete: if request.auth.uid == user_id;
+        }
+      }
+      match /tv_lists/{list_id} {
+        allow read, write, update, delete: if request.auth.uid == user_id;
+        match /items/{item_id} {
+        	allow read, write, update, delete: if request.auth.uid == user_id;
+        }
+      }
+    }
+  }
+}

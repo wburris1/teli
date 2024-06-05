@@ -8,7 +8,7 @@ export const storeDataLocally = async (key: string, value: any) => {
       console.error('Error saving data locally', e);
     }
 };
-  
+
 export const getDataLocally = async (key: string) => {
     try {
       const jsonValue = await AsyncStorage.getItem(key);

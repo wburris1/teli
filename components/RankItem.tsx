@@ -9,6 +9,8 @@ import Colors from '@/constants/Colors';
 import { useData } from '@/contexts/dataContext';
 import { AddToList, useUserAdjustScores, useUserItemsSeenSearch } from '@/data/userData';
 import Values from '@/constants/Values';
+import { getDataLocally, storeDataLocally } from '@/data/userLocalData';
+import { getAuth } from 'firebase/auth';
 
 type Props = {
     item: Item
@@ -24,7 +26,9 @@ const initialDislikeScore = 4;
 const smallAssNumber = 0.0000001; // Used to make mid inclusive of 4 and 6 scores
 
 const Rank = ({item}: Props) => {
+  const { user } = useAuth();
   const isMovie = 'title' in item ? true : false;
+  //const items = isMovie ? movies : shows;
   const listID = Values.seenListID;
   const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
 
@@ -36,15 +40,16 @@ const Rank = ({item}: Props) => {
   const [upperScore, setUpperScore] = useState(0);
   const [lowerScore, setLowerScore] = useState(0);
   const adjustScoreFunc = useUserAdjustScores();
-  const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
-  const { refreshFlag } = useData();
+  const [items, setItems] = useState<UserItem[]>([]);
+  //const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
+  const { refreshListFlag } = useData();
   const [rankButtonLoading, setRankButtonLoading] = useState(true);
   const addToDB = AddToList();
 
-  async function checkDupe() {
+  function checkDupe(localItems: UserItem[]) {
     var exists = false;
-    if (item && items) {
-      items.forEach(seenItem => {
+    if (item && localItems) {
+      localItems.forEach(seenItem => {
         if (seenItem.item_id == item.id) {
           exists = true;
         }
@@ -81,8 +86,9 @@ const Rank = ({item}: Props) => {
       setCompItem(newItem);
     } else {
       const newScore = initialScore;
-      addToDB(newScore, item, listID, isMovie, isDupe).then(() => {
+      addToDB(newScore, item, listID, isMovie, isDupe, items).then(() => {
         setModalVisible(false);
+        //storeDataLocally(`items_${user!.uid}_${listTypeID}_${item.id}`, item);
         console.log("Item added!");
         requestRefresh();
       }).catch(error => {
@@ -96,7 +102,7 @@ const Rank = ({item}: Props) => {
     setUpperScore(maxScore);
 
     if (minScore == maxScore) {
-      addToDB(minScore, item, listID, isMovie, isDupe).then(() => {
+      addToDB(minScore, item, listID, isMovie, isDupe, items).then(() => {
         setModalVisible(false);
         requestRefresh();
         console.log("Item added! No score adjust necessary");
@@ -110,20 +116,10 @@ const Rank = ({item}: Props) => {
         setCompItem(newItem);
       } else {
         const newScore = maxScore - smallAssNumber;
-        addToDB(newScore, item, listID, isMovie, isDupe).then(addItem => {
+        addToDB(newScore, item, listID, isMovie, isDupe, items).then(addItem => {
           if (addItem) {
             setDupe(true);
             setModalVisible(false);
-            if (isDupe) {
-              items.forEach(seenItem => {
-                if (seenItem.item_id == item.id) {
-                  seenItem.score = newScore;
-                }
-              });
-              adjustScoreFunc(items, newScore, listID, listTypeID);
-            } else {
-              adjustScoreFunc([...items, addItem], newScore, listID, listTypeID);
-            }
             console.log("Item added!");
           }
         }).catch(error => {
@@ -134,22 +130,16 @@ const Rank = ({item}: Props) => {
   }
 
   useEffect(() => {
-    setRankButtonLoading(true);
-    if (item && items) {
-      checkDupe().then(exists => {
-        if (exists) {
-          setDupe(true);
-        } else {
-          setDupe(false);
-        }
-        if (loaded) {
-          setRankButtonLoading(false);
-        }
-      }).catch(error => {
-        console.error("Error in checkDupe:", error);
-      });
-    }
-  }, [items, refreshFlag])
+    getDataLocally(`items_${user!.uid}_${listTypeID}_${listID}`).then(localItems => {
+      setItems(localItems);
+      if (checkDupe(localItems)) {
+        setDupe(true);
+      } else {
+        setDupe(false);
+      }
+      setRankButtonLoading(false);
+    })
+  }, [refreshListFlag])
 
   return (
     <>

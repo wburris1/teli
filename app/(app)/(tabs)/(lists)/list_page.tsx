@@ -167,8 +167,9 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
 
 const MakeList = ({ listID, listTypeID }: {listID: string, listTypeID: string}) => {
     const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
-    items.sort((a: UserItem, b: UserItem) => b.score - a.score);
-
+    if (items != null) {
+      items.sort((a: UserItem, b: UserItem) => b.score - a.score);
+    }
     if (items) {
       return (
         <>

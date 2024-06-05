@@ -3,80 +3,95 @@ import { useAuth } from '@/contexts/authContext';
 import { useData } from '@/contexts/dataContext';
 import { FIREBASE_DB } from '@/firebaseConfig';
 import { setItem } from 'expo-secure-store';
-import { addDoc, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy, query, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore';
+import { addDoc, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
+import { getDataLocally, storeDataLocally } from './userLocalData';
 
 const db = FIREBASE_DB;
 
 export const useUserListsSearch = (listTypeID: string) => {
-    const { refreshFlag } = useData();
+    const { refreshFlag, refreshListFlag } = useData();
     const [lists, setLists] = useState<List[]>([]);
     const { user } = useAuth();
     const [loaded, setLoaded] = useState(false);
     const { setMovieLists, setTVLists } = useData();
-
-    async function fetchLists() {
-        if (user) {
-            const userListsRef = collection(db, "users", user.uid, listTypeID);
-            const snapshot = await getDocs(userListsRef);
-            if (!snapshot.empty) {
-                const userLists = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));
-                return userLists;
-            }
-        }
-        return [];
-    }
-
+  
     useEffect(() => {
-        fetchLists().then(lists => {
-            setLoaded(true);
-            setLists(lists);
-            if (listTypeID == Values.movieListsID) {
-                setMovieLists(lists);
-            } else {
-                setTVLists(lists);
-            }
-        }).catch(error => {
-            setLoaded(true);
-            setLists([]);
-            console.error("Error fetching lists: " + error);
+      if (user) {
+        const userListsRef = collection(db, "users", user.uid, listTypeID);
+  
+        const unsubscribe = onSnapshot(userListsRef, (snapshot) => {
+          const userLists = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));
+          setLists(userLists);
+          setLoaded(true);
+  
+          if (listTypeID == Values.movieListsID) {
+            setMovieLists(userLists);
+          } else {
+            setTVLists(userLists);
+          }
+  
+          // Store lists locally
+          storeDataLocally(`lists_${user.uid}_${listTypeID}`, userLists);
+        }, (error: any) => {
+          console.error("Error fetching lists: ", error);
+          setLoaded(true);
         });
-    }, [refreshFlag]);
-    
+  
+        return () => unsubscribe();
+      }
+    }, [refreshFlag, refreshListFlag, user]);
+  
+    useEffect(() => {
+      if (user) {
+        // Load lists from local storage initially
+        getDataLocally(`lists_${user.uid}_${listTypeID}`).then(localLists => {
+          setLists(localLists);
+          setLoaded(true);
+        });
+      }
+    }, [user]);
+  
     return { lists, loaded };
 }
 
 export const useUserItemsSeenSearch = (listID: string, listTypeID: string) => {
-    const { refreshFlag } = useData();
+    const { refreshFlag, refreshListFlag } = useData();
     const [items, setItems] = useState<UserItem[]>([]);
     const { user } = useAuth();
     const [loaded, setLoaded] = useState(false);
-
-    async function fetchItems() {
-        if (user) {
-            const userItemsRef = collection(db, "users", user.uid, listTypeID, listID, "items");
-            const itemQuery = query(userItemsRef);
-            const snapshot = await getDocs(itemQuery);
-            if (!snapshot.empty) {
-                const seenItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserItem }));
-                return seenItems;
-            }
-        }
-        return [];
-    }
-
+  
     useEffect(() => {
-        fetchItems().then(items => {
-            setLoaded(true);
-            setItems(items);
-        }).catch(error => {
-            setLoaded(true);
-            setItems([]);
-            console.error("Error fetching seen items: " + error);
+      if (user) {
+        const userItemsRef = collection(db, "users", user.uid, listTypeID, listID, "items");
+  
+        const unsubscribe = onSnapshot(userItemsRef, (snapshot) => {
+          const seenItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserItem }));
+          setItems(seenItems);
+          setLoaded(true);
+  
+          // Store items locally
+          storeDataLocally(`items_${user.uid}_${listTypeID}_${listID}`, seenItems);
+        }, (error) => {
+          console.error("Error fetching seen items: ", error);
+          setLoaded(true);
         });
-    }, [refreshFlag]);
-    
+  
+        return () => unsubscribe();
+      }
+    }, [refreshFlag, refreshListFlag, user]);
+  
+    useEffect(() => {
+      if (user) {
+        // Load items from local storage initially
+        getDataLocally(`items_${user.uid}_${listTypeID}_${listID}`).then(localItems => {
+          setItems(localItems);
+          setLoaded(true);
+        });
+      }
+    }, [user]);
+  
     return { items, loaded };
 }
 
@@ -87,11 +102,21 @@ export const useUserItemDelete = (item_id: string, score: number, listID: string
 
     async function deleteItem() {
         if (user) {
-            const itemRef = doc(db, "users", user.uid, listTypeID, listID, "items", item_id);  
             try {
-                await deleteDoc(itemRef);
+                const userListsRef = collection(db, "users", user.uid, listTypeID);
+
+                const listsSnapshot = await getDocs(userListsRef);
+                const batch = writeBatch(db);
+
+                listsSnapshot.forEach(list => {
+                    const listRef = doc(db, "users", user.uid, listTypeID, list.id, "items", item_id);
+                    batch.delete(listRef);
+                });
+
+                await batch.commit();
+
+                console.log(`Item ${item_id} deleted from all lists`);
                 updateListFunc(listTypeID);
-                console.log("Item successfully deleted: ", item_id);
             } catch (error) {
                 console.error("Error removing document: ", error);
             }
@@ -109,7 +134,6 @@ export const useUserItemDelete = (item_id: string, score: number, listID: string
 
 export const removeFromList = (listID: string, listTypeID: string, item_id: string) => {
     const { user } = useAuth();
-    const { requestRefresh }= useData();
     const updatePosterFunc = updateSomeListPosters(listID, listTypeID);
 
     async function removeItem() {
@@ -117,7 +141,11 @@ export const removeFromList = (listID: string, listTypeID: string, item_id: stri
             const itemRef = doc(db, "users", user.uid, listTypeID, listID, "items", item_id);  
             try {
                 await deleteDoc(itemRef);
-                await updatePosterFunc();
+                const listItemsRef = collection(db, "users", user!.uid, listTypeID, listID, "items");
+                const snapshot = await getDocs(listItemsRef);
+                const listItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserItem }));
+                storeDataLocally(`items_${user!.uid}_${listTypeID}_${listID}`, listItems);
+                updatePosterFunc();
                 console.log("Item successfully removed: ", item_id);
             } catch (error) {
                 console.error("Error removing document: ", error);
@@ -127,7 +155,7 @@ export const removeFromList = (listID: string, listTypeID: string, item_id: stri
 
     function reactToRemove() {
         removeItem().then(() => {
-            requestRefresh();
+            //requestRefresh();
         })
     }
 
@@ -135,11 +163,14 @@ export const removeFromList = (listID: string, listTypeID: string, item_id: stri
 }
 
 export const useUserAdjustScores = () => {
-    const { requestRefresh } = useData();
     const { user } = useAuth();
+    const { requestListRefresh } = useData();
 
     async function adjustScores(items: UserItem[], minScore: number, maxScore: number, range: number, listID: string, listTypeID: string) {
         // Distribute scores evenly between minScore and maxScore
+        if (!user) {
+            return;
+        }
         var filteredItems: UserItem[] = [];
         if (minScore == 0) {
             // Bad items - include 0, exclude 4
@@ -159,6 +190,18 @@ export const useUserAdjustScores = () => {
         var scoreIncrement = range / count;
 
         const batch = writeBatch(db);
+        //const userListsRef = collection(db, "users", user.uid, listTypeID);
+        //const listsSnapshot = await getDocs(userListsRef);
+        // Fetch list ids from local storage: TODO
+        const lists: List[] = await getDataLocally(`lists_${user.uid}_${listTypeID}`);
+        // Get all items from all lists
+        const listDict: { [key: string]: UserItem[] } = {};
+        if (lists) {
+            for (const list of lists) {
+              const items: UserItem[] = await getDataLocally(`items_${user.uid}_${listTypeID}_${list.list_id}`);
+              listDict[list.list_id] = items || [];
+            }
+        }
 
         var lastScore = -1;
         var lastNewScoreIndex = 0;
@@ -171,8 +214,20 @@ export const useUserAdjustScores = () => {
             } else if (lastScore < 0) {
                 lastScore = filteredItems[i].score;
             }
-            const itemRef = doc(db, 'users', user!.uid, listTypeID, listID, "items", filteredItems[i].item_id);
+            const itemRef = doc(db, 'users', user.uid, listTypeID, listID, "items", filteredItems[i].item_id);
             batch.update(itemRef, { score: newScore });
+
+            if (lists) {
+                for (const list of lists) {
+                    if (listDict.hasOwnProperty(list.list_id)) {
+                        var listItems = listDict[list.list_id];
+                        if (listItems.some(listItem => listItem.item_id === filteredItems[i].item_id)) {
+                            const itemRef = doc(db, "users", user.uid, listTypeID, list.list_id, "items", filteredItems[i].item_id);
+                            batch.update(itemRef, { score: newScore });
+                        }
+                    }
+                }
+            }
         }
 
         try {
@@ -199,7 +254,7 @@ export const useUserAdjustScores = () => {
             maxScore = Values.minMidScore;
         }
         adjustScores(items, minScore, maxScore, range, listID, listTypeID).then(() => {
-            requestRefresh();
+            requestListRefresh();
         })
     }
 
@@ -212,6 +267,9 @@ export const AdjustReorderedScores = () => {
 
     async function reorderScores(items: UserItem[], listID: string, listTypeID: string) {
         // Count number of good/mid/bad items:
+        if (!user) {
+            return;
+        }
         var numGood = 0;
         var numMid = 0;
         var numBad = 0;
@@ -246,6 +304,14 @@ export const AdjustReorderedScores = () => {
         var index = 0;
         prevScore = -1;
         var lastNewScore = -1;
+        const lists: List[] = await getDataLocally(`lists_${user.uid}_${listTypeID}`);
+        const listDict: { [key: string]: UserItem[] } = {};
+        if (lists) {
+            for (const list of lists) {
+              const items: UserItem[] = await getDataLocally(`items_${user.uid}_${listTypeID}_${list.list_id}`);
+              listDict[list.list_id] = items || [];
+            }
+        }
         
         for (let i = 0; i < items.length; i++) {
             var newScore = 0;
@@ -272,13 +338,23 @@ export const AdjustReorderedScores = () => {
             } else {
                 newScore = lastNewScore;
             }
-            const itemRef = doc(db, 'users', user!.uid, listTypeID, listID, "items", items[i].item_id);
-            batch.update(itemRef, { score: newScore });
+
+            if (lists) {
+                for (const list of lists) {
+                    if (listDict.hasOwnProperty(list.list_id)) {
+                        const listItems = listDict[list.list_id];
+                        if (listItems.some(listItem => listItem.item_id === items[i].item_id)) {
+                            const itemRef = doc(db, "users", user.uid, listTypeID, list.list_id, "items", items[i].item_id);
+                            batch.update(itemRef, { score: newScore });
+                        }
+                    }
+                }
+            }
         }
 
         try {
             await batch.commit();
-            await updateListFunc(listTypeID);
+            updateListFunc(listTypeID);
             console.log('Score update successful');
         } catch (error) {
             console.error('Score update failed: ', error);
@@ -291,8 +367,9 @@ export const AdjustReorderedScores = () => {
 export const AddToList = () => {
     const { user } = useAuth();
     const updateListFunc = UpdateListPosters();
+    const adjustScoreFunc = useUserAdjustScores();
 
-    async function addToDB(newScore: number, item: Item, listID: string, isMovie: boolean, isDupe: boolean) {
+    async function addToDB(newScore: number, item: Item, listID: string, isMovie: boolean, isDupe: boolean, items: UserItem[]) {
         var newItem: UserItem;
         const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
 
@@ -316,8 +393,12 @@ export const AddToList = () => {
     
         if (user) {
           const itemRef = doc(db, "users", user.uid, listTypeID, listID, "items", item.id.toString());
-    
           if (isDupe) {
+            items.forEach(seenItem => {
+                if (seenItem.item_id == item.id) {
+                    seenItem.score = newScore;
+                }
+            });
             const updateData = isMovie
             ? {
                 title: (newItem as UserMovie).title,
@@ -333,14 +414,19 @@ export const AddToList = () => {
               };
               try {
                 await updateDoc(itemRef, updateData);
-                await updateListFunc(listTypeID);
+                await adjustScoreFunc(items, newScore, listID, listTypeID);
+                await storeDataLocally(`items_${user!.uid}_${listTypeID}_${item.id}`, updateData);
+                updateListFunc(listTypeID);
               } catch (err: any) {
                 console.error("Error updating item: ", err);
               }
               return newItem;
           } else {
+            const currItems = [...items, newItem];
             try {
               await setDoc(itemRef, newItem);
+              await adjustScoreFunc(currItems, newScore, listID, listTypeID);
+              await storeDataLocally(`items_${user!.uid}_${listTypeID}_${item.id}`, newItem);
               updateListFunc(listTypeID);
             } catch (err: any) {
               console.error("Error adding new item: ", err);
@@ -376,7 +462,7 @@ async function getListPosters(listID: string, listTypeID: string, userID: string
 
 const updateSomeListPosters = (listID: string, listTypeID: string) => {
     const { user } = useAuth();
-    const { requestRefresh } = useData();
+    const { requestListRefresh } = useData();
 
     async function updatePosters() {
         if (user) {
@@ -388,7 +474,7 @@ const updateSomeListPosters = (listID: string, listTypeID: string) => {
                     second_poster_path: posters.second_poster_path,
                     bottom_poster_path: posters.bottom_poster_path
                 });
-                requestRefresh();
+                requestListRefresh();
             } catch (err: any) {
                 console.error("Error updating specific list posters: ", err);
             }
@@ -400,7 +486,7 @@ const updateSomeListPosters = (listID: string, listTypeID: string) => {
 
 const UpdateListPosters = () => {
     const { user } = useAuth();
-    const { requestRefresh } = useData();
+    const { requestListRefresh } = useData();
 
     async function updatePosters(listTypeID: string) {
         // for each list of list type, fetch top 3 items by score and set poster paths
@@ -428,7 +514,7 @@ const UpdateListPosters = () => {
                 
                 try {
                     await batch.commit();
-                    requestRefresh();
+                    requestListRefresh();
                     console.log("List posters updated");
                 } catch (err: any) {
                     console.error("List posters update failed: ", err);
@@ -441,7 +527,7 @@ const UpdateListPosters = () => {
 }
 
 export const CreateListDB = () => {
-    const { tvLists, movieLists, requestRefresh } = useData();
+    const { tvLists, movieLists, requestListRefresh } = useData();
     const { user } = useAuth();
     // Three steps:
     // 1. Check if list id already exists, give alert if so and don't close modal yet
@@ -488,13 +574,13 @@ export const CreateListDB = () => {
                         await setDoc(itemRef, item);
                     })
                     await Promise.all(promises);
-                    requestRefresh();
+                    requestListRefresh();
                     itemsAdded = true;
                 } catch (err: any) {
                     console.error("Error adding selected items to new list: ", err);
                 }
             } else {
-                requestRefresh();
+                requestListRefresh();
             }
         }
         return listAdded && itemsAdded;
@@ -571,7 +657,7 @@ export const addAndRemoveItemFromLists = () => {
     
             try {
                 await batch.commit();
-                await updateListFunc(listTypeID);
+                updateListFunc(listTypeID);
                 console.log('Item added and removed successfully.');
             } catch (error: any) {
                 console.error('Error when adding/removing item from lists: ', error);
@@ -581,3 +667,5 @@ export const addAndRemoveItemFromLists = () => {
 
     return addAndRemove;
 }
+
+
