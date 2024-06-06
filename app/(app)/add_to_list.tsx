@@ -7,12 +7,13 @@ import { useEffect, useState } from 'react';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import Dimensions from '@/constants/Dimensions';
 import Colors from '@/constants/Colors';
-import { useGetItemLists, useUserItemsSeenSearch, useUserListsSearch } from '@/data/userData';
+import { useUserItemsSeenSearch, useUserListsSearch } from '@/data/userData';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTab } from '@/contexts/listContext';
 import { useData } from '@/contexts/dataContext';
 import Values from '@/constants/Values';
 import { useLocalSearchParams } from 'expo-router';
+import { useGetItemLists } from '@/data/addToList';
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;

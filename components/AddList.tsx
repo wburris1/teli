@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { KeyboardAvoidingView, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from "react-native";
 import { ListModalScreen } from "./ListModal";
 import { useData } from "@/contexts/dataContext";
-import { CreateListDB } from "@/data/userData";
+import { CreateListDB } from "@/data/addList";
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
@@ -73,14 +73,17 @@ export const AddList = () => {
                     />
                 </TouchableOpacity>
                 <KeyboardAvoidingView behavior="padding">
-                    <View style={styles.modalView}>
-                        <Text style={styles.headerText}>Create List</Text>
+                    <View style={[styles.modalView, { backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
+                        <Text style={[styles.headerText, { color: Colors[colorScheme ?? 'light'].text}]}>Create List</Text>
                         <TextInput
                             autoCapitalize="sentences"
                             placeholder="List name..."
                             value={listName}
                             onChangeText={setListName}
-                            style={styles.inputNameField}
+                            style={[styles.inputNameField,
+                                { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text,
+                                    color: Colors[colorScheme ?? 'light'].text,
+                                 }]}
                         />
                         <TextInput
                             multiline
@@ -88,11 +91,16 @@ export const AddList = () => {
                             placeholder="List description (optional)..."
                             value={listDescription}
                             onChangeText={setListDescription}
-                            style={styles.inputDescField}
+                            style={[styles.inputDescField,
+                                { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text,
+                                    color: Colors[colorScheme ?? 'light'].text,
+                                 }]
+                            }
                         />
                         <View style={styles.switchContainer}>
                             <TouchableOpacity
-                                style={[styles.button, listTypeID === Values.movieListsID && styles.selectedButton]}
+                                style={[styles.button, listTypeID === Values.movieListsID ? {backgroundColor: Colors[colorScheme ?? 'light'].text} :
+                                    { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text }]}
                                 onPress={() => {
                                     if (listTypeID != Values.movieListsID) {
                                         setSelectedItems([]);
@@ -100,12 +108,13 @@ export const AddList = () => {
                                     setListTypeID(Values.movieListsID);
                                 }}
                             >
-                                <Text style={[styles.buttonText, listTypeID === Values.movieListsID && styles.selectedButtonText]}>
+                                <Text style={listTypeID === Values.movieListsID ? { color: Colors[colorScheme ?? 'light'].background } : { color: Colors[colorScheme ?? 'light'].text }}>
                                     Movies
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.button, listTypeID == Values.tvListsID && styles.selectedButton]}
+                                style={[styles.button, listTypeID == Values.tvListsID ? {backgroundColor: Colors[colorScheme ?? 'light'].text} :
+                                    { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text }]}
                                 onPress={() => {
                                     if (listTypeID != Values.tvListsID) {
                                         setSelectedItems([]);
@@ -113,7 +122,7 @@ export const AddList = () => {
                                     setListTypeID(Values.tvListsID);
                                 }}
                             >
-                                <Text style={[styles.buttonText, listTypeID === Values.tvListsID && styles.selectedButtonText]}>
+                                <Text style={listTypeID === Values.tvListsID ? { color: Colors[colorScheme ?? 'light'].background } : { color: Colors[colorScheme ?? 'light'].text }}>
                                     Shows
                                 </Text>
                             </TouchableOpacity>
@@ -123,7 +132,7 @@ export const AddList = () => {
                                 <Text style={styles.addText}>Add entries...</Text>
                             </TouchableOpacity>
                             {selectedItems.length > 0 &&
-                                <Text style={styles.text}>{selectedItems.length}{selectedItems.length > 1 ? " entries added" : " entry added"}</Text>
+                                <Text style={[styles.text, { color: Colors[colorScheme ?? 'light'].text }]}>{selectedItems.length}{selectedItems.length > 1 ? " entries added" : " entry added"}</Text>
                             }
                         </View>
                         <TouchableOpacity onPress={handleListCreate}>
@@ -166,19 +175,9 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingVertical: 10,
         margin: 3,
-        backgroundColor: 'white',
         alignItems: 'center',
         borderRadius: 20,
         borderWidth: 1,
-    },
-    selectedButton: {
-        backgroundColor: 'black',
-    },
-    buttonText: {
-        color: '#000',
-    },
-    selectedButtonText: {
-        color: '#fff',
     },
     text: {
         fontSize: 16,
@@ -198,7 +197,6 @@ const styles = StyleSheet.create({
         top: 55,
     },
     modalView: {
-        backgroundColor: 'white',
         borderRadius: 20,
         padding: 10,
         alignItems: 'center',
@@ -220,7 +218,6 @@ const styles = StyleSheet.create({
         borderColor: 'black',
         borderRadius: 4,
         padding: 10,
-        backgroundColor: '#fff',
         width: '90%',
     },
     inputDescField: {
@@ -230,7 +227,6 @@ const styles = StyleSheet.create({
         borderColor: 'black',
         borderRadius: 4,
         padding: 10,
-        backgroundColor: '#fff',
         width: '90%',
     },
 });

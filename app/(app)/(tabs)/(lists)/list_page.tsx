@@ -3,7 +3,7 @@ import { Text } from '@/components/Themed';
 import SearchTabs from '@/components/Search/SearchTabs';
 import React, { ContextType, forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocalSearchParams, useNavigation } from 'expo-router';
-import { removeFromList, useUserItemDelete, useUserItemsSeenSearch } from '@/data/userData';
+import { useUserItemsSeenSearch } from '@/data/userData';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
@@ -12,6 +12,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-g
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import Values from '@/constants/Values';
 import { useTab } from '@/contexts/listContext';
+import { removeFromList, useUserItemDelete } from '@/data/deleteItem';
 
 type RowProps = {
     item: UserItem;
@@ -33,6 +34,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
     const isCustomList = (listID == Values.seenListID || listID == Values.bookmarkListID) ? false : true;
     var date = "";
+    const colorScheme = useColorScheme();
   
     const handleSetSwiped = (value: boolean) => {
       setSwiped(value);
@@ -119,7 +121,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
       <GestureDetector gesture={panGesture}>
         <View>
         <Animated.View style={[!isCustomList ? styles.deleteButtonContainer : styles.removeButtonContainer, deleteButtonStyle]}>
-          <TouchableOpacity style={styles.fullSize} onPress={() => onDelete(item.item_id)}>
+          <TouchableOpacity style={[styles.fullSize, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]} onPress={() => onDelete(item.item_id)}>
             <Ionicons
               name={!isCustomList ? "trash" : "close"}
               size={40}
@@ -127,24 +129,28 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
             />
           </TouchableOpacity>
         </Animated.View>
-        <Animated.View style={[styles.itemContainer, animatedStyle]}>
+        <Animated.View style={[styles.itemContainer, animatedStyle, { backgroundColor: Colors[colorScheme ?? 'light'].background, borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
           <Link href={{pathname: "/list_item", params: { id: item.item_id, groupKey: isMovie ? "movie" : "tv" }}} style={styles.linkStyle}>
             <View style={styles.innerContainer}>
-              <View style={styles.rank}><View style={styles.scoreCircle}><Text style={styles.text}>#{index + 1}</Text></View></View>
+              <View style={styles.rank}><Text style={styles.text}>{index + 1}.</Text></View>
               <Image
                   source={{ uri: imgUrl + item.poster_path }}
-                  style={styles.image}
+                  style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
               />
               <View style={styles.textContainer}>
                 <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
                 <Text style={styles.dateText}>{date}</Text>
               </View>
               {listID != Values.bookmarkListID &&
-              <View style={styles.score}><View style={styles.scoreCircle}><Text style={styles.text}>{score}</Text></View></View>}
+              <View style={styles.score}>
+                <View style={[styles.scoreCircle, {backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text}]}>
+                  <Text style={styles.scoreText}>{score}</Text>
+                </View>
+              </View>}
               <Ionicons
                 name="chevron-forward"
                 size={15}
-                color={Colors['light'].text}
+                color={Colors[colorScheme ?? 'light'].text}
               />
             </View>
           </Link>
@@ -165,14 +171,19 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
     );
 });
 
-const MakeList = ({ listID, listTypeID }: {listID: string, listTypeID: string}) => {
+const MakeList = ({ listID, listTypeID, description }: {listID: string, listTypeID: string, description: string}) => {
     const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
+    const colorScheme = useColorScheme();
+
     if (items != null) {
       items.sort((a: UserItem, b: UserItem) => b.score - a.score);
     }
     if (items) {
       return (
-        <>
+        <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
+        {description != "" && <View style={[styles.description, { backgroundColor: Colors[colorScheme ?? 'light'].background, borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
+            <Text>{description}</Text>
+          </View>}
           {items.length > 0 ? 
           <FlatList
             data={items}
@@ -181,7 +192,7 @@ const MakeList = ({ listID, listTypeID }: {listID: string, listTypeID: string}) 
             numColumns={1}
           /> : 
           <Text>Rank something!</Text>}
-        </>
+        </View>
       )
     } else {
       return (
@@ -192,7 +203,7 @@ const MakeList = ({ listID, listTypeID }: {listID: string, listTypeID: string}) 
 
 export default function TabOneScreen() {
     const { refreshFlag } = useData();
-    const { listTypeID, listID } = useLocalSearchParams();
+    const { listTypeID, listID, description } = useLocalSearchParams();
     const navigation = useNavigation();
     const colorScheme = useColorScheme();
     const isCustomList = (listID == Values.seenListID || listID == Values.bookmarkListID) ? false : true;
@@ -231,7 +242,7 @@ export default function TabOneScreen() {
     }, [navigation, listID])
     
     var ItemList = useCallback(() =>  
-      <MakeList listID={listID as string} listTypeID={listTypeID as string}/>
+      <MakeList listID={listID as string} listTypeID={listTypeID as string} description={description as string}/>
     , [refreshFlag]);
   
     return (
@@ -248,6 +259,10 @@ const styles = StyleSheet.create({
       flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    description: {
+      padding: 10,
+      borderBottomWidth: 1,
     },
     title: {
       fontSize: 20,
@@ -271,21 +286,26 @@ const styles = StyleSheet.create({
     text: {
       fontSize: 16
     },
+    scoreText: {
+      fontSize: 20,
+      fontWeight: '500',
+    },
     rank: {
+      alignSelf: 'flex-start',
       paddingHorizontal: 10,
+      paddingVertical: 15,
       backgroundColor: 'transparent'
     },
     score: {
-      paddingHorizontal: 5,
+      paddingHorizontal: 7,
       backgroundColor: 'transparent'
     },
     scoreCircle: {
-      width: 35,
-      height: 35,
+      width: 50,
+      height: 50,
       backgroundColor: '#fff',
-      borderRadius: 35/2,
-      borderWidth: 0.5,
-      borderColor: '#000000',
+      borderRadius: 50,
+      borderWidth: 1,
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 1,
@@ -299,7 +319,6 @@ const styles = StyleSheet.create({
       borderLeftWidth: 0,
       borderRightWidth: 0,
       borderTopWidth: 0,
-      borderBottomColor: '#000',
       overflow: 'hidden',
       paddingRight: 5,
       width: '100%',
@@ -310,7 +329,6 @@ const styles = StyleSheet.create({
       paddingHorizontal: 5,
       marginVertical: 10,
       borderWidth: 0.5,
-      borderColor: '#000',
       borderRadius: 10,
     },
     textContainer: {
@@ -353,7 +371,6 @@ const styles = StyleSheet.create({
       borderLeftWidth: 0,
       borderRightWidth: 0,
       borderTopWidth: 0,
-      borderBottomColor: '#000',
     },
     addButtonContainer: {
       flexDirection: 'row',

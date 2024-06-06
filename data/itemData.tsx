@@ -9,33 +9,17 @@ const tvSearchUrl = "https://api.themoviedb.org/3/search/tv?api_key=";
 const tvDiscoverUrl = "https://api.themoviedb.org/3/discover/tv?api_key=";
 const tvDetailsUrl = "https://api.themoviedb.org/3/tv/";
 
-export const useItemSearch = (query: string, isMovie: boolean) => {
-    const [itemList, setItemList] = useState<Item[]>([]);
-    const { setLoading } = useLoading();
-
+export const useItemSearch = async (query: string, isMovie: boolean): Promise<Item[]> => {
     const baseUrl = isMovie ? movieSearchUrl : tvSearchUrl;
-    var fetchUrl = baseUrl + tmdbKey + "&query=" + query;
+    let fetchUrl = baseUrl + tmdbKey + "&query=" + query;
 
     if (!query) {
         fetchUrl = isMovie ? movieDiscoverUrl + tmdbKey : tvDiscoverUrl + tmdbKey;
     }
 
-    const getItem = () => {
-        setLoading(true);
-        fetch(fetchUrl)
-        .then(res=>res.json())
-        .then(json=>{
-            setItemList(json.results);
-            //console.log(json.results);
-        })
-    }
-
-    useEffect(() => {
-        getItem();
-    }, [query]);
-
-
-    return itemList;
+    const response = await fetch(fetchUrl);
+    const json = await response.json();
+    return json.results;
 };
 
 export const useItemDetails = (id: string, isMovie: boolean) => {

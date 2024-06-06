@@ -9,44 +9,29 @@ type Props = {
     setSearch: (value: string) => void;
 };
 
-const onFilterPress = () => {
-
-};
-
 const SearchInput = ({search, setSearch}: Props) => {
     const colorScheme = useColorScheme();
     //const [search, setSearch] = useState('');
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
             <View style={styles.inner}>
                 <View style={styles.search} pointerEvents='none'>
                     <Ionicons name="search" size={25} color={Colors[colorScheme ?? 'light'].text} />
                 </View>
-                <TextInput placeholder="Search..." style={styles.field} value={search} onChangeText={setSearch}/>
-                <View style={styles.filter}>
-                    <TouchableOpacity onPress={onFilterPress}>
-                        <Ionicons
-                            name="filter"
-                            size={25}
-                            color={Colors[colorScheme ?? 'light'].text}
-                        />
-                    </TouchableOpacity>
-                </View>
+                <TextInput placeholder="Search..." style={[styles.field, {color: Colors[colorScheme ?? 'light'].text}]} value={search} onChangeText={setSearch}/>
             </View>
         </View>
-        
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: 'white',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         width: '100%',
-        padding: 10,
+        paddingHorizontal: 10,
     },
     inner: {
         flexDirection: 'row',
@@ -54,26 +39,19 @@ const styles = StyleSheet.create({
     search: {
         position: 'absolute',
         top: 12,
-        left: 12,
+        left: 5,
         zIndex: 1,
     },
     field: {
         flex: 1,
         marginLeft: 5,
         marginRight: 5,
-        paddingVertical: 10,
+        paddingVertical: 0,
         paddingLeft: 37,
-        paddingRight: 37,
-        backgroundColor: 'white',
+        paddingRight: 10,
         borderRadius: 10,
         height: 50,
         fontSize: 16,
-        // Shadow properties
-        shadowColor: 'black',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.23,
-        shadowRadius: 2.62,
-        elevation: 4,
     },
     filter: {
         position: 'absolute',

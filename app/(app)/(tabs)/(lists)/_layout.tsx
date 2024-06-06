@@ -10,32 +10,41 @@ export default function SearchLayout() {
 
   return (
       <Stack>
-          <Stack.Screen name="lists" options={{
-              headerShown: true,
-              title: "",
-              headerTransparent: true,
-                headerRight: () => (
-                  <Pressable onPress={() => setAddModalVisible(true)}>
-                    {({ pressed }) => (
-                      <Ionicons
-                        name="add"
-                        size={35}
-                        color={Colors[colorScheme ?? 'light'].text}
-                        style={{ opacity: pressed ? 0.5 : 1 }}
-                      />
-                    )}
-                  </Pressable>
-                ),
-                headerLeft: () => (
-                  <Text style={{fontSize: 25, fontWeight: 'bold'}}>Lists</Text>
-                )
-          }} />
-          <Stack.Screen name="list_item" options={{
-              headerShown: true, headerBackTitle: "List", headerTitle: "", headerTintColor: '#000'
-          }} />
-          <Stack.Screen name="list_page" options={{
-              headerShown: true, headerBackTitle: "Lists", headerTitle: "", headerTintColor: '#000'
-          }} />
+        <Stack.Screen name="lists" options={{
+          headerShown: true,
+          title: "",
+          headerStyle: {
+            backgroundColor: Colors[colorScheme ?? 'light'].background,
+          },
+          headerShadowVisible: false,
+            headerRight: () => (
+              <Pressable onPress={() => setAddModalVisible(true)}>
+                {({ pressed }) => (
+                  <Ionicons
+                    name="add"
+                    size={35}
+                    color={Colors[colorScheme ?? 'light'].text}
+                    style={{ opacity: pressed ? 0.5 : 1 }}
+                  />
+                )}
+              </Pressable>
+            ),
+            headerLeft: () => (
+              <Text style={{fontSize: 25, fontWeight: 'bold', color: Colors[colorScheme ?? 'light'].text}}>Lists</Text>
+            )
+        }} />
+        <Stack.Screen name="list_item" options={{
+          headerShown: true, headerBackTitle: "List", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+          headerStyle: {
+            backgroundColor: Colors[colorScheme ?? 'light'].background,
+          }
+        }} />
+        <Stack.Screen name="list_page" options={{
+          headerShown: true, headerBackTitle: "Lists", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+          headerStyle: {
+            backgroundColor: Colors[colorScheme ?? 'light'].background,
+          }
+        }} />
       </Stack>
   );
 }

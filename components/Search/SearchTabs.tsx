@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, useColorScheme } from 'react-native';
 import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import { LoadingProvider } from '@/contexts/loading';
+import Colors from '@/constants/Colors';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -15,6 +16,7 @@ type Props = {
 };
 
 const SearchTabs = ({ tabs, onTabChange }: Props) => {
+    const colorScheme = useColorScheme();
     const [tabIndex, setTabIndex] = useState(0);
     const indicatorPosition = useRef(new Animated.Value(0)).current;
 
@@ -34,13 +36,13 @@ const SearchTabs = ({ tabs, onTabChange }: Props) => {
     return (
         <View style={styles.container}>
             <View style={styles.tabs}>
-                <Animated.View style={[styles.line, {left: indicatorPosition}]}/>
+                <Animated.View style={[styles.line, {left: indicatorPosition, backgroundColor: Colors[colorScheme ?? 'light'].text}]}/>
                 <View style={styles.separatorLine}/>
                 {tabs.map((tab, index) => {
                     const active = index === tabIndex;
                     return (
                         <TouchableOpacity key={index} onPress={()=>handleTabPress(index)} style={active ? styles.activeTab : styles.tab}>
-                            <Text style={active ? styles.activeTabText : styles.tabText}>{tab.title}</Text>
+                            <Text style={active ? [styles.activeTabText, { color: Colors[colorScheme ?? 'light'].text}] : styles.tabText}>{tab.title}</Text>
                         </TouchableOpacity>
                     );
                 })}
@@ -97,7 +99,6 @@ const styles = StyleSheet.create({
         bottom: 0,
         width: screenWidth / 2,
         height: 3,
-        backgroundColor: '#000',
         borderRadius: 5,
         zIndex: 1,
     },
@@ -106,8 +107,8 @@ const styles = StyleSheet.create({
         bottom: 0,
         width: screenWidth,
         height: 1,
-        backgroundColor: '#d3d3d3',
         borderRadius: 0,
+        backgroundColor: '#d3d3d3'
     },
 });
 

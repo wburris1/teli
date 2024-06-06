@@ -2,15 +2,13 @@ import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, I
 import { Text } from '@/components/Themed';
 import SearchTabs from '@/components/Search/SearchTabs';
 import React, { ContextType, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import ListTab from '@/components/ListTab';
 import { Link, useNavigation } from 'expo-router';
-import { useUserItemDelete, useUserItemsSeenSearch, useUserListsSearch } from '@/data/userData';
+import { useUserListsSearch } from '@/data/userData';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
 import { useData } from '@/contexts/dataContext';
-import { Gesture, GestureDetector, GestureHandlerRootView, PanGestureHandler, PanGestureHandlerGestureEvent, Swipeable } from 'react-native-gesture-handler';
-import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTab } from '@/contexts/listContext';
 import Values from '@/constants/Values';
 import { AddList } from '@/components/AddList';
@@ -34,7 +32,7 @@ const RenderListItem = ({ list, listTypeID }: { list: List, listTypeID: string }
 
   return (
     <Link
-      href={{pathname: "/list_page", params: { listTypeID: listTypeID, listID: list.list_id }}}
+      href={{pathname: "/list_page", params: { listTypeID: listTypeID, listID: list.list_id, description: list.description }}}
       style={styles.itemContainer}
     >
       <View>
@@ -58,6 +56,8 @@ const RenderListItem = ({ list, listTypeID }: { list: List, listTypeID: string }
 }
 
 const OverlappingImages = ({ images }: { images: string[] }) => {
+  const colorScheme = useColorScheme();
+
   return (
     <View style={styles.imageContainer}>
       {images.map((image, index) => (
@@ -66,7 +66,7 @@ const OverlappingImages = ({ images }: { images: string[] }) => {
           source={{ uri: image }}
           style={[styles.image,
             { left: index * -90, top: index * 10, zIndex: images.length - index,
-              opacity: image == "/" ? 0 : 100,
+              opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text,
              }]}
         />
       ))}
@@ -100,6 +100,7 @@ const chunkLists = (lists: List[], size: number) => {
 };
 
 const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID: string}) => {
+  const colorScheme = useColorScheme();
   const numRows = 2;
   const reorderedLists = lists != null ? reorderData(lists, Values.seenListID, Values.bookmarkListID) : [];
 
@@ -129,7 +130,7 @@ const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID:
           ))}
         </View>
       </ScrollView>
-      <View style={styles.listSeparator}>
+      <View style={[styles.listSeparator, { borderColor: Colors[colorScheme ?? 'light'].text}]}>
           <Text style={styles.separatorText}>Unwatched</Text>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -158,6 +159,7 @@ const TVTabContent = () => {
 };
 
 export default function TabOneScreen() {
+  const colorScheme = useColorScheme();
   const { refreshFlag, refreshListFlag } = useData();
   const { setActiveTab } = useTab();
 
@@ -181,7 +183,7 @@ export default function TabOneScreen() {
 
   return (
       <GestureHandlerRootView>
-        <View style={{ backgroundColor: '#fff', flex: 1, }}>
+        <View style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1, }}>
           <SafeAreaView style={styles.container}>
             <AddList />
             <SearchTabs tabs={searchTabs} onTabChange={index => setActiveTab(index)} />
@@ -221,8 +223,7 @@ const styles = StyleSheet.create({
     width: 100,
     aspectRatio: 2/3,
     borderRadius: 10,
-    borderWidth: 2,
-    borderColor: 'black',
+    borderWidth: 1,
     backgroundColor: 'gray',
   },
   title: {
@@ -261,7 +262,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     padding: 10,
     borderTopWidth: 3,
-    borderColor: 'black',
   },
   separatorText: {
     fontSize: 18,

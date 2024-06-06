@@ -1,10 +1,12 @@
+import Colors from "@/constants/Colors";
 import Values from "@/constants/Values";
 import { useData } from "@/contexts/dataContext";
 import { useTab } from "@/contexts/listContext";
-import { AdjustReorderedScores, addAndRemoveItemFromLists } from "@/data/userData";
+import { addAndRemoveItemFromLists } from "@/data/addToList";
+import { AdjustReorderedScores } from "@/data/itemScores";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import { Pressable } from "react-native";
+import { Pressable, useColorScheme } from "react-native";
 
 export default function AppEntry() {
     const router = useRouter();

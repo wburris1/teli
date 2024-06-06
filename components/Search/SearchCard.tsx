@@ -1,9 +1,12 @@
 import { useLoading } from '@/contexts/loading';
 import { Link } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react'
-import { View, Image, Text, StyleSheet, FlatList, ActivityIndicator, Pressable, Animated, TouchableOpacity } from 'react-native';
+import { View, Image, StyleSheet, FlatList, ActivityIndicator, Pressable, Animated, TouchableOpacity, useColorScheme } from 'react-native';
 import Dimensions from '@/constants/Dimensions';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { Text } from '../Themed';
+import Colors from '@/constants/Colors';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenHeight = Dimensions.screenHeight;
@@ -14,20 +17,12 @@ type Props = {
 };
 
 const ItemScreen = ({movieList}: Props) => {
-    const { loading, setLoading } = useLoading();
-    const [numImgsLoaded, setImgsLoaded] = useState(0);
+    const colorScheme = useColorScheme();
     var changed = false;
 
     const [animatedValues, setAnimatedValues] = useState(() =>
         movieList.map(() => new Animated.Value(1))
     );
-
-    useEffect(() => {
-        if (numImgsLoaded >= movieList.length) {
-            setLoading(false);
-            setImgsLoaded(0);
-        }
-    }, [numImgsLoaded]);
 
     useEffect(() => {
         setAnimatedValues({ ...animatedValues });
@@ -59,53 +54,41 @@ const ItemScreen = ({movieList}: Props) => {
                 useNativeDriver: true,
             }).start()
         };
-
+        
         return (
             <Link href={{pathname: "/search_item", params: { id: item.id, groupKey: isMovie ? "movie" : "tv" }}} asChild>
-                <TouchableOpacity onPress={handleItemPress} style={styles.container}>
-                    <View style={styles.imageBorder}>
-                    <Image
-                        source={{ uri: imgUrl + item.poster_path }}
-                        style={styles.image}
-                        onLoad={() => setImgsLoaded((prevNumImgsLoaded) => prevNumImgsLoaded + 1)}
-                    />
-                    </View>
-                    <View style={styles.textContainer}>
-                        <Text style={styles.title}>{title}</Text>
-                        <Text style={{fontWeight: '200'}}>{date}</Text>
+                <TouchableOpacity onPress={handleItemPress}>
+                    <View style={[styles.container, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
+                        <View style={[styles.imageBorder, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
+                        <Image
+                            source={{ uri: imgUrl + item.poster_path }}
+                            style={styles.image}
+                        />
+                        </View>
+                        <View style={styles.textContainer}>
+                            <Text style={styles.title}>{title}</Text>
+                            <Text style={{fontWeight: '200'}}>{date}</Text>
+                        </View>
+                        <Ionicons
+                            name="chevron-forward"
+                            size={15}
+                            color={Colors[colorScheme ?? 'light'].text}
+                            style={{padding: 5,}}
+                        />
                     </View>
                 </TouchableOpacity>
             </Link>
         );
-        /*
-        return (
-            <Link href={{pathname: "/item", params: item}} asChild>
-                <Pressable onPress={handleItemPress} style={styles.container}>
-                    <Animated.View style={{opacity: animatedValues[index]}}>
-                        <Image
-                            source={{ uri: imgUrl + item.poster_path }}
-                            style={styles.image}
-                            onLoad={() => setImgsLoaded((prevNumImgsLoaded) => prevNumImgsLoaded + 1)}
-                        />
-                        <Text style={styles.title}>{item.title}</Text>
-                    </Animated.View>
-                </Pressable>
-            </Link>
-        ); */
     };
     
 
     return (
         <View style={styles.list}>
-            {loading && <View style={styles.loadContainer}>
-                <ActivityIndicator size="large" color="#000" />
-            </View>}
             <FlatList
                 data={movieList}
                 renderItem={renderItem}
                 keyExtractor={item => item.id}
-                numColumns={2}
-                style={{ opacity: loading ? 0 : 1 }}
+                numColumns={1}
             />
         </View>
     );
@@ -125,50 +108,38 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        marginTop: 10,
-        marginLeft: 5,
-        marginRight: 5,
-        width: (screenWidth / 2) - 20,
-        borderWidth: 1,
-        borderColor: '#000',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        borderBottomLeftRadius: 15,
-        borderBottomRightRadius: 15,
-        //overflow: 'hidden',
-        shadowColor: 'black',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.6,
-        shadowRadius: 2,
-        elevation: 4,
-        backgroundColor: 'white',
+        width: '100%',
+        borderBottomWidth: 1,
     },
     image: {
-        width: '100%',
+        width: 80,
         aspectRatio: 1 / 1.5,
     },
     imageBorder: {
-        borderBottomWidth: 1,
-        borderBottomColor: '#000',
+        borderWidth: 1,
+        borderColor: '#000',
         overflow: 'hidden',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        borderRadius: 10,
+        marginVertical: 10,
+        marginLeft: 10,
     },
     title: {
         flex: 1,
         textAlign: 'left',
-        paddingVertical: 5,
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: '500',
+        paddingLeft: 2,
     },
     textContainer: {
         flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        alignSelf: 'flex-start',
         width: '100%',
+        paddingVertical: 13,
         paddingHorizontal: 5,
     },
 });

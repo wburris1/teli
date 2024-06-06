@@ -1,30 +1,53 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, useColorScheme } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import ItemScreen from '@/components/Search/SearchCard';
 import SearchInput from '@/components/Search/SearchInput';
 import SearchTabs from '@/components/Search/SearchTabs';
 import { useItemSearch } from '@/data/itemData';
-//import { useTVSearch } from '@/data/showData';
 import { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
+import _ from 'lodash';
+import Colors from '@/constants/Colors';
 
-type Props = {
-    query: string;
-};
-  
-const MoviesTabContent = ({query}: Props) => {
-    const movieList = useItemSearch(query, true);
+const MoviesTabContent = ({ query }: { query: string }) => {
+    const [movieList, setMovieList] = useState<Item[]>([]);
+    
+    const debouncedFetchData = useCallback(
+        _.debounce(async (query) => {
+            const items = await useItemSearch(query, true);
+            setMovieList(items);
+        }, 300),
+        []
+    );
+
+    useEffect(() => {
+        debouncedFetchData(query);
+    }, [query, debouncedFetchData]);
+
     return <ItemScreen movieList={movieList} />;
 };
-  
-const ShowsTabContent = ({query}: Props) => {
-    const tvList = useItemSearch(query, false);
+
+const ShowsTabContent = ({ query }: { query: string }) => {
+    const [tvList, setTvList] = useState<Item[]>([]);
+    
+    const debouncedFetchData = useCallback(
+        _.debounce(async (query) => {
+            const items = await useItemSearch(query, false);
+            setTvList(items);
+        }, 300),
+        []
+    );
+
+    useEffect(() => {
+        debouncedFetchData(query);
+    }, [query, debouncedFetchData]);
+
     return <ItemScreen movieList={tvList} />;
 };
 
 export default function SearchScreen() {
+    const colorScheme = useColorScheme();
     const [search, setSearch] = useState('');
 
     const moviesTabContent = useCallback(() => 
@@ -48,7 +71,7 @@ export default function SearchScreen() {
     ];
 
     return (
-        <View style={{ backgroundColor: '#fff', flex: 1 }}>
+        <View style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1 }}>
             <SafeAreaView style={styles.container}>
                 <SearchInput search={search} setSearch={setSearch} />
                 <SearchTabs tabs={searchTabs} onTabChange={() => {}} />

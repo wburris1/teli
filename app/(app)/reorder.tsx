@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Platform, StyleSheet, TouchableOpacity } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { Text, View } from '../../components/Themed';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +22,7 @@ export default function ReorderScreen() {
   const { items, loaded } = useUserItemsSeenSearch(Values.seenListID, listTypeID);
   const [listItems, setListItems] = useState<UserItem[]>([]);
   const { setMovies, setShows } = useData();
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
     items.sort((a: UserItem, b: UserItem) => b.score - a.score);
@@ -40,7 +41,7 @@ export default function ReorderScreen() {
     var date = "";
     
     return (
-      <View style={styles.itemContainer}>
+      <View style={[styles.itemContainer, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
         <View style={[styles.innerContainer, { padding: 10 }]}>
         <View style={styles.rank}><Text style={styles.text}>{index! + 1}.</Text></View>
         <View style={styles.textContainer}>
@@ -50,7 +51,7 @@ export default function ReorderScreen() {
           <Ionicons
             name="reorder-three"
             size={25}
-            color={Colors['light'].text}
+            color={Colors[colorScheme ?? 'light'].text}
           />
         </TouchableOpacity>
         </View>
@@ -122,7 +123,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 0,
     borderRightWidth: 0,
     borderTopWidth: 0,
-    borderBottomColor: '#000',
     overflow: 'hidden',
     paddingRight: 5,
     width: '100%',

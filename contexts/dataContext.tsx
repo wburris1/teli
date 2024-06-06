@@ -31,6 +31,7 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
 
     const requestRefresh = useCallback(() => {
         setRefreshFlag(prev => !prev);
+        console.log("refreshed");
     }, []);
 
     const requestListRefresh = useCallback(() => {

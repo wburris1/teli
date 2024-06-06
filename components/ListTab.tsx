@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
 
+// COMPLETELY UNUSED RIGHT NOW. Could be helpful down the road, prob not tho
+
 const screenHeight = Dimensions.screenHeight;
 const offset = 130;
 

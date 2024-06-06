@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button } from 'react-native'
+import { StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button } from 'react-native'
 import React, { useState } from 'react'
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { Link } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import Rank from './RankItem';
+import { Text, View } from './Themed';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -31,7 +32,7 @@ const ItemDetails = ({item}: Props) => {
     return (
         <View style={styles.container}>
             <View style={styles.info}>
-                <Image source={{ uri: imgUrl + item.poster_path }} style={styles.image} />
+                <Image source={{ uri: imgUrl + item.poster_path }} style={[styles.image, {borderColor: Colors[colorScheme ?? 'light'].text}]} />
                 <View style={styles.titleInfo}>
                     <Text style={styles.title}>{title}</Text>
                     <Text style={styles.date}>{releaseYear}</Text>
@@ -50,7 +51,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         overflow: 'hidden',
-        backgroundColor: '#fff'
     },
     info: {
         flexDirection: 'row',

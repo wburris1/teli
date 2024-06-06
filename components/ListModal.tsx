@@ -1,4 +1,4 @@
-import { FlatList, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Modal, Platform, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
@@ -30,10 +30,13 @@ export const ListModalScreen = ({ listTypeID, visible, onClose, onSelectedItemsC
   const { items, loaded } = useUserItemsSeenSearch(Values.seenListID, listTypeID);
   const [listItems, setListItems] = useState<UserItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<UserItem[]>([]);
+  const colorScheme = useColorScheme();
 
   useEffect(() => {
-    items.sort((a: UserItem, b: UserItem) => b.score - a.score);
-    setListItems(items);
+    if (items) {
+        items.sort((a: UserItem, b: UserItem) => b.score - a.score);
+        setListItems(items);
+    }
   }, [items])
 
   const handleSelect = (item: UserItem) => {
@@ -44,20 +47,20 @@ export const ListModalScreen = ({ listTypeID, visible, onClose, onSelectedItemsC
     setSelectedItems(prev => prev.filter(i => i.item_id !== item.item_id));
   };
 
-  const RenderItem = ({ item, index, onSelect, onDeselect, isSelected }: RowProps) => {
+  const RenderItem = ({ item, index, onSelect, onDeselect, isSelected }: RowProps) => {    
     return (
         <TouchableOpacity onPress={() => isSelected ? onDeselect(item) : onSelect(item)}>
-            <View style={styles.itemContainer}>
+            <View style={[styles.itemContainer, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
                 <View style={[styles.innerContainer, { padding: 10 }]}>
-                    <View style={styles.rank}><Text style={styles.text}>{index + 1}.</Text></View>
+                    <View style={styles.rank}><Text style={[styles.text, {color: Colors[colorScheme ?? 'light'].text}]}>{index + 1}.</Text></View>
                     <View style={styles.textContainer}>
-                        <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
+                        <Text style={[styles.itemText, {color: Colors[colorScheme ?? 'light'].text}]}>{'title' in item ? item.title : item.name}</Text>
                     </View>
                     {isSelected &&
                     <Ionicons
                         name="checkmark"
                         size={25}
-                        color={Colors['light'].text}
+                        color={Colors[colorScheme ?? 'light'].text}
                     />}
                 </View>
             </View>
@@ -76,19 +79,19 @@ export const ListModalScreen = ({ listTypeID, visible, onClose, onSelectedItemsC
             <Ionicons
                 name="close-circle"
                 size={45}
-                color={"red"}
+                color='red'
             />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => onSelectedItemsChange(selectedItems)} style={styles.saveButton}>
             <Ionicons
                 name="checkmark-circle"
                 size={45}
-                color={"#32CD32"}
+                color='#32CD32'
             />
         </TouchableOpacity>
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
             <View style={styles.header}>
-                <Text style={[styles.text, {fontWeight: 'bold'}]}>Add to List</Text>
+                <Text style={[styles.text, {fontWeight: 'bold', color: Colors[colorScheme ?? 'light'].text}]}>Add to List</Text>
             </View>
             <FlatList
             data={listItems}
@@ -105,7 +108,6 @@ export const ListModalScreen = ({ listTypeID, visible, onClose, onSelectedItemsC
             />
         </View>
     </Modal>
-    
   );
 }
 
@@ -114,7 +116,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         alignItems: 'center',
-        backgroundColor: 'white',
     },
     header: {
         marginTop: 55,
@@ -155,7 +156,6 @@ const styles = StyleSheet.create({
         borderLeftWidth: 0,
         borderRightWidth: 0,
         borderTopWidth: 0,
-        borderBottomColor: '#000',
         overflow: 'hidden',
         paddingRight: 5,
         width: '100%',

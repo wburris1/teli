@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, Modal, StyleSheet, Image, TextInput, TouchableOpacity, useColorScheme, ActivityIndicator } from 'react-native';
+import { View, Button, Modal, StyleSheet, Image, TextInput, TouchableOpacity, useColorScheme, ActivityIndicator } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { useLocalSearchParams } from 'expo-router';
 import Dimensions from '@/constants/Dimensions';
@@ -7,10 +7,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/authContext';
 import Colors from '@/constants/Colors';
 import { useData } from '@/contexts/dataContext';
-import { AddToList, useUserAdjustScores, useUserItemsSeenSearch } from '@/data/userData';
+import { useUserItemsSeenSearch } from '@/data/userData';
 import Values from '@/constants/Values';
 import { getDataLocally, storeDataLocally } from '@/data/userLocalData';
 import { getAuth } from 'firebase/auth';
+import { useUserAdjustScores } from '@/data/itemScores';
+import { AddToDatabase } from '@/data/addItem';
+import { Text } from './Themed';
 
 type Props = {
     item: Item
@@ -39,12 +42,12 @@ const Rank = ({item}: Props) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [upperScore, setUpperScore] = useState(0);
   const [lowerScore, setLowerScore] = useState(0);
-  const adjustScoreFunc = useUserAdjustScores();
+  //const adjustScoreFunc = useUserAdjustScores();
   const [items, setItems] = useState<UserItem[]>([]);
   //const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
   const { refreshListFlag, refreshFlag } = useData();
   const [rankButtonLoading, setRankButtonLoading] = useState(true);
-  const addToDB = AddToList();
+  const addToDB = AddToDatabase();
 
   function checkDupe(localItems: UserItem[]) {
     var exists = false;
@@ -90,7 +93,7 @@ const Rank = ({item}: Props) => {
         setModalVisible(false);
         //storeDataLocally(`items_${user!.uid}_${listTypeID}_${item.id}`, item);
         console.log("Item added!");
-        requestRefresh();
+        //requestRefresh();
       }).catch(error => {
         console.error("Failed to add item:", error);
       });
@@ -104,7 +107,7 @@ const Rank = ({item}: Props) => {
     if (minScore == maxScore) {
       addToDB(minScore, item, listID, isMovie, isDupe, items).then(() => {
         setModalVisible(false);
-        requestRefresh();
+        //requestRefresh();
         console.log("Item added! No score adjust necessary");
       }).catch(error => {
         console.error("Failed to add item:", error);
@@ -139,7 +142,7 @@ const Rank = ({item}: Props) => {
       }
       setRankButtonLoading(false);
     })
-  }, [refreshListFlag, refreshFlag])
+  }, [refreshFlag])
 
   return (
     <>
@@ -172,15 +175,15 @@ const Rank = ({item}: Props) => {
           </TouchableOpacity>
 
           <View style={styles.container}>
-            <View style={styles.modalView}>
+            <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
               <Image
                 source={{ uri: imgUrl + item.poster_path }}
-                style={styles.movieImage}
+                style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].text}]}
               />
               <Text style={styles.movieTitle}>{item.title}</Text>
             </View>
 
-            <View style={styles.modalView}>
+            <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
               {!compItem && (
                 <>
                   <Text style={styles.feedbackText}>Did you like it?</Text>
@@ -214,7 +217,7 @@ const Rank = ({item}: Props) => {
                 <>
                   <Image
                     source={{ uri: imgUrl + compItem.poster_path }}
-                    style={styles.movieImage}
+                    style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].text}]}
                   />
                   <Text style={styles.movieTitle}>{'title' in compItem ? compItem.title : compItem.name}</Text>                 
                 </>
@@ -222,7 +225,7 @@ const Rank = ({item}: Props) => {
             </View>
             {compItem && (
               <>
-                <View style={styles.modalView2}>
+                <View style={[styles.modalView2, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
                 <Text>How does this compare?</Text>
                   <View style={styles.compMovieBottom}>
                     <TouchableOpacity style={styles.feedbackButton} onPress={() => handleComp(lowerScore, compItem.score)}>
