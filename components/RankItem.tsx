@@ -16,7 +16,11 @@ import { AddToDatabase } from '@/data/addItem';
 import { Text } from './Themed';
 
 type Props = {
-    item: Item
+    item: Item,
+    items: UserItem[],
+    isDupe: boolean,
+    setDupe: (dupe: boolean) => void,
+    onClose: () => void,
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
@@ -28,44 +32,24 @@ const initialMehScore = 5;
 const initialDislikeScore = 4;
 const smallAssNumber = 0.0000001; // Used to make mid inclusive of 4 and 6 scores
 
-const Rank = ({item}: Props) => {
+const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const { user } = useAuth();
   const isMovie = 'title' in item ? true : false;
   //const items = isMovie ? movies : shows;
   const listID = Values.seenListID;
   const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
 
-  const [isDupe, setDupe] = useState(true);
+  //const [isDupe, setDupe] = useState(true);
   const { requestRefresh } = useData();
   const [compItem, setCompItem] = useState<UserItem | null>(null);
   const colorScheme = useColorScheme();
-  const [modalVisible, setModalVisible] = useState(false);
   const [upperScore, setUpperScore] = useState(0);
   const [lowerScore, setLowerScore] = useState(0);
   //const adjustScoreFunc = useUserAdjustScores();
-  const [items, setItems] = useState<UserItem[]>([]);
+  //const [items, setItems] = useState<UserItem[]>([]);
   //const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
   const { refreshListFlag, refreshFlag, requestListRefresh } = useData();
-  const [rankButtonLoading, setRankButtonLoading] = useState(true);
   const addToDB = AddToDatabase();
-
-  function checkDupe(localItems: UserItem[]) {
-    var exists = false;
-    if (item && localItems) {
-      localItems.forEach(seenItem => {
-        if (seenItem.item_id == item.id) {
-          exists = true;
-        }
-      });
-    }
-    return exists;
-  }
-
-  const onRankStart = async () => {
-    if (item) {
-      setModalVisible(true);
-    }
-  }
 
   const getNext = (minScore: number, maxScore: number) => {
     if (items) {
@@ -95,7 +79,7 @@ const Rank = ({item}: Props) => {
       const newScore = initialScore;
       addToDB(newScore, item, listID, isMovie, isDupe, items || []).then(() => {
         setDupe(true);
-        setModalVisible(false);
+        onClose();
         requestRefresh();
         console.log("Item added!");
       }).catch(error => {
@@ -111,7 +95,7 @@ const Rank = ({item}: Props) => {
     if (minScore == maxScore) {
       addToDB(minScore, item, listID, isMovie, isDupe, items).then(() => {
         setDupe(true);
-        setModalVisible(false);
+        onClose();
         requestRefresh();
         console.log("Item added! No score adjust necessary");
       }).catch(error => {
@@ -127,7 +111,7 @@ const Rank = ({item}: Props) => {
         addToDB(newScore, item, listID, isMovie, isDupe, items).then(addItem => {
           if (addItem) {
             setDupe(true);
-            setModalVisible(false);
+            onClose();
             requestRefresh();
             console.log("Item added!");
           }
@@ -138,45 +122,15 @@ const Rank = ({item}: Props) => {
     }
   }
 
-  useEffect(() => {
-    getDataLocally(`items_${user!.uid}_${listTypeID}_${listID}`).then(localItems => {
-      setItems(localItems);
-      if (checkDupe(localItems)) {
-        setDupe(true);
-      } else {
-        setDupe(false);
-      }
-      setRankButtonLoading(false);
-    })
-  }, [refreshFlag, refreshListFlag])
-
   return (
     <>
-      {rankButtonLoading && <View style={styles.rankButtonLoadContainer}>
-        <ActivityIndicator size="large" color="#fff" />
-      </View>}
-      {!rankButtonLoading &&
-      <TouchableOpacity onPress={onRankStart} style={styles.addButton}>
-        <Ionicons
-          name={isDupe ? "refresh-circle" : "add-circle"}
-          size={85}
-          color={Colors[colorScheme ?? 'light'].text}
-        />
-      </TouchableOpacity>}
       {item &&
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-          
         <BlurView intensity={100} style={styles.blurContainer}>
-          <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelButton}>
+          <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
             <Ionicons
               name="close-circle"
               size={45}
-              color={Colors[colorScheme ?? 'light'].text}
+              color={Colors[colorScheme ?? 'light'].background}
             />
           </TouchableOpacity>
 
@@ -260,8 +214,7 @@ const Rank = ({item}: Props) => {
               </>
             )}
           </View>
-        </BlurView>
-      </Modal>}
+        </BlurView>}
     </>
   );
 };
@@ -348,10 +301,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 50
   },
-  addButton: {
-    position: 'absolute',
-    bottom: 10,
-  },
   compMovieBottom: {
     paddingTop: 10,
     flexDirection: 'row',
@@ -359,15 +308,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: screenWidth * 2/3
   },
-  rankButtonLoadContainer: {
-    position: 'absolute',
-    bottom: 17,
-    backgroundColor: '#000',
-    borderRadius: 50,
-    width: 70,
-    height: 70,
-    justifyContent: 'center',
-  }
 });
 
 export default Rank;

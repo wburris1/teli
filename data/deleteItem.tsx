@@ -64,11 +64,5 @@ export const removeFromList = (listID: string, listTypeID: string, item_id: stri
         }
     };
 
-    function reactToRemove() {
-        removeItem().then(() => {
-            //requestRefresh();
-        })
-    }
-
-    return reactToRemove;
+    return removeItem;
 }

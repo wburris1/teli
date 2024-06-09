@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/authContext";
-import { UpdateListPosters } from "./posterUpdates";
+import { UpdateListPosters, updateSomeListPosters } from "./posterUpdates";
 import { useUserAdjustScores } from "./itemScores";
 import Values from "@/constants/Values";
 import { FIREBASE_DB } from "@/firebaseConfig";
@@ -90,4 +90,45 @@ export const AddToDatabase = () => {
     }
 
     return addToDB;
+}
+
+export const addToBookmarked = () => {
+  const { user } = useAuth();
+  const updatePosters = updateSomeListPosters();
+  const listID = Values.bookmarkListID;
+
+  const bookmark = async (item: Item, isMovie: boolean) => {
+    var newItem: UserItem;
+    const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
+
+    if (isMovie) {
+      newItem = {
+        item_id: item.id.toString(),
+        title: item.title,
+        poster_path: item.poster_path,
+        score: -1,
+        release_date: item.release_date,
+      };
+    } else {
+      newItem = {
+        item_id: item.id.toString(),
+        name: item.name,
+        poster_path: item.poster_path,
+        score: -1,
+        first_air_date: item.first_air_date,
+      };
+    }
+
+    if (user) {
+      const itemRef = doc(db, "users", user.uid, listTypeID, listID, "items", item.id.toString());
+      try {
+        await setDoc(itemRef, newItem);
+        updatePosters(listID, listTypeID);
+      } catch (err: any) {
+        console.error("Error bookmarking item: ", err);
+      }
+    }
+  }
+
+  return bookmark;
 }

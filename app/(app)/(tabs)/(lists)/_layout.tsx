@@ -34,13 +34,13 @@ export default function SearchLayout() {
             )
         }} />
         <Stack.Screen name="list_item" options={{
-          headerShown: true, headerBackTitle: "List", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+          headerShown: false, headerBackTitle: "List", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
           headerStyle: {
             backgroundColor: Colors[colorScheme ?? 'light'].background,
           }
         }} />
         <Stack.Screen name="list_page" options={{
-          headerShown: true, headerBackTitle: "Lists", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+          headerShown: true, headerBackTitle: "", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
           headerStyle: {
             backgroundColor: Colors[colorScheme ?? 'light'].background,
           }
