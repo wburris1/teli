@@ -25,11 +25,11 @@ async function getListPosters(listID: string, listTypeID: string, userID: string
     return { top_poster_path, second_poster_path, bottom_poster_path };
 }
 
-export const updateSomeListPosters = (listID: string, listTypeID: string) => {
+export const updateSomeListPosters = () => {
     const { user } = useAuth();
     const { requestListRefresh } = useData();
 
-    async function updatePosters() {
+    async function updatePosters(listID: string, listTypeID: string) {
         if (user) {
             try {
                 const posters = await getListPosters(listID, listTypeID, user.uid);

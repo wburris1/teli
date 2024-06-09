@@ -5,11 +5,7 @@ import { useEffect, useState } from 'react';
 import Dimensions from '@/constants/Dimensions';
 import Colors from '@/constants/Colors';
 import { useUserItemsSeenSearch } from '@/data/userData';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Values from '@/constants/Values';
-
-const screenWidth = Dimensions.screenWidth;
-const screenHeight = Dimensions.screenHeight;
 
 type RowProps = {
     item: UserItem;
@@ -22,14 +18,16 @@ type RowProps = {
 type ListModalScreenProps = {
     listTypeID: string,
     visible: boolean;
+    containedItems: UserItem[],
     onClose: () => void;
-    onSelectedItemsChange: (items: UserItem[]) => void;
+    onSelectedItemsChange: (items: UserItem[], removedItems: UserItem[]) => void;
   };
 
-export const ListModalScreen = ({ listTypeID, visible, onClose, onSelectedItemsChange }: ListModalScreenProps) => {
+export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, onSelectedItemsChange }: ListModalScreenProps) => {
   const { items, loaded } = useUserItemsSeenSearch(Values.seenListID, listTypeID);
   const [listItems, setListItems] = useState<UserItem[]>([]);
-  const [selectedItems, setSelectedItems] = useState<UserItem[]>([]);
+  const [selectedItems, setSelectedItems] = useState<UserItem[]>(containedItems);
+  const [removedItems, setRemovedItems] = useState<UserItem[]>([]);
   const colorScheme = useColorScheme();
 
   useEffect(() => {
@@ -40,10 +38,16 @@ export const ListModalScreen = ({ listTypeID, visible, onClose, onSelectedItemsC
   }, [items])
 
   const handleSelect = (item: UserItem) => {
+    if (removedItems.some(removedItem => removedItem.item_id == item.item_id)) {
+        setRemovedItems(prev => prev.filter(i => i.item_id !== item.item_id));
+    }
     setSelectedItems(prev => [...prev, item]);
   };
 
   const handleDeselect = (item: UserItem) => {
+    if (containedItems.some(containedItem => containedItem.item_id == item.item_id)) {
+        setRemovedItems(prev => [...prev, item]);
+    }
     setSelectedItems(prev => prev.filter(i => i.item_id !== item.item_id));
   };
 
@@ -82,7 +86,7 @@ export const ListModalScreen = ({ listTypeID, visible, onClose, onSelectedItemsC
                 color='red'
             />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => onSelectedItemsChange(selectedItems)} style={styles.saveButton}>
+        <TouchableOpacity onPress={() => onSelectedItemsChange(selectedItems, removedItems)} style={styles.saveButton}>
             <Ionicons
                 name="checkmark-circle"
                 size={45}

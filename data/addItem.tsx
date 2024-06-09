@@ -38,6 +38,13 @@ export const AddToDatabase = () => {
         if (user) {
           const itemRef = doc(db, "users", user.uid, listTypeID, listID, "items", item.id.toString());
           if (isDupe) {
+            var otherItems: UserItem[] = [];
+            if (items) {
+              otherItems = items.filter(otherItem => otherItem.item_id !== item.id);
+            }
+            otherItems.push(newItem);
+            const mapItems = otherItems.map(doc => ({ id: doc.item_id, ...doc as UserItem }));
+
             items.forEach(seenItem => {
                 if (seenItem.item_id == item.id) {
                     seenItem.score = newScore;
@@ -59,7 +66,7 @@ export const AddToDatabase = () => {
               try {
                 await updateDoc(itemRef, updateData);
                 await adjustScoreFunc(items, newScore, listID, listTypeID);
-                await storeDataLocally(`items_${user!.uid}_${listTypeID}_${item.id}`, updateData);
+                await storeDataLocally(`items_${user!.uid}_${listTypeID}_${listID}`, mapItems);
                 updateListFunc(listTypeID);
               } catch (err: any) {
                 console.error("Error updating item: ", err);
@@ -67,10 +74,11 @@ export const AddToDatabase = () => {
               return newItem;
           } else {
             const currItems = [...items, newItem];
+            const mapItems = currItems.map(doc => ({ id: doc.item_id, ...doc as UserItem }));
             try {
               await setDoc(itemRef, newItem);
               await adjustScoreFunc(currItems, newScore, listID, listTypeID);
-              await storeDataLocally(`items_${user!.uid}_${listTypeID}_${item.id}`, newItem);
+              await storeDataLocally(`items_${user!.uid}_${listTypeID}_${listID}`, mapItems);
               updateListFunc(listTypeID);
             } catch (err: any) {
               console.error("Error adding new item: ", err);

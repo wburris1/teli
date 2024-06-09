@@ -2,7 +2,7 @@ import Values from "@/constants/Values";
 import { useAuth } from "@/contexts/authContext";
 import { useData } from "@/contexts/dataContext";
 import { FIREBASE_DB } from "@/firebaseConfig";
-import { doc, setDoc } from "firebase/firestore";
+import { addDoc, collection, doc, setDoc, updateDoc } from "firebase/firestore";
 import { Alert } from "react-native";
 
 const db = FIREBASE_DB;
@@ -32,17 +32,23 @@ export const CreateListDB = () => {
         }
 
         currLists.forEach(item => {
-            if (item.list_id == list.list_id) {
+            if (item.name == list.name) {
                 isDupe = true;
             }
         })
         if (isDupe) {
             Alert.alert("List name already exists, please choose a different one");
             return false;
+        } else if (list.name == "") {
+            Alert.alert("Please enter a name for the list");
+            return false;
         } else if (user) {
-            const listRef = doc(db, "users", user.uid, listTypeID, list.list_id);
+            const listsRef = collection(db, "users", user.uid, listTypeID);
+            var listID = "";
             try {
-                await setDoc(listRef, list);
+                const listRef = await addDoc(listsRef, list);
+                listID = listRef.id;
+                await updateDoc(listRef, { list_id: listRef.id });
                 listAdded = true;
             } catch (err: any) {
                 console.error("Error creating new list: ", err);
@@ -50,12 +56,12 @@ export const CreateListDB = () => {
             if (listAdded && !itemsAdded) {
                 // Add selectedItems to new list and update poster paths?
                 try {
+                    const itemsCollectionRef = collection(db, "users", user.uid, listTypeID, listID, "items");
                     const promises = selectedItems.map(async (item) => {
-                        const itemRef = doc(db, "users", user.uid, listTypeID, list.list_id, "items", item.item_id);
+                        const itemRef = doc(itemsCollectionRef, item.item_id);
                         await setDoc(itemRef, item);
-                    })
+                    });
                     await Promise.all(promises);
-                    //requestListRefresh();
                     requestRefresh();
                     itemsAdded = true;
                 } catch (err: any) {
@@ -70,4 +76,25 @@ export const CreateListDB = () => {
     }
 
     return addList;
+}
+
+export const editList = () => {
+    const { user } = useAuth();
+    const { requestListRefresh, requestRefresh } = useData();
+    
+    const handleEdit = async (listID: string, listTypeID: string, name: string, description: string) => {
+        if (user) {
+            const listRef = doc(db, "users", user.uid, listTypeID, listID);
+            try {
+                await updateDoc(listRef, {
+                    name: name,
+                    description: description,
+                });
+            } catch (err: any) {
+                console.error("Error updating list details: ", err);
+            }
+        }
+    }
+
+    return handleEdit;
 }

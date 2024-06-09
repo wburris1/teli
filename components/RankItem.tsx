@@ -45,7 +45,7 @@ const Rank = ({item}: Props) => {
   //const adjustScoreFunc = useUserAdjustScores();
   const [items, setItems] = useState<UserItem[]>([]);
   //const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
-  const { refreshListFlag, refreshFlag } = useData();
+  const { refreshListFlag, refreshFlag, requestListRefresh } = useData();
   const [rankButtonLoading, setRankButtonLoading] = useState(true);
   const addToDB = AddToDatabase();
 
@@ -68,13 +68,17 @@ const Rank = ({item}: Props) => {
   }
 
   const getNext = (minScore: number, maxScore: number) => {
-    const newItems = items.filter(filterItem => filterItem.score > minScore && 
-      filterItem.score < maxScore && filterItem.item_id != item.id);
-    const count = newItems.length;
-
-    if (count > 0) {
-      const randIndex = Math.floor(Math.random() * count);
-      return newItems[randIndex];
+    if (items) {
+      const newItems = items.filter(filterItem => filterItem.score > minScore && 
+        filterItem.score < maxScore && filterItem.item_id != item.id);
+      const count = newItems.length;
+  
+      if (count > 0) {
+        const randIndex = Math.floor(Math.random() * count);
+        return newItems[randIndex];
+      } else {
+        return null;
+      }
     } else {
       return null;
     }
@@ -89,11 +93,11 @@ const Rank = ({item}: Props) => {
       setCompItem(newItem);
     } else {
       const newScore = initialScore;
-      addToDB(newScore, item, listID, isMovie, isDupe, items).then(() => {
+      addToDB(newScore, item, listID, isMovie, isDupe, items || []).then(() => {
+        setDupe(true);
         setModalVisible(false);
-        //storeDataLocally(`items_${user!.uid}_${listTypeID}_${item.id}`, item);
+        requestRefresh();
         console.log("Item added!");
-        //requestRefresh();
       }).catch(error => {
         console.error("Failed to add item:", error);
       });
@@ -106,8 +110,9 @@ const Rank = ({item}: Props) => {
 
     if (minScore == maxScore) {
       addToDB(minScore, item, listID, isMovie, isDupe, items).then(() => {
+        setDupe(true);
         setModalVisible(false);
-        //requestRefresh();
+        requestRefresh();
         console.log("Item added! No score adjust necessary");
       }).catch(error => {
         console.error("Failed to add item:", error);
@@ -123,6 +128,7 @@ const Rank = ({item}: Props) => {
           if (addItem) {
             setDupe(true);
             setModalVisible(false);
+            requestRefresh();
             console.log("Item added!");
           }
         }).catch(error => {
@@ -142,7 +148,7 @@ const Rank = ({item}: Props) => {
       }
       setRankButtonLoading(false);
     })
-  }, [refreshFlag])
+  }, [refreshFlag, refreshListFlag])
 
   return (
     <>

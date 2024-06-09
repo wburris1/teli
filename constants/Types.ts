@@ -38,6 +38,7 @@ type UserItem = UserMovie | UserShow;
 
 type List = {
     list_id: string,
+    name: string,
     is_custom: boolean,
     description: string,
     top_poster_path: string,

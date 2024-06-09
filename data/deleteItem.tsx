@@ -11,6 +11,7 @@ export const useUserItemDelete = (item_id: string, score: number, listID: string
     const { user } = useAuth();
     const adjustScoreFunc = useUserAdjustScores();
     const updateListFunc = UpdateListPosters();
+    const { requestListRefresh } = useData();
 
     async function deleteItem() {
         if (user) {
@@ -37,6 +38,7 @@ export const useUserItemDelete = (item_id: string, score: number, listID: string
 
     function reactToDelete(items: UserItem[]) {
         deleteItem().then(() => {
+            requestListRefresh();
             adjustScoreFunc(items, score, listID, listTypeID);
         })
     }
@@ -47,14 +49,14 @@ export const useUserItemDelete = (item_id: string, score: number, listID: string
 export const removeFromList = (listID: string, listTypeID: string, item_id: string) => {
     const { user } = useAuth();
     const { requestListRefresh, requestRefresh } = useData();
-    const updatePosterFunc = updateSomeListPosters(listID, listTypeID);
+    const updatePosterFunc = updateSomeListPosters();
 
     async function removeItem() {
         if (user) {
             const itemRef = doc(db, "users", user.uid, listTypeID, listID, "items", item_id);  
             try {
                 await deleteDoc(itemRef);
-                updatePosterFunc();
+                updatePosterFunc(listID, listTypeID);
                 console.log("Item successfully removed: ", item_id);
             } catch (error) {
                 console.error("Error removing document: ", error);

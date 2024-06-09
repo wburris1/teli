@@ -28,11 +28,11 @@ const RenderListItem = ({ list, listTypeID }: { list: List, listTypeID: string }
     list.bottom_poster_path != "" ? imgUrl + list.bottom_poster_path : "/"
   ];
   const isEmpty = posters[0] == "/";
-  const listName = list.list_id == Values.seenListID ? "All " + (listTypeID == Values.movieListsID ? "Movies" : "Shows") : list.list_id;
+  const listName = list.name;
 
   return (
     <Link
-      href={{pathname: "/list_page", params: { listTypeID: listTypeID, listID: list.list_id, description: list.description }}}
+      href={{pathname: "/list_page", params: { listTypeID: listTypeID, listID: list.list_id, description: list.description, name: list.name }}}
       style={styles.itemContainer}
     >
       <View>

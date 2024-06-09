@@ -35,7 +35,8 @@ export const AddList = () => {
 
     const handleListCreate = () => {
         const list: List = {
-            list_id: listName,
+            list_id: "",
+            name: listName,
             description: listDescription,
             is_custom: true,
             top_poster_path: "",
@@ -65,16 +66,18 @@ export const AddList = () => {
             onRequestClose={() => setAddModalVisible(false)}
         >
             <BlurView intensity={100} style={styles.blurContainer}>
-                <TouchableOpacity onPress={handleClose} style={styles.cancelButton}>
-                    <Ionicons
-                        name="close-circle"
-                        size={45}
-                        color={Colors[colorScheme ?? 'light'].text}
-                    />
-                </TouchableOpacity>
                 <KeyboardAvoidingView behavior="padding">
                     <View style={[styles.modalView, { backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
-                        <Text style={[styles.headerText, { color: Colors[colorScheme ?? 'light'].text}]}>Create List</Text>
+                        <View style={styles.headerContainer}>
+                            <Text style={[styles.headerText, { color: Colors[colorScheme ?? 'light'].text}]}>Create List</Text>
+                            <TouchableOpacity onPress={handleClose}>
+                                <Ionicons
+                                    name="close"
+                                    size={35}
+                                    color={Colors[colorScheme ?? 'light'].text}
+                                />
+                            </TouchableOpacity>
+                        </View>
                         <TextInput
                             autoCapitalize="sentences"
                             placeholder="List name..."
@@ -149,6 +152,7 @@ export const AddList = () => {
                 <ListModalScreen
                     listTypeID={listTypeID}
                     visible={entriesModalVisible}
+                    containedItems={[]}
                     onClose={() => setEntriesModalVisible(false)}
                     onSelectedItemsChange={handleSelectedItemsChange}
                 />
@@ -187,14 +191,9 @@ const styles = StyleSheet.create({
         color: 'gray',
     },
     headerText: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
         padding: 10,
-    },
-    cancelButton: {
-        position: 'absolute',
-        right: 10,
-        top: 55,
     },
     modalView: {
         borderRadius: 20,
@@ -228,5 +227,12 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         padding: 10,
         width: '90%',
+    },
+    headerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%',
+        paddingLeft: 10,
     },
 });

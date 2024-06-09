@@ -1,18 +1,18 @@
 import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Modal, Pressable } from 'react-native';
 import { Text } from '@/components/Themed';
-import SearchTabs from '@/components/Search/SearchTabs';
 import React, { ContextType, forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocalSearchParams, useNavigation } from 'expo-router';
+import { Link, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useUserItemsSeenSearch } from '@/data/userData';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
-import { useData } from '@/contexts/dataContext';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withClamp, withSpring } from 'react-native-reanimated';
 import Values from '@/constants/Values';
 import { useTab } from '@/contexts/listContext';
 import { removeFromList, useUserItemDelete } from '@/data/deleteItem';
+import { EditListScreen } from '@/components/EditList';
+import SearchInput from '@/components/Search/SearchInput';
 
 type RowProps = {
     item: UserItem;
@@ -35,6 +35,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
     const isCustomList = (listID == Values.seenListID || listID == Values.bookmarkListID) ? false : true;
     var date = "";
     const colorScheme = useColorScheme();
+    const router = useRouter();
   
     const handleSetSwiped = (value: boolean) => {
       setSwiped(value);
@@ -84,8 +85,8 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
   
     const addButtonStyle = useAnimatedStyle(() => ({
       opacity: interpolate(transX.value, [0, -DELETE_WIDTH], [0, 1]),
-      transform: [{ translateX: 0 }],
-      width: transX.value < 0 ? Math.abs(transX.value) : DELETE_WIDTH,
+      transform: [{ translateX: 0}],
+      width: transX.value < 0 ? -transX.value : DELETE_WIDTH,
     }));
     
     const onDelete = (item_id: string) => {
@@ -120,7 +121,8 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
     return (
       <GestureDetector gesture={panGesture}>
         <View>
-        <Animated.View style={[!isCustomList ? styles.deleteButtonContainer : styles.removeButtonContainer, deleteButtonStyle]}>
+        <Animated.View style={[!isCustomList ? styles.deleteButtonContainer : styles.removeButtonContainer, deleteButtonStyle]}
+            pointerEvents={isSwiped && transX.value >= DELETE_WIDTH ? 'auto' : 'none'}>
           <TouchableOpacity style={[styles.fullSize, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]} onPress={() => onDelete(item.item_id)}>
             <Ionicons
               name={!isCustomList ? "trash" : "close"}
@@ -155,35 +157,40 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
             </View>
           </Link>
         </Animated.View>
-        <Animated.View style={[styles.addButtonContainer, addButtonStyle]}>
-          <Link href={{pathname: "/add_to_list", params: {item_id: item.item_id, listTypeID: listTypeID }}} asChild>
-            <TouchableOpacity style={styles.fullSize} onPress={() => setItem(item)}>
+        <Animated.View style={[styles.addButtonContainer, addButtonStyle]}
+          pointerEvents={isSwiped && transX.value <= -DELETE_WIDTH ? 'auto' : 'none'}>
+            <TouchableOpacity onPress={() => {
+                setItem(item);
+                router.push({pathname: "/add_to_list", params: { item_id: item.item_id, listTypeID: listTypeID }});
+              }} style={[styles.fullSize, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
               <Ionicons
                 name="add"
                 size={40}
                 color={'#fff'}
               />
             </TouchableOpacity>
-          </Link>
         </Animated.View>
         </View>
       </GestureDetector>
     );
 });
 
-const MakeList = ({ listID, listTypeID, description }: {listID: string, listTypeID: string, description: string}) => {
-    const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
+const MakeList = ({ listID, listTypeID, onItemsUpdate, items }:
+  {listID: string, listTypeID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[] }) => {
+    //const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
     const colorScheme = useColorScheme();
 
-    if (items != null) {
-      items.sort((a: UserItem, b: UserItem) => b.score - a.score);
-    }
+    useEffect(() => {
+      if (items) {
+        onItemsUpdate(items);
+      }
+    }, [items])
+
     if (items) {
+      items.sort((a: UserItem, b: UserItem) => b.score - a.score);
+
       return (
         <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
-        {description != "" && <View style={[styles.description, { backgroundColor: Colors[colorScheme ?? 'light'].background, borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
-            <Text>{description}</Text>
-          </View>}
           {items.length > 0 ? 
           <FlatList
             data={items}
@@ -202,22 +209,84 @@ const MakeList = ({ listID, listTypeID, description }: {listID: string, listType
 }
 
 export default function TabOneScreen() {
-    const { refreshFlag } = useData();
-    const { listTypeID, listID, description } = useLocalSearchParams();
+    const { listTypeID, listID, description, name } = useLocalSearchParams();
     const navigation = useNavigation();
     const colorScheme = useColorScheme();
     const isCustomList = (listID == Values.seenListID || listID == Values.bookmarkListID) ? false : true;
+    const [editModalVisible, setEditModalVisible] = useState(false);
+    const [currDescription, setCurrDescription] = useState("");
+    const [currName, setCurrName] = useState("");
+    const [searchVisible, setSearchVisible] = useState(false);
+    const [filteredItems, setFilteredItems] = useState<UserItem[]>([]);
+    const { items, loaded } = useUserItemsSeenSearch(listID as string, listTypeID as string);
+    const [search, setSearch] = useState('');
+    const searchInputHeight = useSharedValue(0);
+
+    useEffect(() => {
+      if (description) {
+        setCurrDescription(description as string);
+      }
+      if (name) {
+        setCurrName(name as string);
+      }
+    }, [name, description])
+
+    const onItemsUpdate = (items: UserItem[]) => {
+      setFilteredItems(items);
+    }
+
+    useEffect(() => {
+      if (loaded) {
+          setFilteredItems(items);
+      }
+    }, [items, loaded]);
+
+    const onClose = () => {
+      setEditModalVisible(false);
+    }
+
+    const onEditDetails = (newName: string, newDescription: string) => {
+      setCurrName(newName);
+      setCurrDescription(newDescription);
+    }
+
+    const handleSearch = (query: string) => {
+      setSearch(query);
+      const filtered = items.filter(item => {
+        const title = 'title' in item ? item.title : item.name;
+        return title.toLowerCase().includes(query.toLowerCase());
+      });
+      setFilteredItems(filtered);
+    }
 
     useLayoutEffect(() => {
       navigation.setOptions({
-        headerTitle: listID,
+        headerTitle: currName,
         headerRight: () => (<>
+          <Pressable onPress={() => {
+              if (searchVisible) {
+                handleSearch("");
+                searchInputHeight.value = 50;
+              } else {
+                searchInputHeight.value = 0;
+              }
+              setSearchVisible(!searchVisible)
+            }}>
+            {({ pressed }) => (
+              <Ionicons
+                name="search"
+                size={25}
+                color={Colors[colorScheme ?? 'light'].text}
+                style={{ opacity: pressed ? 0.5 : 1 }}
+              />
+            )}
+          </Pressable>
           {listID == Values.seenListID &&
             <Link href="/reorder" asChild>
-            <Pressable>
+            <Pressable style={{paddingLeft: 10,}}>
               {({ pressed }) => (
                 <Ionicons
-                  name="menu"
+                  name="repeat"
                   size={35}
                   color={Colors[colorScheme ?? 'light'].text}
                   style={{ opacity: pressed ? 0.5 : 1 }}
@@ -226,11 +295,11 @@ export default function TabOneScreen() {
             </Pressable>
           </Link>}
           {isCustomList && 
-            <Pressable>
+            <Pressable onPress={() => setEditModalVisible(true)} style={{paddingLeft: 10,}}>
               {({ pressed }) => (
                 <Ionicons
                   name="ellipsis-horizontal"
-                  size={35}
+                  size={25}
                   color={Colors[colorScheme ?? 'light'].text}
                   style={{ opacity: pressed ? 0.5 : 1 }}
                 />
@@ -239,15 +308,38 @@ export default function TabOneScreen() {
           </>
         ),
       })
-    }, [navigation, listID])
+    }, [navigation, listID, currName, searchVisible])
+
+    const searchInputStyle = useAnimatedStyle(() => {
+      return {
+        height: searchInputHeight.value,
+        opacity: interpolate(searchInputHeight.value, [0, 50], [0, 1]),
+      };
+    });
+
+    useEffect(() => {
+      if (searchVisible) {
+        searchInputHeight.value = withSpring(50);
+      } else {
+        searchInputHeight.value = withSpring(0);
+      }
+    }, [searchVisible]);
     
-    var ItemList = useCallback(() =>  
-      <MakeList listID={listID as string} listTypeID={listTypeID as string} description={description as string}/>
-    , [refreshFlag]);
+    var ItemList = useCallback(() =>  (
+        <MakeList listID={listID as string} listTypeID={listTypeID as string} onItemsUpdate={onItemsUpdate} items={filteredItems}/>
+    ), [currDescription, filteredItems]);
   
     return (
         <GestureHandlerRootView>
           <View style={{ backgroundColor: '#fff', flex: 1 }}>
+            {currDescription != "" && <View style={[styles.description, { backgroundColor: Colors[colorScheme ?? 'light'].background, borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
+              <Text>{currDescription}</Text>
+            </View>}
+            <EditListScreen listID={listID as string} listTypeID={listTypeID as string} name={name as string} description={description as string}
+              items={items} visible={editModalVisible} onClose={onClose} onEdit={onEditDetails} />
+            {searchVisible && <Animated.View style={[searchInputStyle, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
+              <SearchInput search={search} setSearch={handleSearch} isFocused={true} />
+            </Animated.View>}
             <ItemList />
           </View>
         </GestureHandlerRootView>

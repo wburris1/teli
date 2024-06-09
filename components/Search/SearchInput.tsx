@@ -1,17 +1,25 @@
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TextInput, View, StyleSheet, Pressable, TouchableHighlight, TouchableOpacity } from 'react-native';
 import { useColorScheme } from '@/components/useColorScheme';
 
 type Props = {
     search: string;
     setSearch: (value: string) => void;
+    isFocused: boolean,
 };
 
-const SearchInput = ({search, setSearch}: Props) => {
+const SearchInput = ({search, setSearch, isFocused}: Props) => {
     const colorScheme = useColorScheme();
-    //const [search, setSearch] = useState('');
+    
+    const inputRef = useRef<TextInput>(null);
+
+    useEffect(() => {
+        if (inputRef.current && isFocused) {
+            inputRef.current.focus();
+        }
+    }, []);
 
     return (
         <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
@@ -19,7 +27,7 @@ const SearchInput = ({search, setSearch}: Props) => {
                 <View style={styles.search} pointerEvents='none'>
                     <Ionicons name="search" size={25} color={Colors[colorScheme ?? 'light'].text} />
                 </View>
-                <TextInput placeholder="Search..." style={[styles.field, {color: Colors[colorScheme ?? 'light'].text}]} value={search} onChangeText={setSearch}/>
+                <TextInput ref={inputRef} placeholder="Search..." style={[styles.field, {color: Colors[colorScheme ?? 'light'].text}]} value={search} onChangeText={setSearch}/>
             </View>
         </View>
     );

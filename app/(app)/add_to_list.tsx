@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { FlatList, Platform, StyleSheet, TouchableOpacity } from 'react-native';
+import { FlatList, Platform, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { Text, View } from '../../components/Themed';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,6 +30,7 @@ export default function AddToListsScreen() {
     const { item_id, listTypeID } = useLocalSearchParams();
     const { inLists, outLists, loaded } = useGetItemLists(item_id as string, listTypeID as string);
     const { selectedLists, setSelectedLists, removeLists, setRemoveLists } = useTab();
+    const colorScheme = useColorScheme();
 
     useEffect(() => {
       setSelectedLists(inLists);
@@ -52,16 +53,16 @@ export default function AddToListsScreen() {
     const RenderItem = ({ item, index, onSelect, onDeselect, isSelected }: RowProps) => {        
       return (
         <TouchableOpacity onPress={() => isSelected ? onDeselect(item) : onSelect(item)}>
-          <View style={styles.itemContainer}>
+          <View style={[styles.itemContainer, { borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
               <View style={[styles.innerContainer, { padding: 10 }]}>
                 <View style={styles.textContainer}>
-                  <Text style={styles.itemText}>{item.list_id}</Text>
+                  <Text style={styles.itemText}>{item.name}</Text>
                 </View>
                 {isSelected &&
                   <Ionicons
                       name="checkmark"
                       size={25}
-                      color={Colors['light'].text}
+                      color={Colors[colorScheme ?? 'light'].text}
                   />}
               </View>
           </View>
@@ -129,7 +130,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 0,
     borderRightWidth: 0,
     borderTopWidth: 0,
-    borderBottomColor: '#000',
     overflow: 'hidden',
     paddingRight: 5,
     width: '100%',

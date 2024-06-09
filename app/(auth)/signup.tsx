@@ -70,6 +70,7 @@ const Register = () => {
     const tvBookmarkRef = doc(FIREBASE_DB, "users", user_id, Values.tvListsID, Values.bookmarkListID);
     const seenData = {
       list_id: Values.seenListID,
+      name: Values.seenListID,
       description: "",
       is_custom: false,
       top_poster_path: "",
@@ -78,6 +79,7 @@ const Register = () => {
     }
     const bookmarkData = {
       list_id: Values.bookmarkListID,
+      name: Values.bookmarkListID,
       description: "",
       is_custom: false,
       top_poster_path: "",
