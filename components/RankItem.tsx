@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { View, Button, Modal, StyleSheet, Image, TextInput, TouchableOpacity, useColorScheme, ActivityIndicator } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { useLocalSearchParams } from 'expo-router';
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/authContext';
 import Colors from '@/constants/Colors';
 import { useData } from '@/contexts/dataContext';
-import { useUserItemsSeenSearch } from '@/data/userData';
 import Values from '@/constants/Values';
-import { getDataLocally, storeDataLocally } from '@/data/userLocalData';
-import { getAuth } from 'firebase/auth';
-import { useUserAdjustScores } from '@/data/itemScores';
 import { AddToDatabase } from '@/data/addItem';
 import { Text } from './Themed';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTab } from '@/contexts/listContext';
+import AddToListsScreen from './AddToListsModal';
+import { CommentModalScreen } from './RankComment';
 
 type Props = {
     item: Item,
@@ -35,20 +34,17 @@ const smallAssNumber = 0.0000001; // Used to make mid inclusive of 4 and 6 score
 const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const { user } = useAuth();
   const isMovie = 'title' in item ? true : false;
-  //const items = isMovie ? movies : shows;
   const listID = Values.seenListID;
   const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
 
-  //const [isDupe, setDupe] = useState(true);
   const { requestRefresh } = useData();
   const [compItem, setCompItem] = useState<UserItem | null>(null);
   const colorScheme = useColorScheme();
   const [upperScore, setUpperScore] = useState(0);
   const [lowerScore, setLowerScore] = useState(0);
-  //const adjustScoreFunc = useUserAdjustScores();
-  //const [items, setItems] = useState<UserItem[]>([]);
-  //const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
-  const { refreshListFlag, refreshFlag, requestListRefresh } = useData();
+  const [selectedPref, setSelectedPref] = useState("none");
+  const [listsModalVisible, setListsModalVisible] = useState(false);
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
   const addToDB = AddToDatabase();
 
   const getNext = (minScore: number, maxScore: number) => {
@@ -126,93 +122,154 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
     <>
       {item &&
         <BlurView intensity={100} style={styles.blurContainer}>
-          <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
+          <TouchableOpacity onPress={() => {
+              setCompItem(null);
+              setUpperScore(0);
+              setLowerScore(0);
+              setSelectedPref("none");
+              onClose();
+            }} style={styles.cancelButton}>
             <Ionicons
               name="close-circle"
               size={45}
-              color={Colors[colorScheme ?? 'light'].background}
+              color={Colors[colorScheme ?? 'light'].text}
             />
           </TouchableOpacity>
 
           <View style={styles.container}>
             <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
-              <Image
-                source={{ uri: imgUrl + item.poster_path }}
-                style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].text}]}
-              />
-              <Text style={styles.movieTitle}>{item.title}</Text>
+              <View>
+                <Image
+                  source={{ uri: imgUrl + item.poster_path }}
+                  style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].background}]}
+                />
+                <LinearGradient
+                    colors={['transparent', 'black']}
+                    style={styles.gradient}
+                />
+              </View>
+              <Text style={[styles.movieTitle, {color: 'white'}]}>{'title' in item ? item.title : item.name}</Text>
             </View>
 
-            <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
-              {!compItem && (
+            {!compItem && (
+              <View style={[styles.initialRankView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
+                <Text style={styles.feedbackText}>Did you like it?</Text>
+                <View style={styles.feedback}>
+                  <TouchableOpacity onPress={() => setSelectedPref("like")}>
+                    <Ionicons
+                      name="checkmark-circle-outline"
+                      size={60}
+                      color={selectedPref == "like" ? "#00ff00" : Colors[colorScheme ?? 'light'].text}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setSelectedPref("mid")}>
+                    <Ionicons
+                      name="remove-circle-outline"
+                      size={60}
+                      color={selectedPref == "mid" ? 'gray' : Colors[colorScheme ?? 'light'].text}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setSelectedPref("dislike")}>
+                    <Ionicons
+                      name="close-circle-outline"
+                      size={60}
+                      color={selectedPref == "dislike" ? "#ff0000" : Colors[colorScheme ?? 'light'].text}
+                    />
+                  </TouchableOpacity>
+                </View>
+                
+                {selectedPref != "none" &&
                 <>
-                  <Text style={styles.feedbackText}>Did you like it?</Text>
-                  <View style={styles.feedback}>
-                    <TouchableOpacity style={styles.feedbackButton} onPress={() => handleFeedback(initialLikeScore, 10.1, 10)}>
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={60}
-                        color={'#00ff00'}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.feedbackButton} onPress={() => handleFeedback(initialDislikeScore - smallAssNumber, initialLikeScore + smallAssNumber, initialMehScore)}>
-                      <Ionicons
-                        name="remove-circle"
-                        size={60}
-                        color={'#d3d3d3'}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.feedbackButton} onPress={() => handleFeedback(0, initialDislikeScore, initialDislikeScore - 1)}>
-                      <Ionicons
-                        name="close-circle"
-                        size={60}
-                        color={'#ff0000'}
-                      />
+                  <View style={{width: '100%'}}>
+                  <TouchableOpacity onPress={() => setCommentModalVisible(true)}>
+                    <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
+                      <Text style={{fontSize: 16, fontWeight: '300'}}>Comment</Text>
+                      <Ionicons name="pencil" size={25} color={Colors[colorScheme ?? 'light'].text} />
+                    </View>
+                  </TouchableOpacity>
+                  </View>
+                  <View style={{width: '100%'}}>
+                    <TouchableOpacity onPress={() => {
+                      setListsModalVisible(true);
+                    }}>
+                      <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
+                        <Text style={{fontSize: 16, fontWeight: '300'}}>Add to lists</Text>
+                        <Ionicons name="add" size={25} color={Colors[colorScheme ?? 'light'].text} />
+                      </View>
                     </TouchableOpacity>
                   </View>
-                </>
-              )}
+                  <View style={{width: '100%'}}>
+                    <TouchableOpacity onPress={() => {
+                      if (selectedPref === "like") {
+                        handleFeedback(initialLikeScore, 10.1, 10);
+                      } else if (selectedPref === "dislike") {
+                        handleFeedback(0, initialDislikeScore, initialDislikeScore - 1);
+                      } else if (selectedPref === "mid") {
+                        handleFeedback(initialDislikeScore - smallAssNumber, initialLikeScore + smallAssNumber, initialMehScore);
+                      }
+                    }}>
+                      <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text}, {justifyContent: 'center'}]}>
+                        <Text style={{fontSize: 16, fontWeight: 'bold'}}>Rank</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                  <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={listsModalVisible}
+                    onRequestClose={() => setListsModalVisible(false)}
+                  >
+                    <AddToListsScreen item_id={item.id.toString()} listTypeID={listTypeID} isRanking={true} onClose={() => setListsModalVisible(false)} />
+                  </Modal>
+                  <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={commentModalVisible}
+                    onRequestClose={() => setCommentModalVisible(false)}
+                  >
+                    <CommentModalScreen onClose={() => setCommentModalVisible(false)}
+                      onSave={() => setCommentModalVisible(false)} />
+                  </Modal>
+                </>}
+              </View>
+            )}
 
               {compItem && (
-                <>
+                <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
+                <View>
                   <Image
                     source={{ uri: imgUrl + compItem.poster_path }}
-                    style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].text}]}
+                    style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].background}]}
                   />
-                  <Text style={styles.movieTitle}>{'title' in compItem ? compItem.title : compItem.name}</Text>                 
-                </>
-              )}
-            </View>
-            {compItem && (
-              <>
-                <View style={[styles.modalView2, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
-                <Text>How does this compare?</Text>
-                  <View style={styles.compMovieBottom}>
-                    <TouchableOpacity style={styles.feedbackButton} onPress={() => handleComp(lowerScore, compItem.score)}>
+                  <LinearGradient
+                    colors={['transparent', 'black']}
+                    style={styles.gradient}
+                  />
+                </View>
+                <Text style={[styles.movieTitle, {color: 'white'}]}>{'title' in compItem ? compItem.title : compItem.name}</Text>
+                <TouchableOpacity style={{position: 'absolute', left: -75, top: 150}} onPress={() => handleComp(compItem.score, upperScore)}>
                       <Ionicons
                         name="close-circle"
                         size={60}
                         color={'#ff0000'}
                       />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.feedbackButton} onPress={() => handleComp(compItem.score, compItem.score)}>
+                    <TouchableOpacity style={{position: 'absolute', bottom: -70}} onPress={() => handleComp(compItem.score, compItem.score)}>
                       <Ionicons
                         name="remove-circle"
-                        size={50}
+                        size={60}
                         color={'#d3d3d3'}
                       />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.feedbackButton} onPress={() => handleComp(compItem.score, upperScore)}>
+                    <TouchableOpacity style={{position: 'absolute', right: -75, top: 150}} onPress={() => handleComp(lowerScore, compItem.score)}>
                       <Ionicons
                         name="heart-circle"
                         size={60}
                         color={'#00ff00'}
                       />
                     </TouchableOpacity>
-                  </View>
                 </View>
-              </>
-            )}
+              )}
           </View>
         </BlurView>}
     </>
@@ -226,11 +283,17 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     padding: 10,
   },
+  gradient: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 200,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
   modalView: {
-    backgroundColor: 'white',
     borderRadius: 20,
-    paddingHorizontal: 30,
-    paddingVertical: 15,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -241,14 +304,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     marginBottom: 10,
-    width: (screenWidth / 2.25) + 60,
+    height: (screenHeight / 2) - 80,
+    aspectRatio: 1 / 1.5,
   },
-  modalView2: {
-    backgroundColor: 'white',
+  initialRankView: {
     borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 15,
-    width: screenWidth * 2/3,
+    paddingTop: 10,
+    width: screenWidth * 0.75,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -263,25 +325,37 @@ const styles = StyleSheet.create({
   feedback: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  feedbackButton: {
-    paddingHorizontal: 10,
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
   feedbackText: {
-    fontSize: 16,
-    paddingBottom: 10
+    fontSize: 18,
+    fontWeight: '200',
+  },
+  rankTab: {
+    flexDirection: 'row',
+    width: '100%',
+    padding: 10,
+    borderTopWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   movieImage: {
-    width: screenWidth / 2.5,
+    height: (screenHeight / 2) - 80,
     aspectRatio: 1 / 1.5,
-    marginTop: 15,
-    borderRadius: 5,
-    borderWidth: 0.5,
+    borderRadius: 20,
   },
   movieTitle: {
-    textAlign: 'center',
-    fontSize: 18,
-    marginTop: 10
+    position: 'absolute',
+    bottom: 15,
+    left: 15,
+    textAlign: 'left',
+    fontSize: 20,
+    fontWeight: '500',
+    marginTop: 10,
+    width: "92%",
   },
   input: {
     borderWidth: 1,
@@ -300,13 +374,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 50
-  },
-  compMovieBottom: {
-    paddingTop: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: screenWidth * 2/3
   },
 });
 

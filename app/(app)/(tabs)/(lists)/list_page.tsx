@@ -32,7 +32,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
     const score = item.score.toFixed(1);
     const isMovie = 'title' in item;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
-    const isCustomList = (listID == Values.seenListID || listID == Values.bookmarkListID) ? false : true;
+    const isAll = listID == Values.seenListID ? true : false;
     var date = "";
     const colorScheme = useColorScheme();
     const router = useRouter();
@@ -44,7 +44,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
     date = isMovie ? item.release_date : item.first_air_date;
     date = date.slice(0,4);
     const deleteItem = useUserItemDelete(item.item_id, item.score, Values.seenListID, listTypeID);
-    const removeItem = removeFromList(listID, listTypeID, item.item_id);
+    const removeItem = removeFromList();
   
     const transX = useSharedValue(0);
   
@@ -90,10 +90,10 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
     }));
     
     const onDelete = (item_id: string) => {
-      const alertHeaderText = isCustomList ? "Confirm Remove" : "Confirm Delete";
-      const alertText = isCustomList ? "Are you sure you want to remove this item from the list?" : 
+      const alertHeaderText = !isAll ? "Confirm Remove" : "Confirm Delete";
+      const alertText = !isAll ? "Are you sure you want to remove this item from the list?" : 
         "Are you sure you want to delete this item?";
-      const alertButtonText = isCustomList ? "Remove" : "Delete";
+      const alertButtonText = !isAll ? "Remove" : "Delete";
       Alert.alert(
         alertHeaderText,
         alertText,
@@ -105,12 +105,12 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
           {
             text: alertButtonText,
             onPress: () => {
-              if (!isCustomList) {
+              if (isAll) {
                 console.log("Delete Pressed, deleting item with ID:", item_id);
                 deleteItem(items.filter(filterItem => filterItem.item_id !== item.item_id));
               } else {
                 console.log("Remove Pressed, removing item with ID:", item_id);
-                removeItem();
+                removeItem(listID, listTypeID, item.item_id);
               }
             }
           }
@@ -121,11 +121,11 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
     return (
       <GestureDetector gesture={panGesture}>
         <View>
-        <Animated.View style={[!isCustomList ? styles.deleteButtonContainer : styles.removeButtonContainer, deleteButtonStyle]}
+        <Animated.View style={[isAll ? styles.deleteButtonContainer : styles.removeButtonContainer, deleteButtonStyle]}
             pointerEvents={isSwiped && transX.value >= DELETE_WIDTH ? 'auto' : 'none'}>
           <TouchableOpacity style={[styles.fullSize, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]} onPress={() => onDelete(item.item_id)}>
             <Ionicons
-              name={!isCustomList ? "trash" : "close"}
+              name={isAll ? "trash" : "close"}
               size={40}
               color={'#fff'}
             />
@@ -177,7 +177,6 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
 
 const MakeList = ({ listID, listTypeID, onItemsUpdate, items }:
   {listID: string, listTypeID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[] }) => {
-    //const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
     const colorScheme = useColorScheme();
 
     useEffect(() => {

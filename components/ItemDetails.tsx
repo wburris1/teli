@@ -37,7 +37,8 @@ const ItemDetails = ({item}: Props) => {
     const [bookmarked, setBookmarked] = useState(false);
     const router = useRouter();
     const bookmarkFunc = addToBookmarked();
-    const removeBookmark = removeFromList(Values.bookmarkListID, listTypeID, item.id.toString());
+    const removeFunc = removeFromList();
+    const [score, setScore] = useState("");
 
     var releaseYear = "";
     var title = "";
@@ -56,6 +57,9 @@ const ItemDetails = ({item}: Props) => {
           localItems.forEach(seenItem => {
             if (seenItem.item_id == item.id) {
               exists = true;
+              if (seenItem.score <= 10 && seenItem.score >= 0) {
+                setScore(seenItem.score.toFixed(1));
+              }
             }
           });
         }
@@ -88,12 +92,20 @@ const ItemDetails = ({item}: Props) => {
                         style={styles.gradient}
                     />
                 </View>
-                <View style={styles.info}>
-                    <Image source={{ uri: imgUrl + item.poster_path }} style={[styles.image, {borderColor: Colors[colorScheme ?? 'light'].text}]} />
+                <View style={[styles.info, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
+                    <View style={[styles.posterContainer, {borderColor: Colors[colorScheme ?? 'light'].text, shadowColor: Colors[colorScheme ?? 'light'].background}]}>
+                        <Image source={{ uri: imgUrl + item.poster_path }} style={styles.image} />
+                    </View>
                     <View style={styles.rightInfo}>
                         <View>
                             <Text style={styles.title}>{title}</Text>
-                            <Text style={styles.date}>{releaseYear}</Text>
+                            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end'}}>
+                                <Text style={styles.date}>{releaseYear}</Text> 
+                                {isDupe && score &&
+                                    <View style={{borderWidth: 1, borderRadius: 50, borderColor: Colors[colorScheme ?? 'light'].text, padding: 5, marginLeft: 8, marginVertical: 3,}}>
+                                        <Text style={{fontSize: 22, fontWeight: '600', paddingVertical: 3}}>{score}</Text>
+                                    </View>} 
+                            </View>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', paddingVertical: 5 }}>
                             {rankButtonLoading && <View style={styles.addButton}>
@@ -115,7 +127,7 @@ const ItemDetails = ({item}: Props) => {
                                             setBookmarked(true);
                                         })
                                     } else {
-                                        removeBookmark().then(() => {
+                                        removeFunc(Values.bookmarkListID, listTypeID, item.id.toString()).then(() => {
                                             setBookmarked(false);
                                         })
                                     }
@@ -132,7 +144,17 @@ const ItemDetails = ({item}: Props) => {
                         </View>
                     </View>
                 </View>
-                <Text style={styles.overview}>{item.overview}</Text>
+                <View style={styles.overviewContainer}>
+                    {item.tagline != "" && <Text style={{fontSize: 17, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
+                    <Text style={styles.overview}>{item.overview}</Text>
+                </View>
+                <View style={styles.genreContainer}>
+                    {item.genres.map(genre => (
+                        <View key={genre.id} style={[styles.genreButton, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
+                            <Text>{genre.name}</Text>
+                        </View>
+                    ))}
+                </View>
                 <Modal
                     animationType="fade"
                     transparent={true}
@@ -172,6 +194,8 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
         paddingRight: 0,
         paddingTop: 10,
+        paddingBottom: 10,
+        borderBottomWidth: 1,
     },
     rightInfo: {
         flex: 1,
@@ -180,11 +204,20 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         height: 130 * 1.5,
     },
+    posterContainer: {
+        zIndex: 1,
+        borderRadius: 5,
+        borderWidth: 1,
+        elevation: 4,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 1,
+        shadowOpacity: 1,
+    },
     image: {
         width: 130,
         aspectRatio: 1 / 1.5,
         borderRadius: 5,
-        borderWidth: 0.5
+        //borderWidth: 0.5,
     },
     backdropImage: {
         width: screenWidth,
@@ -210,15 +243,34 @@ const styles = StyleSheet.create({
     },
     date: {
         textAlign: 'right',
-        paddingVertical: 5,
+        paddingVertical: 2,
         fontSize: 14,
+        alignSelf: 'flex-start'
     },
-    overview: {
-        textAlign: 'left',
-        paddingVertical: 10,
+    overviewContainer: {
+        width: screenWidth,
+        paddingVertical: 5,
         paddingLeft: 10,
         paddingRight: 10,
+        alignItems: 'center',
+        //borderBottomWidth: 1,
+    },
+    overview: {
+        width: '100%',
+        textAlign: 'left',
         fontSize: 14,
+    },
+    genreContainer: {
+        flexDirection: 'row',
+        width: screenWidth,
+        alignItems: 'center',
+        padding: 5,
+    },
+    genreButton: {
+        borderRadius: 50,
+        padding: 5,
+        borderWidth: 1,
+        margin: 2.5,
     },
     addButton: {
         flexDirection: 'row',

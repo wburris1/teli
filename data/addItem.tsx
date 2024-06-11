@@ -5,6 +5,9 @@ import Values from "@/constants/Values";
 import { FIREBASE_DB } from "@/firebaseConfig";
 import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { storeDataLocally } from "./userLocalData";
+import { removeFromList } from "./deleteItem";
+import { useTab } from "@/contexts/listContext";
+import { addAndRemoveItemFromLists } from "./addToList";
 
 const db = FIREBASE_DB;
 
@@ -12,6 +15,9 @@ export const AddToDatabase = () => {
     const { user } = useAuth();
     const updateListFunc = UpdateListPosters();
     const adjustScoreFunc = useUserAdjustScores();
+    const removeFunc = removeFromList();
+    const {selectedLists, removeLists} = useTab();
+    const addAndRemoveFunc = addAndRemoveItemFromLists();
 
     async function addToDB(newScore: number, item: Item, listID: string, isMovie: boolean, isDupe: boolean, items: UserItem[]) {
         var newItem: UserItem;
@@ -67,6 +73,7 @@ export const AddToDatabase = () => {
                 await updateDoc(itemRef, updateData);
                 await adjustScoreFunc(items, newScore, listID, listTypeID);
                 await storeDataLocally(`items_${user!.uid}_${listTypeID}_${listID}`, mapItems);
+                addAndRemoveFunc(newItem, selectedLists, removeLists, listTypeID);
                 updateListFunc(listTypeID);
               } catch (err: any) {
                 console.error("Error updating item: ", err);
@@ -79,6 +86,8 @@ export const AddToDatabase = () => {
               await setDoc(itemRef, newItem);
               await adjustScoreFunc(currItems, newScore, listID, listTypeID);
               await storeDataLocally(`items_${user!.uid}_${listTypeID}_${listID}`, mapItems);
+              addAndRemoveFunc(newItem, selectedLists, removeLists, listTypeID);
+              removeFunc(Values.bookmarkListID, listTypeID, itemRef.id);
               updateListFunc(listTypeID);
             } catch (err: any) {
               console.error("Error adding new item: ", err);

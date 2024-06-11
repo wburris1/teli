@@ -5,6 +5,7 @@ import { FIREBASE_DB } from "@/firebaseConfig";
 import { collection, doc, getDoc, getDocs, writeBatch } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { UpdateListPosters } from "./posterUpdates";
+import { useTab } from "@/contexts/listContext";
 
 const db = FIREBASE_DB;
 
@@ -57,6 +58,7 @@ export const useGetItemLists = (item_id: string, listTypeID: string) => {
 export const addAndRemoveItemFromLists = () => {
     const { user } = useAuth();
     const updateListFunc = UpdateListPosters();
+    const {setSelectedLists, setRemoveLists} = useTab();
 
     async function addAndRemove(item: UserItem, addLists: List[], removeLists: List[], listTypeID: string) {
         // Add item to addLists, remove item from removeLists:
@@ -76,6 +78,8 @@ export const addAndRemoveItemFromLists = () => {
     
             try {
                 await batch.commit();
+                setSelectedLists([]);
+                setRemoveLists([]);
                 updateListFunc(listTypeID);
                 console.log('Item added and removed successfully.');
             } catch (error: any) {

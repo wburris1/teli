@@ -3,7 +3,9 @@ type BaseItem = {
     id: string,
     poster_path: string,
     overview: string,
-    genres: { id: string, name: string }[]
+    genres: { id: string, name: string }[],
+    backdrop_path: string,
+    tagline: string,
 };
 
 interface Movie extends BaseItem {

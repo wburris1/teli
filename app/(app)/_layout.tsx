@@ -11,15 +11,10 @@ import { Pressable, useColorScheme } from "react-native";
 export default function AppEntry() {
     const router = useRouter();
     const { movies, shows, requestRefresh } = useData();
-    const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item } = useTab();
+    const { activeTab } = useTab();
     const reorderFunc = AdjustReorderedScores();
-    const addToListsFunc = addAndRemoveItemFromLists();
     const listTypeID = activeTab == 0 ? Values.movieListsID : Values.tvListsID;
-
-    function resetAddLists() {
-        setSelectedLists([]);
-        setRemoveLists([]);
-    }
+    const colorScheme = useColorScheme();
 
     return (
         <Stack>
@@ -27,6 +22,10 @@ export default function AppEntry() {
             <Stack.Screen name="reorder" options={{
                 title: 'Reorder List',
                 presentation: 'modal',
+                headerShadowVisible: false,
+                headerStyle: {
+                    backgroundColor: Colors[colorScheme ?? 'light'].background,
+                },
                 headerRight: () => (
                     <Pressable onPress={() => {
                         reorderFunc(activeTab == 0 ? movies : shows, Values.seenListID, listTypeID).then(() => {
@@ -60,40 +59,10 @@ export default function AppEntry() {
             <Stack.Screen name="add_to_list" options={{
                 title: 'Add to Lists',
                 presentation: 'modal',
-                headerRight: () => (
-                    <Pressable onPress={() => {
-                        addToListsFunc(item, selectedLists, removeLists,
-                            activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
-                                requestRefresh();
-                                resetAddLists();
-                                router.back();
-                            })
-                    }}>
-                    {({ pressed }) => (
-                        <Ionicons
-                        name="checkmark-circle"
-                        size={35}
-                        color={"#32CD32"}
-                        style={{ opacity: pressed ? 0.5 : 1 }}
-                        />
-                    )}
-                    </Pressable>
-                ),
-                headerLeft: () => (
-                    <Pressable onPress={() => {
-                        router.back();
-                        resetAddLists();
-                    }}>
-                    {({ pressed }) => (
-                        <Ionicons
-                        name="close-circle"
-                        size={35}
-                        color={"red"}
-                        style={{ opacity: pressed ? 0.5 : 1 }}
-                        />
-                    )}
-                    </Pressable>
-                ),
+                headerShadowVisible: false,
+                headerStyle: {
+                    backgroundColor: Colors[colorScheme ?? 'light'].background,
+                },
             }} />
             <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         </Stack>

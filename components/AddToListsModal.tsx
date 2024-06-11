@@ -1,23 +1,25 @@
-import { StatusBar } from 'expo-status-bar';
 import { FlatList, Platform, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
-import { Text, View } from '../../components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useLayoutEffect, useState } from 'react';
-import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import Dimensions from '@/constants/Dimensions';
 import Colors from '@/constants/Colors';
-import { useUserItemsSeenSearch, useUserListsSearch } from '@/data/userData';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTab } from '@/contexts/listContext';
 import { useData } from '@/contexts/dataContext';
 import Values from '@/constants/Values';
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { addAndRemoveItemFromLists, useGetItemLists } from '@/data/addToList';
-import { user } from 'firebase-functions/v1/auth';
+import { Text, View } from './Themed';
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
+
+type ScreenProps = {
+    item_id: string;
+    listTypeID: string;
+    isRanking: boolean;
+    onClose: () => void;
+}
 
 type RowProps = {
   list: List;
@@ -27,13 +29,10 @@ type RowProps = {
   isSelected: boolean;
 };
 
-export default function AddToListsScreen() {
-    const { item_id, listTypeID } = useLocalSearchParams();
-    const { inLists, outLists, loaded } = useGetItemLists(item_id as string, listTypeID as string);
+export default function AddToListsScreen({item_id, listTypeID, isRanking, onClose}: ScreenProps) {
+    const { inLists, outLists, loaded } = useGetItemLists(item_id, listTypeID);
     const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item } = useTab();
     const colorScheme = useColorScheme();
-    const navigation = useNavigation();
-    const router = useRouter();
     const addToListsFunc = addAndRemoveItemFromLists();
     const { requestRefresh } = useData();
 
@@ -81,48 +80,46 @@ export default function AddToListsScreen() {
       setRemoveLists([]);
     }
 
-    useLayoutEffect(() => {
-      navigation.setOptions({
-        headerRight: () => (
-          <Pressable onPress={() => {
-              addToListsFunc(item, selectedLists, removeLists,
-                activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
-                    requestRefresh();
-                    resetAddLists();
-                    router.back();
-                })
-          }}>
-          {({ pressed }) => (
-              <Ionicons
-              name="checkmark-circle"
-              size={35}
-              color={"#32CD32"}
-              style={{ opacity: pressed ? 0.5 : 1 }}
-              />
-          )}
-          </Pressable>
-        ),
-        headerLeft: () => (
-          <Pressable onPress={() => {
-              router.back();
-              resetAddLists();
-          }}>
-          {({ pressed }) => (
-              <Ionicons
-              name="close-circle"
-              size={35}
-              color={"red"}
-              style={{ opacity: pressed ? 0.5 : 1 }}
-              />
-          )}
-          </Pressable>
-        ),
-      })
-    })
-
     return (
         <GestureHandlerRootView>
           <View style={styles.centeredView}>
+            <View style={styles.headerContainer}>
+                <Pressable onPress={() => {
+                    onClose();
+                    resetAddLists();
+                }}>
+                {({ pressed }) => (
+                    <Ionicons
+                    name="close-circle"
+                    size={35}
+                    color={"red"}
+                    style={{ opacity: pressed ? 0.5 : 1 }}
+                    />
+                )}
+                </Pressable>
+                <Text style={{fontSize: 16, fontWeight: 'bold'}}>Add to lists</Text>
+                <Pressable onPress={() => {
+                    if (!isRanking) {
+                        addToListsFunc(item, selectedLists, removeLists,
+                        activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
+                            requestRefresh();
+                            resetAddLists();
+                            onClose();
+                        })
+                    } else {
+                        onClose();
+                    }
+                }}>
+                {({ pressed }) => (
+                    <Ionicons
+                    name="checkmark-circle"
+                    size={35}
+                    color={"#32CD32"}
+                    style={{ opacity: pressed ? 0.5 : 1 }}
+                    />
+                )}
+                </Pressable>
+            </View>
             {loaded &&
               <FlatList
               data={[...outLists, ...inLists]}
@@ -143,13 +140,23 @@ export default function AddToListsScreen() {
 }
 
 const styles = StyleSheet.create({
+    headerContainer: {
+        flexDirection: 'row',
+        width: '100%',
+        paddingHorizontal: 10,
+        paddingTop: 10,
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
   centeredView: {
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
+    zIndex: 1,
+    paddingTop: 50,
   },
   reorderHeader: {
-    padding: 15,
+    paddingHorizontal: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

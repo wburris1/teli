@@ -46,12 +46,12 @@ export const useUserItemDelete = (item_id: string, score: number, listID: string
     return reactToDelete;
 }
 
-export const removeFromList = (listID: string, listTypeID: string, item_id: string) => {
+export const removeFromList = () => {
     const { user } = useAuth();
     const { requestListRefresh, requestRefresh } = useData();
     const updatePosterFunc = updateSomeListPosters();
 
-    async function removeItem() {
+    async function removeItem(listID: string, listTypeID: string, item_id: string) {
         if (user) {
             const itemRef = doc(db, "users", user.uid, listTypeID, listID, "items", item_id);  
             try {
