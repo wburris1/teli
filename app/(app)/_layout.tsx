@@ -64,7 +64,26 @@ export default function AppEntry() {
                     backgroundColor: Colors[colorScheme ?? 'light'].background,
                 },
             }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="addPost" options={{
+                title: 'Make Post',
+                presentation: 'modal',
+                headerShadowVisible: false,
+                headerStyle: {
+                    backgroundColor: Colors[colorScheme ?? 'light'].background,
+                },
+                headerLeft: () => (
+                    <Pressable onPress={() => router.back()}>
+                    {({ pressed }) => (
+                        <Ionicons
+                        name="close-circle"
+                        size={35}
+                        color={Colors[colorScheme ?? 'light'].text}
+                        style={{ opacity: pressed ? 0.5 : 1 }}
+                        />
+                    )}
+                    </Pressable>
+                ),
+            }} />
         </Stack>
     );
 }

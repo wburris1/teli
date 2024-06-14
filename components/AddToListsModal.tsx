@@ -10,6 +10,7 @@ import { useData } from '@/contexts/dataContext';
 import Values from '@/constants/Values';
 import { addAndRemoveItemFromLists, useGetItemLists } from '@/data/addToList';
 import { Text, View } from './Themed';
+import { AddList } from './AddList';
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
@@ -31,7 +32,7 @@ type RowProps = {
 
 export default function AddToListsScreen({item_id, listTypeID, isRanking, onClose}: ScreenProps) {
     const { inLists, outLists, loaded } = useGetItemLists(item_id, listTypeID);
-    const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item } = useTab();
+    const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item, setAddModalVisible } = useTab();
     const colorScheme = useColorScheme();
     const addToListsFunc = addAndRemoveItemFromLists();
     const { requestRefresh } = useData();
@@ -120,6 +121,22 @@ export default function AddToListsScreen({item_id, listTypeID, isRanking, onClos
                 )}
                 </Pressable>
             </View>
+            <View style={{width: '100%'}}>
+              <TouchableOpacity onPress={() => setAddModalVisible(true)}>
+                <View style={[styles.addContainer, { borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
+                  <View style={[styles.innerContainer, { padding: 10 }]}>
+                    <View style={styles.textContainer}>
+                      <Text style={{fontSize: 16, width: '100%', fontWeight: '300'}}>Add list</Text>
+                    </View>
+                    <Ionicons
+                        name="add"
+                        size={25}
+                        color={Colors[colorScheme ?? 'light'].text}
+                    />
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </View>
             {loaded &&
               <FlatList
               data={[...outLists, ...inLists]}
@@ -135,6 +152,7 @@ export default function AddToListsScreen({item_id, listTypeID, isRanking, onClos
               numColumns={1}
               />}
           </View>
+          <AddList />
         </GestureHandlerRootView>
     );
 }
@@ -178,15 +196,20 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  addContainer: {
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    paddingRight: 5,
+    width: '100%',
+    borderBottomWidth: 1,
+  },
   itemContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-start',
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderLeftWidth: 0,
-    borderRightWidth: 0,
-    borderTopWidth: 0,
     overflow: 'hidden',
     paddingRight: 5,
     width: '100%',

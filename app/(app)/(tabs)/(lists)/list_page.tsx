@@ -13,6 +13,8 @@ import { useTab } from '@/contexts/listContext';
 import { removeFromList, useUserItemDelete } from '@/data/deleteItem';
 import { EditListScreen } from '@/components/EditList';
 import SearchInput from '@/components/Search/SearchInput';
+import { AnimatedSearch } from '@/components/AnimatedSearch';
+import { UserItem } from '@/constants/ImportTypes';
 
 type RowProps = {
     item: UserItem;
@@ -219,7 +221,6 @@ export default function TabOneScreen() {
     const [filteredItems, setFilteredItems] = useState<UserItem[]>([]);
     const { items, loaded } = useUserItemsSeenSearch(listID as string, listTypeID as string);
     const [search, setSearch] = useState('');
-    const searchInputHeight = useSharedValue(0);
 
     useEffect(() => {
       if (description) {
@@ -263,17 +264,11 @@ export default function TabOneScreen() {
         headerTitle: currName,
         headerRight: () => (<>
           <Pressable onPress={() => {
-              if (searchVisible) {
-                handleSearch("");
-                searchInputHeight.value = 50;
-              } else {
-                searchInputHeight.value = 0;
-              }
               setSearchVisible(!searchVisible)
             }}>
             {({ pressed }) => (
               <Ionicons
-                name="search"
+                name={searchVisible ? "close" : "search"}
                 size={25}
                 color={Colors[colorScheme ?? 'light'].text}
                 style={{ opacity: pressed ? 0.5 : 1 }}
@@ -309,21 +304,6 @@ export default function TabOneScreen() {
       })
     }, [navigation, listID, currName, searchVisible])
 
-    const searchInputStyle = useAnimatedStyle(() => {
-      return {
-        height: searchInputHeight.value,
-        opacity: interpolate(searchInputHeight.value, [0, 50], [0, 1]),
-      };
-    });
-
-    useEffect(() => {
-      if (searchVisible) {
-        searchInputHeight.value = withSpring(50);
-      } else {
-        searchInputHeight.value = withSpring(0);
-      }
-    }, [searchVisible]);
-    
     var ItemList = useCallback(() =>  (
         <MakeList listID={listID as string} listTypeID={listTypeID as string} onItemsUpdate={onItemsUpdate} items={filteredItems}/>
     ), [currDescription, filteredItems]);
@@ -336,9 +316,7 @@ export default function TabOneScreen() {
             </View>}
             <EditListScreen listID={listID as string} listTypeID={listTypeID as string} name={name as string} description={description as string}
               items={items} visible={editModalVisible} onClose={onClose} onEdit={onEditDetails} />
-            {searchVisible && <Animated.View style={[searchInputStyle, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
-              <SearchInput search={search} setSearch={handleSearch} isFocused={true} />
-            </Animated.View>}
+            <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
             <ItemList />
           </View>
         </GestureHandlerRootView>

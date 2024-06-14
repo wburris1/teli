@@ -4,6 +4,7 @@ import { useData } from "@/contexts/dataContext";
 import { FIREBASE_DB } from "@/firebaseConfig";
 import { collection, doc, getDocs, writeBatch } from "firebase/firestore";
 import { UpdateListPosters } from "./posterUpdates";
+import { UserItem } from "@/constants/ImportTypes";
 
 const db = FIREBASE_DB;
 

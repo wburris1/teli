@@ -12,6 +12,7 @@ import { BlurView } from "expo-blur";
 import { editList } from "@/data/addList";
 import { ListModalScreen } from "./ListModal";
 import { editListItems } from "@/data/editListItems";
+import { UserItem } from "@/constants/ImportTypes";
 
 type ListProps = {
     listID: string,

@@ -16,7 +16,7 @@ type Props = {
 }
 
 export const AuthProvider = ({ children } : Props) => {
-    const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const auth = getAuth();

@@ -6,6 +6,7 @@ import Dimensions from '@/constants/Dimensions';
 import Colors from '@/constants/Colors';
 import { useUserItemsSeenSearch } from '@/data/userData';
 import Values from '@/constants/Values';
+import { UserItem } from '@/constants/ImportTypes';
 
 type RowProps = {
     item: UserItem;

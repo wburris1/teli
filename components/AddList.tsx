@@ -10,6 +10,7 @@ import { KeyboardAvoidingView, Modal, StyleSheet, Text, TextInput, TouchableOpac
 import { ListModalScreen } from "./ListModal";
 import { useData } from "@/contexts/dataContext";
 import { CreateListDB } from "@/data/addList";
+import { UserItem } from "@/constants/ImportTypes";
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;

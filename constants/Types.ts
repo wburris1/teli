@@ -1,3 +1,15 @@
+type UserData = {
+    user_id: string,
+    email: string,
+    username: string,
+    first_name: string,
+    last_name: string,
+    followers: string[],
+    following: string[],
+    is_private: boolean,
+    profile_picture: string,
+}
+
 type BaseItem = {
     [key: string]: any;
     id: string,
@@ -20,24 +32,6 @@ interface Show extends BaseItem {
 
 type Item = Movie | Show;
 
-type BaseUserItem = {
-    item_id: string,
-    poster_path: string,
-    score: number
-}
-
-interface UserMovie extends BaseUserItem {
-    title: string,
-    release_date: string,
-}
-
-interface UserShow extends BaseUserItem {
-    name: string,
-    first_air_date: string,
-}
-
-type UserItem = UserMovie | UserShow;
-
 type List = {
     list_id: string,
     name: string,
@@ -46,4 +40,9 @@ type List = {
     top_poster_path: string,
     second_poster_path: string,
     bottom_poster_path: string,
+}
+
+type UserComment = {
+    user_id: string,
+    comment: string,
 }

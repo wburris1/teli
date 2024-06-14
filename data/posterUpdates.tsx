@@ -1,3 +1,4 @@
+import { UserItem } from "@/constants/ImportTypes";
 import { useAuth } from "@/contexts/authContext";
 import { useData } from "@/contexts/dataContext";
 import { FIREBASE_DB } from "@/firebaseConfig";

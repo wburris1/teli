@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
+import { Link, Tabs, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable } from 'react-native';
+import { Pressable, TouchableOpacity } from 'react-native';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -11,34 +11,14 @@ import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import { useSortedScreens } from 'expo-router/build/useScreens';
 import { FIREBASE_AUTH } from '@/firebaseConfig';
 import { useAuth } from '@/contexts/authContext';
-
-export const LogoutButton = () => {
-  //const { signOut } = useAuth();
-  const colorScheme = useColorScheme();
-
-  const doLogout = () => {
-    FIREBASE_AUTH.signOut();
-  };
-
-  return (
-    <Pressable onPress={doLogout} style={{ marginRight: 10 }}>
-      <Ionicons name="log-out-outline" size={25} color={Colors[colorScheme ?? 'light'].text} />
-    </Pressable>
-  );
-};
   
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   //const { isSignedIn } = useAuth();
   const { user } = useAuth();
+  const router = useRouter();
   
   return (
     <Tabs
@@ -55,20 +35,12 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
+          tabBarShowLabel: false,
+          tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} />,
           headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
+            <TouchableOpacity onPress={() => router.push({ pathname: "/addPost" })} style={{paddingRight: 10,}}>
+              <Ionicons name="add-circle" size={30} color={Colors[colorScheme ?? 'light'].text}/>
+            </TouchableOpacity>
           ),
         }}
         redirect={false}
@@ -77,6 +49,7 @@ export default function TabLayout() {
         name="(lists)"
         options={{
           title: 'Lists',
+          tabBarShowLabel: false,
           headerTitle: 'Lists',
           tabBarIcon: ({ color, size }) => <Ionicons name="list" size={size} color={color} />,
           tabBarLabel: 'Lists',
@@ -88,6 +61,7 @@ export default function TabLayout() {
         name="(search)"
         options={{
           headerTitle: 'Search',
+          tabBarShowLabel: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="search" size={size} color={color} />,
           tabBarLabel: 'Search',
           headerShown: false,
@@ -95,12 +69,22 @@ export default function TabLayout() {
         redirect={false}
       />
       <Tabs.Screen
-        name="two"
+        name="(post)"
         options={{
-          headerTitle: "user?.firstName! +  + user?.lastName!",
+          headerShown: false,
+          tabBarShowLabel: false,
+          tabBarIcon: ({ color, size }) => <Ionicons name="notifications" size={size} color={color} />,
+          tabBarLabel: 'Add',
+        }}
+        redirect={false}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          tabBarShowLabel: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
           tabBarLabel: 'Profile',
-          headerRight: () => <LogoutButton />,
+          headerShadowVisible: false,
         }}
         redirect={false}
       />

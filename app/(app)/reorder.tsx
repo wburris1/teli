@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTab } from '@/contexts/listContext';
 import { useData } from '@/contexts/dataContext';
 import Values from '@/constants/Values';
+import { UserItem } from '@/constants/ImportTypes';
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;

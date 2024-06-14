@@ -39,25 +39,10 @@ const ItemScreen = ({movieList}: Props) => {
         } else {
             title = item.name;
         }
-
-        if (!animatedValues[index]) {
-            changed = !changed;
-            animatedValues[index] = new Animated.Value(1);
-        }
-
-        const handleItemPress = () => {
-            const animated = animatedValues[index];
-            animated.setValue(0.4);
-            Animated.timing(animated, {
-                toValue: 1,
-                duration: 400,
-                useNativeDriver: true,
-            }).start()
-        };
         
         return (
             <Link href={{pathname: "/search_item", params: { id: item.id, groupKey: isMovie ? "movie" : "tv" }}} asChild>
-                <TouchableOpacity onPress={handleItemPress}>
+                <TouchableOpacity>
                     <View style={[styles.container, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
                         <View style={[styles.imageBorder, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
                         <Image

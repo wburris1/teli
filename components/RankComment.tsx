@@ -6,7 +6,7 @@ import Colors from "@/constants/Colors";
 
 type ScreenProps = {
     onClose: () => void;
-    onSave: () => void;
+    onSave: (comment: string) => void;
 }
 
 export const CommentModalScreen = ({ onClose, onSave }: ScreenProps) => {
@@ -30,7 +30,7 @@ export const CommentModalScreen = ({ onClose, onSave }: ScreenProps) => {
                 </Pressable>
                 <Text style={{fontSize: 16, fontWeight: 'bold'}}>Comment</Text>
                 <Pressable onPress={() => {
-                    onSave();
+                    onSave(comment);
                 }}>
                 {({ pressed }) => (
                     <Ionicons

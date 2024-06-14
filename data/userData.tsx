@@ -5,6 +5,7 @@ import { FIREBASE_DB } from '@/firebaseConfig';
 import {  collection, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { getDataLocally, storeDataLocally } from './userLocalData';
+import { UserItem } from '@/constants/ImportTypes';
 
 const db = FIREBASE_DB;
 

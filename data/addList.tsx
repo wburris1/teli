@@ -1,3 +1,4 @@
+import { UserItem } from "@/constants/ImportTypes";
 import Values from "@/constants/Values";
 import { useAuth } from "@/contexts/authContext";
 import { useData } from "@/contexts/dataContext";

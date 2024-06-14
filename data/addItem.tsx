@@ -3,11 +3,12 @@ import { UpdateListPosters, updateSomeListPosters } from "./posterUpdates";
 import { useUserAdjustScores } from "./itemScores";
 import Values from "@/constants/Values";
 import { FIREBASE_DB } from "@/firebaseConfig";
-import { doc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { storeDataLocally } from "./userLocalData";
 import { removeFromList } from "./deleteItem";
 import { useTab } from "@/contexts/listContext";
 import { addAndRemoveItemFromLists } from "./addToList";
+import { Post, UserItem, UserMovie, UserShow } from "@/constants/ImportTypes";
 
 const db = FIREBASE_DB;
 
@@ -19,25 +20,40 @@ export const AddToDatabase = () => {
     const {selectedLists, removeLists} = useTab();
     const addAndRemoveFunc = addAndRemoveItemFromLists();
 
-    async function addToDB(newScore: number, item: Item, listID: string, isMovie: boolean, isDupe: boolean, items: UserItem[]) {
+    async function addToDB(newScore: number, item: Item, listID: string, isMovie: boolean, isDupe: boolean, items: UserItem[], caption: string, hasSpoilers: boolean) {
         var newItem: UserItem;
         const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
 
         if (isMovie) {
           newItem = {
             item_id: item.id.toString(),
+            item_name: item.title,
+            name: item.title,
             title: item.title,
             poster_path: item.poster_path,
             score: newScore,
             release_date: item.release_date,
+            caption: caption,
+            has_spoilers: hasSpoilers,
+            comments: [],
+            likes: [],
+            created_at: serverTimestamp(),
+            list_type_id: Values.movieListsID,
           };
         } else {
           newItem = {
             item_id: item.id.toString(),
+            item_name: item.name,
             name: item.name,
             poster_path: item.poster_path,
             score: newScore,
             first_air_date: item.first_air_date,
+            caption: caption,
+            has_spoilers: hasSpoilers,
+            comments: [],
+            likes: [],
+            created_at: serverTimestamp(),
+            list_type_id: Values.tvListsID,
           };
         }
     
@@ -113,18 +129,32 @@ export const addToBookmarked = () => {
     if (isMovie) {
       newItem = {
         item_id: item.id.toString(),
+        item_name: item.title,
         title: item.title,
         poster_path: item.poster_path,
-        score: -1,
+        score: -2,
         release_date: item.release_date,
+        caption: "",
+        has_spoilers: false,
+        comments: [],
+        likes: [],
+        created_at: serverTimestamp(),
+        list_type_id: Values.movieListsID,
       };
     } else {
       newItem = {
         item_id: item.id.toString(),
+        item_name: item.name,
         name: item.name,
         poster_path: item.poster_path,
-        score: -1,
+        score: -2,
         first_air_date: item.first_air_date,
+        caption: "",
+        has_spoilers: false,
+        comments: [],
+        likes: [],
+        created_at: serverTimestamp(),
+        list_type_id: Values.tvListsID,
       };
     }
 

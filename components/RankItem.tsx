@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTab } from '@/contexts/listContext';
 import AddToListsScreen from './AddToListsModal';
 import { CommentModalScreen } from './RankComment';
+import { UserItem } from '@/constants/ImportTypes';
 
 type Props = {
     item: Item,
@@ -45,6 +46,8 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const [selectedPref, setSelectedPref] = useState("none");
   const [listsModalVisible, setListsModalVisible] = useState(false);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [comment, setComment] = useState("");
+  const [hasSpoilers, setHasSpoilers] = useState(false);
   const addToDB = AddToDatabase();
 
   const getNext = (minScore: number, maxScore: number) => {
@@ -73,7 +76,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
       setCompItem(newItem);
     } else {
       const newScore = initialScore;
-      addToDB(newScore, item, listID, isMovie, isDupe, items || []).then(() => {
+      addToDB(newScore, item, listID, isMovie, isDupe, items || [], comment, hasSpoilers).then(() => {
         setDupe(true);
         onClose();
         requestRefresh();
@@ -89,7 +92,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
     setUpperScore(maxScore);
 
     if (minScore == maxScore) {
-      addToDB(minScore, item, listID, isMovie, isDupe, items).then(() => {
+      addToDB(minScore, item, listID, isMovie, isDupe, items, comment, hasSpoilers).then(() => {
         setDupe(true);
         onClose();
         requestRefresh();
@@ -104,7 +107,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
         setCompItem(newItem);
       } else {
         const newScore = maxScore - smallAssNumber;
-        addToDB(newScore, item, listID, isMovie, isDupe, items).then(addItem => {
+        addToDB(newScore, item, listID, isMovie, isDupe, items, comment, hasSpoilers).then(addItem => {
           if (addItem) {
             setDupe(true);
             onClose();
@@ -228,7 +231,10 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                     onRequestClose={() => setCommentModalVisible(false)}
                   >
                     <CommentModalScreen onClose={() => setCommentModalVisible(false)}
-                      onSave={() => setCommentModalVisible(false)} />
+                      onSave={comment => {
+                          setComment(comment);
+                          setCommentModalVisible(false);
+                        }} />
                   </Modal>
                 </>}
               </View>

@@ -47,12 +47,16 @@ const Register = () => {
 
   const addUserToDB = async (user: User) => {
     const userRef = doc(FIREBASE_DB, "users", user.uid);
-    const userData = {
+    const userData: UserData = {
       user_id: user.uid,
       first_name: firstName,
       last_name: lastName,
-      email: user.email,
-      // MORE INITIAL USER DATA HERE
+      email: user.email || "",
+      username: username,
+      is_private: false,
+      followers: [],
+      following: [],
+      profile_picture: "/",
     };
 
     try {

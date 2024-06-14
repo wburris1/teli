@@ -6,6 +6,7 @@ import { collection, doc, getDoc, getDocs, writeBatch } from "firebase/firestore
 import { useEffect, useState } from "react";
 import { UpdateListPosters } from "./posterUpdates";
 import { useTab } from "@/contexts/listContext";
+import { UserItem } from "@/constants/ImportTypes";
 
 const db = FIREBASE_DB;
 

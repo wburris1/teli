@@ -15,6 +15,7 @@ import { useData } from '@/contexts/dataContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { addToBookmarked } from '@/data/addItem';
 import { removeFromList } from '@/data/deleteItem';
+import { UserItem } from '@/constants/ImportTypes';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
