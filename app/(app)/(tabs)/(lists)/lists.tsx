@@ -12,67 +12,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTab } from '@/contexts/listContext';
 import Values from '@/constants/Values';
 import { AddList } from '@/components/AddList';
-
-type Props = {
-  seen: React.ReactNode;
-  want: React.ReactNode;
-  recs: React.ReactNode;
-};
-
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
-
-const RenderListItem = ({ list, listTypeID }: { list: List, listTypeID: string }) => {
-  const posters = [
-    list.top_poster_path != "" ? imgUrl + list.top_poster_path : "/",
-    list.second_poster_path != "" ? imgUrl + list.second_poster_path : "/",
-    list.bottom_poster_path != "" ? imgUrl + list.bottom_poster_path : "/"
-  ];
-  const isEmpty = posters[0] == "/";
-  const listName = list.name;
-
-  return (
-    <Link
-      href={{pathname: "/list_page", params: { listTypeID: listTypeID, listID: list.list_id, description: list.description, name: list.name }}}
-      style={styles.itemContainer}
-    >
-      <View>
-        {isEmpty ? 
-        <View style={styles.emptyList}>
-          <Link href="/search" asChild>
-          <TouchableOpacity>
-            <Ionicons
-              name="add-circle-outline"
-              size={70}
-              color={Colors['light'].text}
-            />
-          </TouchableOpacity>
-          </Link>
-        </View> : 
-        <OverlappingImages images={posters} />}
-        <Text style={!isEmpty ? styles.title : styles.emptyListTitle}>{listName}</Text>
-      </View>
-    </Link>
-  )
-}
-
-const OverlappingImages = ({ images }: { images: string[] }) => {
-  const colorScheme = useColorScheme();
-
-  return (
-    <View style={styles.imageContainer}>
-      {images.map((image, index) => (
-        <Image
-          key={index}
-          source={{ uri: image }}
-          style={[styles.image,
-            { left: index * -90, top: index * 10, zIndex: images.length - index,
-              opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text,
-             }]}
-        />
-      ))}
-    </View>
-  );
-};
+import { UserList } from '@/components/UserList';
 
 const reorderData = (data: List[], firstId: string, secondId: string) => {
   const firstItem = data.find(item => item.list_id === firstId);
@@ -124,7 +64,7 @@ const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID:
           {chunkedData.map((row, rowIndex) => (
             <View key={rowIndex} style={styles.row}>
               {row.map(list => (
-                <RenderListItem key={list.list_id} list={list} listTypeID={listTypeID} />
+                <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={true} userID='' />
               ))}
             </View>
           ))}
@@ -138,7 +78,7 @@ const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID:
           {chunkedUnwatched.map((row, rowIndex) => (
             <View key={rowIndex} style={styles.row}>
               {row.map(list => (
-                <RenderListItem key={list.list_id} list={list} listTypeID={listTypeID} />
+                <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={true} userID='' />
               ))}
             </View>
           ))}
@@ -205,51 +145,6 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-  },
-  itemContainer: {
-    alignItems: 'center',
-    height: 200,
-    marginLeft: 15,
-    marginTop: 5,
-  },
-  imageContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    position: 'relative',
-    height: 100 * (3/2) + 20,
-    width: 120
-  },
-  image: {
-    width: 100,
-    aspectRatio: 2/3,
-    borderRadius: 10,
-    borderWidth: 1,
-    backgroundColor: 'gray',
-  },
-  title: {
-    marginTop: 10,
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'left',
-    width: 120,
-    paddingTop: 3,
-  },
-  emptyList: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 170,
-    width: 120,
-    borderWidth: 1,
-    borderRadius: 15,
-    marginTop: 10,
-    backgroundColor: '#d3d3d3',
-  },
-  emptyListTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'left',
-    width: 120,
-    paddingTop: 3,
   },
   topSeparator: {
     flex: 1,

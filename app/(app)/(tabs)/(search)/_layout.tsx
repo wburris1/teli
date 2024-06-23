@@ -8,11 +8,22 @@ export default function SearchLayout() {
     return (
         <Stack>
             <Stack.Screen name="search" options={{ headerShown: false }} />
-            <Stack.Screen name="search_item" options={{ headerShown: false, headerBackTitle: "Search", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+            <Stack.Screen name="search_item" options={{ headerShown: false, headerBackTitle: "", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
                 headerStyle: {
                     backgroundColor: Colors[colorScheme ?? 'light'].background,
                 }
              }} />
+             <Stack.Screen name="search_user" options={{ headerBackTitle: "Search", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+                headerStyle: {
+                    backgroundColor: Colors[colorScheme ?? 'light'].background,
+                }
+             }} />
+             <Stack.Screen name="search_list_page" options={{
+                headerShown: true, headerBackTitle: "", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+                headerStyle: {
+                    backgroundColor: Colors[colorScheme ?? 'light'].background,
+                }
+            }} />
         </Stack>
     );
 }

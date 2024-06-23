@@ -18,7 +18,7 @@ export const MakePost = () => {
                 poster_path: posterPath,
                 has_spoilers: hasSpoilers,
                 list_type_id: listTypeID,
-                comments: [],
+                num_comments: 0,
                 likes: [],
                 score: -1,
                 created_at: serverTimestamp(),

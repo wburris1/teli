@@ -1,4 +1,4 @@
-import { StyleSheet, useColorScheme } from 'react-native';
+import { StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import ItemScreen from '@/components/Search/SearchCard';
@@ -9,6 +9,55 @@ import { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import _ from 'lodash';
 import Colors from '@/constants/Colors';
+import { fetchUsers } from '@/data/searchUsers';
+import { UsersListScreen } from '@/components/Search/UserSearchCard';
+
+const USERS_PAGE_SIZE = 10;
+
+const UsersTabContent = ({ query }: { query: string }) => {
+    const [userList, setUserList] = useState<UserData[]>([]);
+    const [lastVisible, setLastVisible] = useState<any>(null);
+    const [loading, setLoading] = useState(false);
+
+    const loadMoreUsers = async () => {
+        if (loading) return;
+        setLoading(true);
+        const { users, lastDoc } = await fetchUsers(query, lastVisible);
+        setUserList(prevUsers => [...prevUsers, ...users]);
+        setLastVisible(lastDoc);
+        setLoading(false);
+    };
+
+    const debouncedFetchData = useCallback(
+        _.debounce(async (query) => {
+            setUserList([]);
+            setLastVisible(null);
+            const { users, lastDoc } = await fetchUsers(query, null);
+            setUserList(users);
+            setLastVisible(lastDoc);
+        }, 300),
+        []
+    );
+
+    useEffect(() => {
+        if (query != "") {
+            debouncedFetchData(query);
+        } else {
+            setUserList([]);
+        }
+    }, [query, debouncedFetchData]);
+
+    return (
+        <View style={{ flex: 1 }}>
+            <UsersListScreen users={userList} />
+            {loading && <Text>Loading...</Text>}
+            {userList.length == USERS_PAGE_SIZE &&
+            <TouchableOpacity onPress={loadMoreUsers} disabled={loading}>
+                <Text>Load More</Text>
+            </TouchableOpacity>}
+        </View>
+    );
+}
 
 const MoviesTabContent = ({ query }: { query: string }) => {
     const [movieList, setMovieList] = useState<Item[]>([]);
@@ -58,6 +107,10 @@ export default function SearchScreen() {
         <ShowsTabContent 
             query={search}
         />, [search]);
+    const usersTabContent = useCallback(() => 
+        <UsersTabContent 
+            query={search}
+        />, [search]);
 
     const searchTabs = [
         {
@@ -67,7 +120,11 @@ export default function SearchScreen() {
         {
             title: 'Shows',
             content: showsTabContent
-        }
+        },
+        {
+            title: 'Users',
+            content: usersTabContent
+        },
     ];
 
     return (

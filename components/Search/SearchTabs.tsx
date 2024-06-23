@@ -36,12 +36,12 @@ const SearchTabs = ({ tabs, onTabChange }: Props) => {
     return (
         <View style={styles.container}>
             <View style={styles.tabs}>
-                <Animated.View style={[styles.line, {left: indicatorPosition, backgroundColor: Colors[colorScheme ?? 'light'].text}]}/>
+                <Animated.View style={[styles.line, {left: indicatorPosition, backgroundColor: Colors[colorScheme ?? 'light'].text, width: screenWidth / tabs.length}]}/>
                 <View style={styles.separatorLine}/>
                 {tabs.map((tab, index) => {
                     const active = index === tabIndex;
                     return (
-                        <TouchableOpacity key={index} onPress={()=>handleTabPress(index)} style={active ? styles.activeTab : styles.tab}>
+                        <TouchableOpacity key={index} onPress={()=>handleTabPress(index)} style={[active ? styles.activeTab : styles.tab, {width: screenWidth / tabs.length}]}>
                             <Text style={active ? [styles.activeTabText, { color: Colors[colorScheme ?? 'light'].text}] : styles.tabText}>{tab.title}</Text>
                         </TouchableOpacity>
                     );
@@ -66,25 +66,13 @@ const styles = StyleSheet.create({
     },
     tab: {
         alignItems: 'center',
-        //backgroundColor: '#ccc',
-        marginLeft: 5,
-        marginRight: 5,
         padding: 5,
-        //borderRadius: 10,
-        //borderWidth: 0.5,
         borderColor: '#000',
-        width: (screenWidth / 2) - 10
     },
     activeTab: {
         alignItems: 'center',
-        //backgroundColor: '#fff',
-        marginLeft: 5,
-        marginRight: 5,
         padding: 5,
-        //borderRadius: 10,
-        //borderWidth: 0.5,
         borderColor: '#000',
-        width: (screenWidth / 2) - 10
     },
     tabText: {
         fontSize: 16,
@@ -97,9 +85,8 @@ const styles = StyleSheet.create({
     line: {
         position: 'absolute',
         bottom: 0,
-        width: screenWidth / 2,
         height: 3,
-        borderRadius: 5,
+        borderRadius: 2,
         zIndex: 1,
     },
     separatorLine: {

@@ -6,7 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 //import { User, onAuthStateChanged } from 'firebase/auth';
 
-import { useColorScheme } from '@/components/useColorScheme';
+import { useColorScheme } from '@/components/TemplateFiles/useColorScheme';
 import * as SecureStore from 'expo-secure-store';
 //import { FIREBASE_AUTH } from '@/firebaseConfig';
 import { AuthProvider, useAuth } from '@/contexts/authContext';

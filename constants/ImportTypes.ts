@@ -9,10 +9,18 @@ export type Post = {
     item_name: string,
     list_type_id: string,
     has_spoilers: boolean,
-    comments: UserComment[],
+    num_comments: number,
     likes: string[],
     score: number,
     created_at: Timestamp | FieldValue,
+}
+
+export interface FeedPost extends Post {
+    user_id: string,
+    username: string,
+    first_name: string,
+    last_name: string,
+    profile_picture: string,
 }
 
 type BaseUserItem = {
@@ -22,7 +30,7 @@ type BaseUserItem = {
     score: number,
     caption: string,
     has_spoilers: boolean,
-    comments: UserComment[],
+    num_comments: number,
     likes: string[],
     created_at: Timestamp | FieldValue,
     list_type_id: string,
@@ -39,3 +47,19 @@ export interface UserShow extends BaseUserItem {
 }
 
 export type UserItem = UserMovie | UserShow;
+
+export type UserComment = {
+    user_id: string,
+    comment: string,
+    likes: string[],
+    created_at: Timestamp | FieldValue,
+    num_replies: number,
+}
+
+export interface DisplayComment extends UserComment {
+    comment_id: string,
+    profile_picture: string,
+    username: string,
+    first_name: string,
+    last_name: string,
+}

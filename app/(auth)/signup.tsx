@@ -54,8 +54,6 @@ const Register = () => {
       email: user.email || "",
       username: username,
       is_private: false,
-      followers: [],
-      following: [],
       profile_picture: "/",
     };
 

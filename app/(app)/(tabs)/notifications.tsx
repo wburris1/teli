@@ -1,11 +1,9 @@
+import { StyleSheet } from 'react-native';
+
 import { Text, View } from '@/components/Themed';
-import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import MovieScreen from '@/components/Search/SearchCard';
 
-export default function ModalScreen() {
-
+export default function TabOneScreen() {
   return (
     <View style={styles.container}>
     </View>

@@ -2,7 +2,7 @@ import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { TextInput, View, StyleSheet, Pressable, TouchableHighlight, TouchableOpacity } from 'react-native';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useColorScheme } from '@/components/TemplateFiles/useColorScheme';
 
 type Props = {
     search: string;

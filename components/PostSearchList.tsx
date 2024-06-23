@@ -6,9 +6,9 @@ import { FlatList, Image, StyleSheet, TouchableOpacity, useColorScheme } from "r
 import { Text, View } from "./Themed";
 import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
-import { getDataLocally } from "@/data/userLocalData";
 import { useAuth } from "@/contexts/authContext";
 import { UserItem } from "@/constants/ImportTypes";
+import { getItems } from "@/data/userData";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 
@@ -25,28 +25,24 @@ export const NewPostSearchLists = ({ query, listTypeID, listID, onSelect }: { qu
     const [userList, setUserList] = useState<UserItem[]>([]);
     const [filteredList, setFilteredList] = useState<UserItem[]>([]);
     const { user } = useAuth();
+    const getItemFunc = getItems();
     
     const debouncedFetchData = useCallback(
         _.debounce(async (query) => {
-            const items = await useItemSearch(query, listTypeID == Values.movieListsID);
-            setList(items || []);
+            const globalItems = await useItemSearch(query, listTypeID == Values.movieListsID);
+            setList(globalItems || []);
         }, 300),
         []
     );
 
     useEffect(() => {
-        if (listID != "" && user) {
-            getDataLocally(`items_${user.uid}_${listTypeID}_${listID}`).then(localItems => {
-                setUserList(localItems || []);
-                setFilteredList(localItems || []);
-            });
-        }
+        getItemFunc(listID, listTypeID).then(items => setUserList(items));
     }, [user, listID])
 
     useEffect(() => {
-        if (listID == "") {
+        if (listID === "") {
             debouncedFetchData(query);
-        } else if (userList.length > 0) {
+        } else if (userList) {
             const filtered = userList.filter(item => {
                 const title = 'title' in item ? item.title : item.name;
                 return title.toLowerCase().includes(query.toLowerCase());

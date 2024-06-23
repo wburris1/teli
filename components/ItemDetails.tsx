@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useColorScheme } from '@/components/TemplateFiles/useColorScheme';
 import { Link, useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import Rank from './RankItem';

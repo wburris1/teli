@@ -5,8 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, TouchableOpacity } from 'react-native';
 
 import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
+import { useColorScheme } from '@/components/TemplateFiles/useColorScheme';
+import { useClientOnlyValue } from '@/components/TemplateFiles/useClientOnlyValue';
 //import { useAuth, useUser } from '@clerk/clerk-expo';
 import { useSortedScreens } from 'expo-router/build/useScreens';
 import { FIREBASE_AUTH } from '@/firebaseConfig';
@@ -36,6 +36,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarShowLabel: false,
+          headerShadowVisible: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} />,
           headerRight: () => (
             <TouchableOpacity onPress={() => router.push({ pathname: "/addPost" })} style={{paddingRight: 10,}}>
@@ -69,7 +70,7 @@ export default function TabLayout() {
         redirect={false}
       />
       <Tabs.Screen
-        name="(post)"
+        name="notifications"
         options={{
           headerShown: false,
           tabBarShowLabel: false,

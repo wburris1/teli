@@ -8,12 +8,9 @@ import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useNavigation } from 'expo-router';
-import Dimensions from '@/constants/Dimensions';
 import { Post } from '@/constants/ImportTypes';
-import { format } from "date-fns";
-import { LinearGradient } from 'expo-linear-gradient';
-import { getDataLocally } from '@/data/userLocalData';
 import Values from '@/constants/Values';
+import { ProfilePost } from '@/components/Post';
 
 const db = FIREBASE_DB;
 
@@ -49,6 +46,8 @@ const LogoutButton = () => {
 const ProfilePage = () => {
   const { user } = useAuth();
   const [profileData, setProfileData] = useState<UserData>(emptyUser);
+  const [followers, setFollowers] = useState<{ id: string }[]>([]);
+  const [following, setFollowing] = useState<{ id: string }[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const { refreshFlag, refreshListFlag } = useData();
@@ -109,6 +108,18 @@ const ProfilePage = () => {
             return tvBookmarkedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Post }));
           };
 
+          const fetchFollowers = async () => {
+            const followersRef = collection(db, 'users', user.uid, 'followers');
+            const snapshot = await getDocs(followersRef);
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          }
+
+          const fetchFollowing = async () => {
+            const followingRef = collection(db, 'users', user.uid, 'following');
+            const snapshot = await getDocs(followingRef);
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          }
+
           // Run all operations concurrently
           const [
             userData,
@@ -116,17 +127,23 @@ const ProfilePage = () => {
             moviesSeenData,
             moviesBookmarkedData,
             tvSeenData,
-            tvBookmarkedData
+            tvBookmarkedData,
+            followersData,
+            followingData,
           ] = await Promise.all([
             fetchUserProfile(),
             fetchUserPosts(),
             fetchMoviesSeen(),
             fetchMoviesBookmarked(),
             fetchTVSeen(),
-            fetchTVBookmarked()
+            fetchTVBookmarked(),
+            fetchFollowers(),
+            fetchFollowing(),
           ]);
 
           setProfileData(userData);
+          setFollowers(followersData);
+          setFollowing(followingData);
           const combinedPosts = [
             ...postsData,
             ...moviesSeenData,
@@ -164,121 +181,6 @@ const ProfilePage = () => {
     })
   })
 
-  const RenderItem = ({item, index}: {item: Post, index: number}) => {
-    const timestamp = item.created_at;
-    const date = timestamp as Timestamp ? (timestamp as Timestamp).toDate() : new Date();
-    const formattedDate = format(date, 'PP');
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [captionHeight, setCaptionHeight] = useState<number | null>(null);
-    const animatedHeight = useRef(new Animated.Value(0)).current;
-    const maxCaptionHeight = (item.score && (item.score == -2 || item.score >= 0)) ? 65 : 80;
-
-    useEffect(() => {
-      if (captionHeight !== null) {
-        if (isExpanded) {
-          Animated.timing(animatedHeight, {
-            toValue: captionHeight,
-            duration: 300,
-            useNativeDriver: false,
-          }).start();
-        } else {
-          Animated.timing(animatedHeight, {
-            toValue: maxCaptionHeight,
-            duration: 300,
-            useNativeDriver: false,
-          }).start();
-        }
-      }
-    }, [isExpanded, captionHeight]);
-
-    const toggleExpanded = () => {
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setIsExpanded(!isExpanded);
-    };
-
-    const onTextLayout = (e: any) => {
-      if (captionHeight === null) {
-        setCaptionHeight(e.nativeEvent.layout.height);
-      }
-    };
-
-    const animatedStyle = {
-      height: captionHeight !== null ? animatedHeight : null,
-    };
-
-    return (
-      <View style={[styles.postContainer, {borderColor: Colors[colorScheme ?? 'light'].text}]} key={item.post_id}>
-        <View style={{flexDirection: 'row'}}>
-          <Image
-            source={{ uri: imgUrl + item.poster_path }}
-            style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
-          />
-          <View style={{justifyContent: 'space-between'}}>
-            <View>
-              <View style={{flexDirection: 'row',}}>
-                <View>
-                  {(item.score >= 0 || item.score == -2) && 
-                  <Text style={{fontSize: 14, fontWeight: '300'}}>
-                    {item.score == -2 ? "You bookmarked" : "You ranked"}
-                  </Text>}
-                  <Text numberOfLines={1} style={{fontSize: 17, fontWeight: '600', marginBottom: 3, width: Dimensions.screenWidth - 125}}>
-                    {item.item_name}
-                  </Text>
-                </View>
-                <TouchableOpacity style={{paddingLeft: 5}}>
-                  <Ionicons name="ellipsis-horizontal" size={25} color={Colors[colorScheme ?? 'light'].text} />
-                </TouchableOpacity>
-              </View>
-              <View style={{flexDirection: 'row',}}>
-                {item.score >= 0 && (
-                  <View style={styles.scoreContainer}>
-                    <Text style={styles.scoreText}>{item.score.toFixed(1)}</Text>
-                  </View>
-                )}
-                <Pressable onPress={() => {
-                    if (captionHeight && captionHeight > maxCaptionHeight) {
-                      toggleExpanded();
-                    }
-                  }}>
-                  <Animated.View style={animatedStyle}>
-                    <Text style={[styles.caption, { marginRight: (!item.score || item.score < 0) ? 80 : 125 }]} onLayout={onTextLayout}>
-                      {item.caption}
-                    </Text>
-                  </Animated.View>
-                  {!isExpanded && captionHeight && captionHeight > maxCaptionHeight && (
-                    <LinearGradient
-                      colors={[colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent', Colors[colorScheme ?? 'light'].background]}
-                      style={styles.gradient}
-                    />
-                  )}
-                </Pressable>
-              </View>
-            </View>
-          </View>
-        </View>
-        <View style={styles.postFooter}>
-          <View style={{flexDirection: 'row'}}>
-            <TouchableOpacity style={{alignItems: 'center', paddingTop: 5, paddingRight: 15, flexDirection: 'row'}}>
-              <Ionicons name="heart" size={30} color={Colors[colorScheme ?? 'light'].text} style={{paddingRight: 3}} />
-              <View>
-                <Text style={{fontSize: 14, fontWeight: '300'}}>Likes</Text>
-                <Text style={{fontSize: 14, fontWeight: '500'}}>{item.likes.length}</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity style={{alignItems: 'center', paddingTop: 5, paddingRight: 5, flexDirection: 'row'}}>
-              <Ionicons name="chatbubble-ellipses" size={30} color={Colors[colorScheme ?? 'light'].text} style={{paddingRight: 3}}/>
-              <View>
-                <Text style={{fontSize: 14, fontWeight: '300'}}>Comments</Text>
-                <Text style={{fontSize: 14, fontWeight: '500'}}>{item.comments.length}</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-          <Text style={{fontSize: 14, fontWeight: '200', alignSelf: 'flex-end'}}>{formattedDate}</Text>
-        </View>
-      </View>
-    )
-  }
-
   return (
     <View style={styles.container}>
       {profileData && (
@@ -293,11 +195,11 @@ const ProfilePage = () => {
           <View style={{flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', padding: 10,}}>
             <View style={styles.followContainer}>
               <Text style={styles.follow}>Followers</Text>
-              <Text style={styles.follow}>{profileData.followers.length}</Text>
+              <Text style={styles.follow}>{followers.length}</Text>
             </View>
             <View style={styles.followContainer}>
               <Text style={styles.follow}>Following</Text>
-              <Text style={styles.follow}>{profileData.following.length}</Text>
+              <Text style={styles.follow}>{following.length}</Text>
             </View>
           </View>
         </>
@@ -305,8 +207,8 @@ const ProfilePage = () => {
 
       <FlatList
         data={posts}
-        keyExtractor={item => item.score >= 0 ? item.post_id : item.item_id}
-        renderItem={({item, index}) => <RenderItem item={item} index={index} />}
+        keyExtractor={item => (item.score && (item.score >= 0 || item.score == -2)) ? item.item_id : item.post_id}
+        renderItem={({item, index}) => <ProfilePost item={item} index={index} name="You"/>}
       />
     </View>
   );
@@ -320,18 +222,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  postFooter: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-  },
-  gradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 40,
-  },
   name: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -339,10 +229,6 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 18,
     color: 'gray',
-  },
-  caption: {
-    fontSize: 16,
-    fontWeight: '300',
   },
   followContainer: {
     alignItems: 'center',
@@ -352,17 +238,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '300',
   },
-  postContainer: {
-    padding: 10,
-    borderBottomWidth: 1,
-  },
-  itemImage: {
-    width: 70,
-    aspectRatio: 2/3,
-    borderRadius: 10,
-    marginRight: 7,
-    borderWidth: 0.5,
-  },
   profilePic: {
     width: 100,
     aspectRatio: 1,
@@ -370,20 +245,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginVertical: 10,
     backgroundColor: 'gray',
-  },
-  scoreContainer: {
-    width: 40,
-    aspectRatio: 1,
-    borderRadius: 50,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 5,
-    marginTop: 5,
-  },
-  scoreText: {
-    fontSize: 18,
-    fontWeight: '500',
   },
 });
 

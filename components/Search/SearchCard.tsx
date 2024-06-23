@@ -18,15 +18,6 @@ type Props = {
 
 const ItemScreen = ({movieList}: Props) => {
     const colorScheme = useColorScheme();
-    var changed = false;
-
-    const [animatedValues, setAnimatedValues] = useState(() =>
-        movieList.map(() => new Animated.Value(1))
-    );
-
-    useEffect(() => {
-        setAnimatedValues({ ...animatedValues });
-    }, [changed]);
 
     const renderItem = ({ item, index }: { item: Item, index: number }) => {
         var title = "";

@@ -58,6 +58,8 @@ export default function NewPostScreen() {
   const { requestRefresh } = useData();
   const postFunc = MakePost();
   const router = useRouter();
+  const [movieListID, setMovieListID] = useState('');
+  const [tvListID, setTVListID] = useState('');
   // TODO: Implement functionality to pass movei/show props, or episode or season props to post
   const { itemID, name, poster_path, date,
     seasonID, seasonName, seasonPoster,
@@ -75,12 +77,22 @@ export default function NewPostScreen() {
    const [aboutItem, setAboutItem] = useState<AboutItem>(emptyItem);
 
    const moviesTabContent = useCallback(() => 
-    <MovieTabContent query={search} onSelect={item => setAboutItem(item)} />
-   , [search])
+    <View>
+      <View>
+        <SearchCategories listTypeID={Values.movieListsID} isPost={true} onChange={selectedID => setMovieListID(selectedID)} />
+      </View>
+      <NewPostSearchLists query={search} listTypeID={Values.movieListsID} listID={movieListID} onSelect={item => setAboutItem(item)} />
+    </View>
+   , [search, movieListID])
 
    const showsTabContent = useCallback(() => 
-    <TVTabContent query={search} onSelect={item => setAboutItem(item)} />
-   , [search])
+    <View>
+      <View>
+        <SearchCategories listTypeID={Values.tvListsID} isPost={true} onChange={selectedID => setTVListID(selectedID)} />
+      </View>
+      <NewPostSearchLists query={search} listTypeID={Values.tvListsID} listID={tvListID} onSelect={item => setAboutItem(item)} />
+    </View>
+   , [search, tvListID])
 
    const searchTabs = [
     {

@@ -4,8 +4,6 @@ type UserData = {
     username: string,
     first_name: string,
     last_name: string,
-    followers: string[],
-    following: string[],
     is_private: boolean,
     profile_picture: string,
 }
@@ -40,9 +38,4 @@ type List = {
     top_poster_path: string,
     second_poster_path: string,
     bottom_poster_path: string,
-}
-
-type UserComment = {
-    user_id: string,
-    comment: string,
 }
