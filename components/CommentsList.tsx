@@ -1,26 +1,36 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Pressable, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Pressable, ActivityIndicator, Platform, UIManager, LayoutAnimation, KeyboardAvoidingView } from 'react-native';
 import { Text } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { DisplayComment, FeedPost } from '@/constants/ImportTypes';
 import { useAuth } from '@/contexts/authContext';
 import { fetchUserData } from '@/data/getComments';
 import { FIREBASE_DB } from '@/firebaseConfig';
-import { arrayRemove, arrayUnion, collection, deleteDoc, doc, getDocs, increment, limit, orderBy, query, startAfter, updateDoc } from 'firebase/firestore';
+import { Timestamp, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, increment, limit, orderBy, query, startAfter, updateDoc } from 'firebase/firestore';
 import Values from '@/constants/Values';
 import { useData } from '@/contexts/dataContext';
+import { formatDate } from './Helpers/FormatDate';
+import { toFinite } from 'lodash';
 
 const screenWidth = Dimensions.screenWidth;
 const DELETE_WIDTH = 80;
 const db = FIREBASE_DB;
-const REPLIES_LIMIT = 5;
+const REPLIES_LIMIT = 3;
+
+if (Platform.OS === 'android') {
+    UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, deleteReply }: 
-    { comment: DisplayComment, parentCommentID: string, post: FeedPost, handleReply: (username: string, comment_id: string, parentCommentID: string) => void, deleteReply: (comment_id: string) => void}) => {
+    {
+        comment: DisplayComment, parentCommentID: string, post: FeedPost,
+        handleReply: (username: string, comment_id: string, parentCommentID: string) => void,
+        deleteReply: (comment_id: string) => void,
+    }) => {
     const { user } = useAuth();
     const colorScheme = useColorScheme();
     const [isSwiped, setSwiped] = useState(false);
@@ -30,9 +40,45 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
     const [replies, setReplies] = useState<DisplayComment[]>([]);
     const [lastReply, setLastReply] = useState<any>(null);
     const [loadingReplies, setLoadingReplies] = useState(false);
-    const { requestRefresh } = useData();
+    const { replyID, requestRefresh } = useData();
+    const [repliesOpen, setRepliesOpen] = useState(false);
+    const formattedDate = formatDate(comment.created_at as Timestamp);
 
-    const fetchReplies = useCallback(async () => {
+    useEffect(() => {
+        if (repliesOpen) fetchPostedReply();
+    }, [replyID])
+
+    const fetchPostedReply = useCallback(async () => {
+        if (parentCommentID !== "" || !user || !replyID) return;
+        const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
+            (post.score == -2 ? doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
+                doc(db, "users", post.user_id, "posts", post.post_id));
+
+        const commentRef = doc(postRef, "comments", comment.comment_id);
+        const replyRef = doc(commentRef, "replies", replyID);
+        const replyResp = await getDoc(replyRef);
+        const userData = await fetchUserData(user.uid);
+
+        if (replyResp.exists()) {
+            const replyData = replyResp.data() as DisplayComment;
+            const newReply = {
+                comment_id: replyID,
+                user_id: user.uid,
+                username: userData.username,
+                profile_picture: userData.profile_picture,
+                first_name: userData.first_name,
+                last_name: userData.last_name,
+                comment: replyData.comment,
+                likes: replyData.likes,
+                created_at: replyData.created_at,
+                num_replies: replyData.num_replies,
+            };
+            setReplies(prev => !prev.some(reply => reply.comment_id === newReply.comment_id) ? [newReply, ...prev] : prev);
+            toggleReplies();
+        }
+    }, [parentCommentID, comment.comment_id, post, replyID])
+
+    const fetchReplies = useCallback(async (fetchNum: number) => {
         if (parentCommentID !== "") return;
         setLoadingReplies(true);
         const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
@@ -41,7 +87,7 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
 
         const commentRef = doc(postRef, "comments", comment.comment_id);
         const repliesRef = collection(commentRef, "replies");
-        let q = query(repliesRef, orderBy("created_at", "asc"), limit(REPLIES_LIMIT));
+        let q = query(repliesRef, orderBy("created_at", "asc"), limit(fetchNum));
 
         if (lastReply) {
             q = query(repliesRef, orderBy("created_at", "asc"), startAfter(lastReply), limit(REPLIES_LIMIT));
@@ -70,10 +116,12 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
             };
         });
         const response = await Promise.all(displayCommentsPromises);
-        setReplies(prevReplies => [...prevReplies, ...response]);
-
+        setReplies(prevReplies => [...prevReplies, ...response.filter(item => 
+            !prevReplies.some(reply => reply.comment_id === item.comment_id)
+        )]);
         setLoadingReplies(false);
-    }, [parentCommentID, lastReply, comment.comment_id, post]);
+        toggleReplies();
+    }, [parentCommentID, lastReply, comment.comment_id, post, replyID]);
 
     const handleSetSwiped = useCallback((value: boolean) => {
         setSwiped(value);
@@ -168,9 +216,6 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
 
     const handleDelete = useCallback(async () => {
         if (comment && user) {
-            if (parentCommentID != "") {
-                removeFromReplies(comment.comment_id)
-            }
             const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
             (post.score == -2 ?  doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
                 doc(db, "users", post.user_id, "posts", post.post_id));
@@ -183,11 +228,12 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
             
             await deleteDoc(commentRef)
             if (parentCommentID != "") {
-                updateDoc(doc(postRef, "comments", parentCommentID), { num_replies: increment(-1) })
+                await updateDoc(doc(postRef, "comments", parentCommentID), { num_replies: increment(-1) })
             } else {
-                updateDoc(postRef, { num_comments: increment(-1) })
+                await updateDoc(postRef, { num_comments: increment(-1) })
             }
             requestRefresh();
+            deleteReply(comment.comment_id);
         }
     }, [user, post, comment.comment_id, parentCommentID])
 
@@ -195,29 +241,31 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
         setReplies(replies.filter(reply => reply.comment_id !== comment_id));
     }
 
+    const toggleReplies = () => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    };
+
     return (
         <View>
             <GestureDetector gesture={panGesture} key={comment.comment_id}>
                 <View>
                     <Animated.View style={[styles.itemContainer, animatedStyle, {
                         backgroundColor: Colors[colorScheme ?? 'light'].background, borderBottomColor: Colors[colorScheme ?? 'light'].text,
-                        paddingLeft: parentCommentID !== "" ? 50 : 0,
+                        paddingLeft: parentCommentID !== "" ? 55 : 0,
                     }]}>
                         <Image source={{ uri: comment.profile_picture }} style={styles.profilePic} />
                         <View style={{ flex: 1 }}>
                             <Text style={styles.name}>{comment.first_name} <Text style={styles.username}>@{comment.username}</Text></Text>
                             <Text style={styles.comment}>{comment.comment}</Text>
-                            <TouchableOpacity onPress={() => handleReply(comment.username, comment.comment_id, parentCommentID)} style={{ width: 40 }}>
-                                <Text style={{ fontSize: 13, fontWeight: '300', marginTop: 3, color: 'gray' }}>Reply</Text>
-                            </TouchableOpacity>
-                            {comment.num_replies > 0 && parentCommentID === "" && (
-                                loadingReplies ? <ActivityIndicator size={20} /> :
-                                    <TouchableOpacity style={{ marginTop: 5, }} onPress={fetchReplies}>
-                                        <Text style={{ fontSize: 11, fontWeight: '400', }}>View {comment.num_replies} {comment.num_replies > 1 ? "replies" : "reply"}</Text>
-                                    </TouchableOpacity>
-                            )}
+                            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                <Text style={{ fontSize: 13, fontWeight: '300', marginTop: 3 }}>{formattedDate}</Text>
+                                <Ionicons name="ellipse" size={5} color='gray' style={{marginTop: 3, paddingHorizontal: 3}} />
+                                <TouchableOpacity onPress={() => {setRepliesOpen(true); handleReply(comment.username, comment.comment_id, parentCommentID)}} style={{ width: 40 }}>
+                                    <Text style={{ fontSize: 13, fontWeight: '300', marginTop: 3, color: 'gray' }}>Reply</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                        <View style={{ padding: 5, alignItems: 'center', alignSelf: 'flex-start', marginTop: 15 }}>
+                        <View style={{ paddingHorizontal: 5, alignItems: 'center', alignSelf: 'flex-start', marginTop: 15 }}>
                             <Pressable onPress={handleLike}>
                                 <Ionicons name={isLiked ? "heart" : "heart-outline"} size={20} color={isLiked ? '#8b0000' : Colors[colorScheme ?? 'light'].text} />
                             </Pressable>
@@ -240,26 +288,57 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
                     </Animated.View>
                 </View>
             </GestureDetector>
-            {replies.map(reply => (
-                <RenderItem comment={reply} key={reply.comment_id} parentCommentID={comment.comment_id} post={post} handleReply={handleReply} deleteReply={removeFromReplies} />
-            ))}
+            {repliesOpen && replies.length > 0 &&
+                <View>
+                {replies.map(reply => reply && (
+                    <View key={reply.comment_id}>
+                        <RenderItem comment={reply} key={reply.comment_id} parentCommentID={comment.comment_id} post={post} handleReply={handleReply} deleteReply={removeFromReplies} />
+                    </View>
+                ))}
+                </View>}
+            {comment.num_replies > 0 && parentCommentID == "" && (
+                loadingReplies ? <ActivityIndicator size={20} style={{alignSelf: 'flex-start', paddingLeft: 100}}/> :
+                <View style={{flexDirection: 'row', alignItems: 'center', paddingLeft: 70, height: 20}}>
+                    {!(repliesOpen && comment.num_replies <= replies.length) &&
+                    <TouchableOpacity onPress={() => {
+                        fetchReplies(REPLIES_LIMIT);
+                        setRepliesOpen(true);
+                    }}>
+                        <Text style={{ fontSize: 11, fontWeight: '400', }}>
+                            View {repliesOpen && replies.length > 0 ? (comment.num_replies - replies.length) + " more" : comment.num_replies}{comment.num_replies > 1 ? " replies" : " reply"}
+                        </Text>
+                    </TouchableOpacity>}
+                    {repliesOpen && replies.length > 0 && (
+                        <>
+                            <Ionicons name="caret-forward" size={12} color={Colors[colorScheme ?? 'light'].text} />
+                            <TouchableOpacity onPress={() => {
+                                setRepliesOpen(false);
+                                setReplies([]);
+                                setLastReply(null);
+                                toggleReplies();
+                            }}>
+                                <Text style={{ fontSize: 11, fontWeight: '400', }}>Close</Text>
+                            </TouchableOpacity>
+                        </>
+                    )}
+                </View>
+            )}
         </View>
     );
 });
 
-export const CommentsList = ({ comments, post, handleReply }: { comments: DisplayComment[], post: FeedPost, handleReply: (username: string, comment_id: string, parentCommentID: string) => void }) => {
+export const CommentsList = ({ comments, post, handleReply }: { comments: DisplayComment[], post: FeedPost,
+    handleReply: (username: string, comment_id: string, parentCommentID: string) => void }) => {
     const colorScheme = useColorScheme();
 
     if (comments) {
         return (
-            <View style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1, marginBottom: 90 }}>
-                <FlatList
-                    data={comments}
-                    renderItem={({ item }) => <RenderItem comment={item} parentCommentID='' post={post} handleReply={handleReply} deleteReply={() => {}} />}
-                    keyExtractor={item => item.comment_id}
-                    numColumns={1}
-                />
-            </View>
+            <FlatList
+                data={comments}
+                renderItem={({ item }) => <RenderItem comment={item} parentCommentID='' post={post} handleReply={handleReply} deleteReply={() => {}} />}
+                keyExtractor={item => item.comment_id}
+                numColumns={1}
+            />
         )
     } else {
         return (

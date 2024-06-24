@@ -29,6 +29,8 @@ const CommentsModal = ({post, onClose, visible}: {post: FeedPost, onClose: () =>
   const textInputRef = useRef<TextInput>(null);
   const [replyUsername, setReplyUsername] = useState('');
   const [replyCommentID, setReplyCommentID] = useState('');
+  const [replyParentID, setReplyParentID] = useState('');
+  const { requestReply } = useData();
 
   const loadComments = useCallback(async () => {
     const comments = await getUsersData(post);
@@ -43,20 +45,19 @@ const CommentsModal = ({post, onClose, visible}: {post: FeedPost, onClose: () =>
     if (!visible) {
       setReplyUsername('');
       setComment('');
-      setDragging(false);
       setReplyCommentID('');
+      setReplyParentID('');
+      requestReply('');
     }
   }, [visible])
 
   const handleReply = async (username: string, comment_id: string, parentCommentID: string) => {
     setReplyUsername(username);
     setReplyCommentID(comment_id);
+    setReplyParentID(parentCommentID);
+
     if (textInputRef.current) {
       textInputRef.current.focus();
-    }
-
-    if (parentCommentID != "") {
-      // TODO: HANDLE REPLY DIFFERENTLY WHEN ITS REPLYING TO A REPLY
     }
   }
 
@@ -69,24 +70,40 @@ const CommentsModal = ({post, onClose, visible}: {post: FeedPost, onClose: () =>
         created_at: serverTimestamp(),
         num_replies: 0,
       }
+
       setComment('');
       setReplyCommentID('');
       setReplyUsername('');
+      setReplyParentID('');
 
       const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
         (post.score == -2 ?  doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
           doc(db, "users", post.user_id, "posts", post.post_id));
       
-      const commentRef = replyCommentID != "" ? collection(postRef, "comments", replyCommentID, "replies") : collection(postRef, "comments");
+      let commentRef = collection(postRef, "comments");
+
+      if (replyCommentID != "") {
+        if (replyParentID != "") {
+          commentRef = collection(commentRef, replyParentID, "replies"); // Replying to a reply just replies to parent comment
+          // TODO: Add tagged user when replying
+        } else {
+          commentRef = collection(commentRef, replyCommentID, "replies");
+        }
+      }
       
-      await addDoc(commentRef, userComment)
+      const resp = await addDoc(commentRef, userComment)
+
       if (replyCommentID === "") {
-        updateDoc(postRef, { num_comments: increment(1) })
+        await updateDoc(postRef, { num_comments: increment(1) })
       } else {
-        const parentCommentRef = doc(postRef, "comments", replyCommentID)
-        updateDoc(parentCommentRef, { num_replies: increment(1) })
+        const parentCommentRef = doc(postRef, "comments", replyParentID != "" ? replyParentID : replyCommentID)
+        await updateDoc(parentCommentRef, { num_replies: increment(1) })
       }
       requestRefresh();
+      if (replyCommentID != "") {
+        console.log(resp.id);
+        requestReply(resp.id);
+      }
     }
   }
 
@@ -129,11 +146,11 @@ const CommentsModal = ({post, onClose, visible}: {post: FeedPost, onClose: () =>
             </TouchableWithoutFeedback>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <PanGestureHandler onGestureEvent={gestureHandler} onEnded={() => setDragging(false)}>
-                      <Animated.View style={[styles.container, animatedStyle, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-                          <View style={styles.handle} />
-                          <Text style={styles.text}>Comments</Text>
-                          <CommentsList comments={displayComments} post={post} handleReply={handleReply} />
-                      </Animated.View>
+                <Animated.View style={[styles.container, animatedStyle, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+                    <View style={styles.handle} />
+                    <Text style={styles.text}>Comments</Text>
+                    <CommentsList comments={displayComments} post={post} handleReply={handleReply} />
+                </Animated.View>
               </PanGestureHandler>
             </TouchableWithoutFeedback>
             <KeyboardAvoidingView
@@ -177,6 +194,7 @@ const CommentsModal = ({post, onClose, visible}: {post: FeedPost, onClose: () =>
                     </View>
                 </View>
             </KeyboardAvoidingView>
+            <View style={{position: 'absolute', bottom: 0, height: 40, width: '100%', zIndex: 1}} />
         </Modal>
   );
 };

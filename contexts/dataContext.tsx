@@ -1,3 +1,4 @@
+import { UserItem } from '@/constants/ImportTypes';
 import React, { createContext, useState, useContext, useEffect, useCallback, ReactNode } from 'react';
 
 type DataContextType = {
@@ -13,6 +14,8 @@ type DataContextType = {
     requestRefresh: () => void;
     refreshListFlag: boolean,
     requestListRefresh: () => void;
+    replyID: string;
+    requestReply: (id: string) => void;
 };
 
 type Props = {
@@ -28,6 +31,11 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
     const [movieLists, setMovieLists] = useState<List[]>([]);
     const [refreshFlag, setRefreshFlag] = useState(false);
     const [refreshListFlag, setRefreshListFlag] = useState(false);
+    const [replyID, setReplyFlag] = useState('');
+
+    const requestReply = useCallback((id: string) => {
+        setReplyFlag(id);
+    }, []);
 
     const requestRefresh = useCallback(() => {
         setRefreshFlag(prev => !prev);
@@ -42,7 +50,9 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
         <DataContext.Provider
             value={{ movies, setMovies, shows, setShows,
                 tvLists, setTVLists, movieLists, setMovieLists,
-                refreshFlag, requestRefresh, refreshListFlag, requestListRefresh }}
+                refreshFlag, requestRefresh, refreshListFlag, requestListRefresh,
+                replyID, requestReply
+            }}
         >
             {children}
         </DataContext.Provider>

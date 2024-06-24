@@ -8,7 +8,7 @@ import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useNavigation } from 'expo-router';
-import { Post } from '@/constants/ImportTypes';
+import { FeedPost, Post } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { ProfilePost } from '@/components/Post';
 

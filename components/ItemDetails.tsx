@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { addToBookmarked } from '@/data/addItem';
 import { removeFromList } from '@/data/deleteItem';
 import { UserItem } from '@/constants/ImportTypes';
+import { ExpandableText } from './AnimatedViews.tsx/ExpandableText';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -147,7 +148,7 @@ const ItemDetails = ({item}: Props) => {
                 </View>
                 <View style={styles.overviewContainer}>
                     {item.tagline != "" && <Text style={{fontSize: 17, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
-                    <Text style={styles.overview}>{item.overview}</Text>
+                    <ExpandableText text={item.overview} maxHeight={65} textStyle={styles.overview} />
                 </View>
                 <View style={styles.genreContainer}>
                     {item.genres.map(genre => (
@@ -257,7 +258,6 @@ const styles = StyleSheet.create({
         //borderBottomWidth: 1,
     },
     overview: {
-        width: '100%',
         textAlign: 'left',
         fontSize: 14,
     },

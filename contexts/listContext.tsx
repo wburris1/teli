@@ -1,3 +1,5 @@
+import { UserItem } from '@/constants/ImportTypes';
+import { serverTimestamp } from 'firebase/firestore';
 import React, { ReactNode, createContext, useContext, useState } from 'react';
 
 interface ListContextType {
@@ -26,6 +28,13 @@ export const ListProvider: React.FC<Props> = ({ children }: Props) => {
     release_date: "",
     poster_path: "",
     score: 0,
+    has_spoilers: false,
+    caption: "",
+    num_comments: 0,
+    likes: [],
+    created_at: serverTimestamp(),
+    item_name: "",
+    list_type_id: "",
   };
   const [activeTab, setActiveTab] = useState(0);
   const [addModalVisible, setAddModalVisible] = useState(false);

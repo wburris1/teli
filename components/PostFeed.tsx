@@ -1,15 +1,15 @@
-import { FeedPost, Post } from "@/constants/ImportTypes";
-import { format } from "date-fns";
+import { FeedPost } from "@/constants/ImportTypes";
 import { Timestamp, arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
-import { useEffect, useRef, useState } from "react";
-import { Animated, Image, LayoutAnimation, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
+import { useState } from "react";
+import { Image, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Text, View } from "./Themed";
 import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_DB } from "@/firebaseConfig";
 import Values from "@/constants/Values";
+import { formatDate } from "./Helpers/FormatDate";
+import { ExpandableText } from "./AnimatedViews.tsx/ExpandableText";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
@@ -18,39 +18,11 @@ export const PostFeed = ({item, index, handleComments}: {item: FeedPost, index: 
   (show: boolean, post: FeedPost) => void}) => {
     const colorScheme = useColorScheme();
     const { user } = useAuth();
-    const timestamp = item.created_at;
-    const date = timestamp as Timestamp ? (timestamp as Timestamp).toDate() : new Date();
-    const formattedDate = format(date, 'PP');
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [captionHeight, setCaptionHeight] = useState<number | null>(null);
-    const animatedHeight = useRef(new Animated.Value(0)).current;
+    const formattedDate = formatDate(item.created_at as Timestamp);
     const maxCaptionHeight = 65;
     const [isLiked, setIsLiked] = useState(item.likes.includes(user?.uid || ""));
     const [numLikes, setNumLikes] = useState(item.likes.length);
     const id = item.score >= 0 ? item.item_id : item.post_id;
-
-    useEffect(() => {
-      if (captionHeight !== null) {
-        if (isExpanded) {
-          Animated.timing(animatedHeight, {
-            toValue: captionHeight,
-            duration: 300,
-            useNativeDriver: false,
-          }).start();
-        } else {
-          Animated.timing(animatedHeight, {
-            toValue: maxCaptionHeight,
-            duration: 300,
-            useNativeDriver: false,
-          }).start();
-        }
-      }
-    }, [isExpanded, captionHeight]);
-
-    const toggleExpanded = () => {
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setIsExpanded(!isExpanded);
-    };
 
     const handleLike = async () => {
       if (!user) return;
@@ -74,18 +46,8 @@ export const PostFeed = ({item, index, handleComments}: {item: FeedPost, index: 
       }
     }
 
-    const onTextLayout = (e: any) => {
-      if (captionHeight === null) {
-        setCaptionHeight(e.nativeEvent.layout.height);
-      }
-    };
-
-    const animatedStyle = {
-      height: captionHeight !== null ? animatedHeight : null,
-    };
-
     return (
-      <View style={[styles.postContainer, {borderColor: Colors[colorScheme ?? 'light'].gray}]} key={item.post_id}>
+      <View style={[styles.postContainer, {borderColor: Colors[colorScheme ?? 'light'].gray}]} key={id}>
         <View style={{flexDirection: 'row', flex: 1,}}>
             <TouchableOpacity>
                 <Image
@@ -117,23 +79,7 @@ export const PostFeed = ({item, index, handleComments}: {item: FeedPost, index: 
         </View>
         <View style={{flexDirection: 'row', paddingTop: 5,}}>
           <View style={{flex: 1}}>
-            <Pressable onPress={() => {
-                if (captionHeight && captionHeight > maxCaptionHeight) {
-                    toggleExpanded();
-                }
-                }}>
-                <Animated.View style={animatedStyle}>
-                <Text style={styles.caption} onLayout={onTextLayout}>
-                    {item.caption}
-                </Text>
-                </Animated.View>
-                {!isExpanded && captionHeight && captionHeight > maxCaptionHeight && (
-                <LinearGradient
-                    colors={[colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent', Colors[colorScheme ?? 'light'].background]}
-                    style={styles.gradient}
-                />
-                )}
-            </Pressable>
+            <ExpandableText text={item.caption} maxHeight={maxCaptionHeight} textStyle={styles.text} />
             <View style={styles.postFooter}>
                 <View style={{flexDirection: 'row'}}>
                     <TouchableOpacity style={{alignItems: 'center', paddingTop: 5,}} onPress={handleLike}>
@@ -183,6 +129,11 @@ export const PostFeed = ({item, index, handleComments}: {item: FeedPost, index: 
       left: 0,
       right: 0,
       height: 40,
+    },
+    text: {
+      fontSize: 16,
+      fontWeight: '300',
+      paddingRight: 15,
     },
     name: {
       fontSize: 24,
