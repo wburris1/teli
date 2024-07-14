@@ -10,6 +10,7 @@ import { FIREBASE_DB } from "@/firebaseConfig";
 import Values from "@/constants/Values";
 import { formatDate } from "./Helpers/FormatDate";
 import { ExpandableText } from "./AnimatedViews.tsx/ExpandableText";
+import { Link } from "expo-router";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
@@ -45,15 +46,16 @@ export const PostFeed = ({item, index, handleComments}: {item: FeedPost, index: 
         });
       }
     }
+    const isMovie = 'title' in item;
 
     return (
       <View style={[styles.postContainer, {borderColor: Colors[colorScheme ?? 'light'].gray}]} key={id}>
         <View style={{flexDirection: 'row', flex: 1,}}>
             <TouchableOpacity>
-                <Image
-                    source={{ uri: item.profile_picture }}
-                    style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
-                />
+              <Image
+                  source={{ uri: item.profile_picture }}
+                  style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
+              />
             </TouchableOpacity>
             <View style={{flex: 1, alignItems: 'flex-start', paddingLeft: 7,}}>
                 <View style={{flexDirection: 'row', alignItems: 'flex-start',}}>
@@ -101,10 +103,14 @@ export const PostFeed = ({item, index, handleComments}: {item: FeedPost, index: 
                 </View>
             </View>
           </View>
-          <Image
-            source={{ uri: imgUrl + item.poster_path }}
-            style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
-          />
+          <Link href={{pathname: "/home_item", params: { id: item.item_id, groupKey: isMovie ? "movie" : "tv" }}} asChild>
+              <TouchableOpacity>
+              <Image
+                source={{ uri: imgUrl + item.poster_path }}
+                style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
+              />
+              </TouchableOpacity>
+          </Link>
         </View>
       </View>
     )
