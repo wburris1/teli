@@ -1,5 +1,5 @@
 import { FeedPost } from "@/constants/ImportTypes";
-import { Timestamp, arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
+import { Timestamp, arrayRemove, arrayUnion, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 import { Image, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Text, View } from "./Themed";
@@ -14,8 +14,8 @@ import { ExpandableText } from "./AnimatedViews.tsx/ExpandableText";
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
 
-export const PostFeed = ({item, index, handleComments}: {item: FeedPost, index: number, handleComments: 
-  (show: boolean, post: FeedPost) => void}) => {
+export const PostFeed = ({item, index, handleComments, handleLikes}: {item: FeedPost, index: number, handleComments: 
+  (show: boolean, post: FeedPost) => void, handleLikes: (show: boolean, post: FeedPost) => void}) => {
     const colorScheme = useColorScheme();
     const { user } = useAuth();
     const formattedDate = formatDate(item.created_at as Timestamp);
@@ -23,8 +23,8 @@ export const PostFeed = ({item, index, handleComments}: {item: FeedPost, index: 
     const [isLiked, setIsLiked] = useState(item.likes.includes(user?.uid || ""));
     const [numLikes, setNumLikes] = useState(item.likes.length);
     const id = item.score >= 0 ? item.item_id : item.post_id;
-
-    const handleLike = async () => {
+    
+    const handleHeart = async () => {
       if (!user) return;
       
       const postRef = item.score >= 0 ? doc(db, "users", item.user_id, item.list_type_id, Values.seenListID, "items", item.item_id) :
@@ -82,14 +82,14 @@ export const PostFeed = ({item, index, handleComments}: {item: FeedPost, index: 
             <ExpandableText text={item.caption} maxHeight={maxCaptionHeight} textStyle={styles.text} />
             <View style={styles.postFooter}>
                 <View style={{flexDirection: 'row'}}>
-                    <TouchableOpacity style={{alignItems: 'center', paddingTop: 5,}} onPress={handleLike}>
+                    <TouchableOpacity style={{alignItems: 'center', paddingTop: 5,}} onPress={handleHeart}>
                       <Ionicons
                         name={isLiked ? "heart" :"heart-outline"} size={30}
                         color={isLiked ? '#8b0000' : Colors[colorScheme ?? 'light'].text}
                         style={{paddingRight: 2}}
                       />
                     </TouchableOpacity>
-                    <TouchableOpacity style={{alignItems: 'center', paddingTop: 5, paddingRight: 7, flexDirection: 'row'}}>
+                    <TouchableOpacity style={{alignItems: 'center', paddingTop: 5, paddingRight: 7, flexDirection: 'row'}} onPress={() => handleLikes(true, item)}>
                       <Text style={{fontSize: 14, fontWeight: '300'}}><Text style={{fontWeight: '500'}}>{numLikes}</Text> Likes</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={{alignItems: 'center', paddingTop: 5,}} onPress={() => handleComments(true, item)}>
