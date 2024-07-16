@@ -10,11 +10,13 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Colors from '@/constants/Colors';
 import { FeedPost } from '@/constants/ImportTypes';
 import { serverTimestamp } from 'firebase/firestore';
+import LikesModal from '@/components/LikesModal';
 
 export default function TabOneScreen() {
   const { posts, loading } = makeFeed();
   const { refreshFlag } = useData();
   const [showComments, setShowComments] = useState(false);
+  const [showLikes, setShowLikes] = useState(false);
   const [post, setPost] = useState<FeedPost>({
     post_id: "", user_id: "", score: -1, list_type_id: "", profile_picture: "", first_name: "", last_name: "",
     num_comments: 0, likes: [], item_id: "", item_name: "", has_spoilers: false,
@@ -30,14 +32,19 @@ export default function TabOneScreen() {
     setShowComments(show);
     setPost(commentPost);
   }
+  const handleLikes = (show: boolean, feedPost: FeedPost) => {
+    setShowLikes(show);
+    setPost(feedPost);
+  }
 
   return (
     <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
       <FlatList
         data={posts}
         keyExtractor={item => (item.score && (item.score >= 0 || item.score == -2)) ? item.item_id : item.post_id}
-        renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} />}
+        renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} />}
       />
+      <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} />
       <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} />
     </GestureHandlerRootView>
   );
