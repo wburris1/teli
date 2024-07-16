@@ -62,7 +62,7 @@ const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID:
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={{flexDirection: 'column'}}>
           {chunkedData.map((row, rowIndex) => (
-            <View key={rowIndex} style={styles.row}>
+            <View key={rowIndex} style={[styles.row, styles.rowSpacing]}>
               {row.map(list => (
                 <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={true} userID='' />
               ))}
@@ -145,6 +145,9 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
+  },
+  rowSpacing: {
+    marginBottom: 20,
   },
   topSeparator: {
     flex: 1,

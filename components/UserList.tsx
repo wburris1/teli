@@ -47,7 +47,7 @@ export const UserList = ({ list, listTypeID, isListTab, userID }: { list: List, 
 
         </View> : 
         <OverlappingImages images={posters} />}
-        <Text style={!isEmpty ? styles.title : styles.emptyListTitle}>{listName}</Text>
+        <Text numberOfLines={2} style={!isEmpty ? styles.title : styles.emptyListTitle}>{listName}</Text>
       </View>
     </Link>
   )
