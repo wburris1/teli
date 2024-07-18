@@ -37,11 +37,20 @@ export default function TabOneScreen() {
     setPost(feedPost);
   }
 
+  const keyExtractor = (item: FeedPost) => {
+    // Ensure unique and correctly formatted keys
+    if (item.score && (item.score >= 0 || item.score == -2)) {
+      return `${item.user_id}/${item.item_id}`;
+    } else {
+      return `${item.user_id}/${item.post_id}`;
+    }
+  };
+
   return (
     <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
       <FlatList
         data={posts}
-        keyExtractor={item => (item.score && (item.score >= 0 || item.score == -2)) ? item.item_id : item.post_id}
+        keyExtractor={keyExtractor}
         renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} />}
       />
       <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} />

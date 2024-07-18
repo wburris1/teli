@@ -1,4 +1,4 @@
-import { FlatList, Platform, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useLayoutEffect, useState } from 'react';
@@ -11,6 +11,7 @@ import Values from '@/constants/Values';
 import { addAndRemoveItemFromLists, useGetItemLists } from '@/data/addToList';
 import { Text, View } from './Themed';
 import { AddList } from './AddList';
+import { useLoading } from '@/contexts/loading';
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
@@ -36,6 +37,7 @@ export default function AddToListsScreen({item_id, listTypeID, isRanking, onClos
     const colorScheme = useColorScheme();
     const addToListsFunc = addAndRemoveItemFromLists();
     const { requestRefresh } = useData();
+    const { loading, setLoading } = useLoading();
 
     useEffect(() => {
       setSelectedLists(inLists);
@@ -86,27 +88,30 @@ export default function AddToListsScreen({item_id, listTypeID, isRanking, onClos
           <View style={styles.centeredView}>
             <View style={styles.headerContainer}>
                 <Pressable onPress={() => {
-                    onClose();
-                    resetAddLists();
+                  if (loading) return;
+                  onClose();
+                  resetAddLists();
                 }}>
                 {({ pressed }) => (
-                    <Ionicons
-                    name="close-circle"
-                    size={35}
-                    color={"red"}
-                    style={{ opacity: pressed ? 0.5 : 1 }}
-                    />
+                  <Ionicons
+                  name="close-circle"
+                  size={35}
+                  color={"red"}
+                  style={{ opacity: pressed ? 0.5 : 1 }}
+                  />
                 )}
                 </Pressable>
                 <Text style={{fontSize: 16, fontWeight: 'bold'}}>Add to lists</Text>
                 <Pressable onPress={() => {
-                    if (!isRanking) {
-                        addToListsFunc(item, selectedLists, removeLists,
-                        activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
-                            requestRefresh();
-                            resetAddLists();
-                            onClose();
-                        })
+                    if (!isRanking && !loading) {
+                      setLoading(true);
+                      addToListsFunc(item, selectedLists, removeLists,
+                      activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
+                          requestRefresh();
+                          setLoading(false);
+                          resetAddLists();
+                          onClose();
+                      })
                     } else {
                         onClose();
                     }
@@ -137,7 +142,12 @@ export default function AddToListsScreen({item_id, listTypeID, isRanking, onClos
                 </View>
               </TouchableOpacity>
             </View>
-            {loaded &&
+            {loading && (
+              <View style={styles.spinnerOverlay}>
+                <ActivityIndicator size="large" />
+              </View>
+            )}
+            {loaded ?
               <FlatList
               data={[...outLists, ...inLists]}
               renderItem={({ item, index }) => 
@@ -150,7 +160,11 @@ export default function AddToListsScreen({item_id, listTypeID, isRanking, onClos
               />}
               keyExtractor={item => item.list_id}
               numColumns={1}
-              />}
+              /> : (
+                <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                  <ActivityIndicator size="large" />
+                </View>
+              )}
           </View>
           <AddList />
         </GestureHandlerRootView>
@@ -158,14 +172,14 @@ export default function AddToListsScreen({item_id, listTypeID, isRanking, onClos
 }
 
 const styles = StyleSheet.create({
-    headerContainer: {
-        flexDirection: 'row',
-        width: '100%',
-        paddingHorizontal: 10,
-        paddingTop: 10,
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
+  headerContainer: {
+    flexDirection: 'row',
+    width: '100%',
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   centeredView: {
     flex: 1,
     justifyContent: 'flex-start',
@@ -220,5 +234,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
     padding: 10,
+  },
+  spinnerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    zIndex: 1,
   },
 });

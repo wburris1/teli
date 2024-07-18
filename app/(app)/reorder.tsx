@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Platform, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { Text, View } from '../../components/Themed';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +13,8 @@ import { useTab } from '@/contexts/listContext';
 import { useData } from '@/contexts/dataContext';
 import Values from '@/constants/Values';
 import { UserItem } from '@/constants/ImportTypes';
+import { useLoading } from '@/contexts/loading';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
@@ -24,6 +26,7 @@ export default function ReorderScreen() {
   const [listItems, setListItems] = useState<UserItem[]>([]);
   const { setMovies, setShows } = useData();
   const colorScheme = useColorScheme();
+  const { loading } = useLoading();
 
   useEffect(() => {
     items.sort((a: UserItem, b: UserItem) => b.score - a.score);
@@ -34,6 +37,10 @@ export default function ReorderScreen() {
       setShows(items);
     }
   }, [items])
+
+  useEffect(() => {
+    console.log(loading);
+  }, [loading])
 
   const renderReorderItem = ({ item, getIndex, drag, isActive }: RenderItemParams<UserItem>) => {
     const score = item.score.toFixed(1);
@@ -63,6 +70,12 @@ export default function ReorderScreen() {
   return (
     <GestureHandlerRootView>
       <View style={styles.centeredView}>
+        {loading && (
+          <View style={styles.spinnerOverlay}>
+            <ActivityIndicator size="large" />
+          </View>
+        )}
+        {loaded ?
         <DraggableFlatList
           data={listItems}
           renderItem={renderReorderItem}
@@ -76,7 +89,10 @@ export default function ReorderScreen() {
               setShows(data);
             }
           }}
-        />
+        /> : 
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator size="large" />
+        </View>}
       </View>
     </GestureHandlerRootView>
   );
@@ -134,5 +150,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
     padding: 10,
+  },
+  spinnerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    zIndex: 1,
   },
 });

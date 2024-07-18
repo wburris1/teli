@@ -22,7 +22,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
     const maxCaptionHeight = 65;
     const [isLiked, setIsLiked] = useState(item.likes.includes(user?.uid || ""));
     const [numLikes, setNumLikes] = useState(item.likes.length);
-    const id = item.score >= 0 ? item.item_id : item.post_id;
+    const id = item.user_id + "/" + (item.score >= 0 ? item.item_id : item.post_id);
     
     const handleHeart = async () => {
       if (!user) return;

@@ -18,7 +18,7 @@ const OverlappingImages = ({ images }: { images: string[] }) => {
             key={index}
             source={{ uri: image }}
             style={[styles.image,
-              { left: index * -90, top: index * 10, zIndex: images.length - index,
+              { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
                 opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text,
                }]}
           />

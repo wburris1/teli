@@ -6,6 +6,7 @@ import {  collection, doc, getDocs, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { getDataLocally, storeDataLocally } from './userLocalData';
 import { UserItem } from '@/constants/ImportTypes';
+import { useLoading } from '@/contexts/loading';
 
 const db = FIREBASE_DB;
 
@@ -15,6 +16,7 @@ export const useUserListsSearch = (listTypeID: string) => {
     const { user } = useAuth();
     const [loaded, setLoaded] = useState(false);
     const { setMovieLists, setTVLists } = useData();
+    const { loading, setLoading } = useLoading();
   
     useEffect(() => {
       if (user) {
@@ -26,16 +28,16 @@ export const useUserListsSearch = (listTypeID: string) => {
           setLoaded(true);
   
           if (listTypeID == Values.movieListsID) {
-            setMovieLists(userLists);
+            //setMovieLists(userLists);
           } else {
-            setTVLists(userLists);
+            //setTVLists(userLists);
           }
   
           // Store lists locally
           storeDataLocally(`lists_${user.uid}_${listTypeID}`, userLists);
         }, (error: any) => {
           console.error("Error fetching lists: ", error);
-          setLoaded(true);
+          setLoading(false);
         });
   
         return () => unsubscribe();
@@ -47,7 +49,7 @@ export const useUserListsSearch = (listTypeID: string) => {
         // Load lists from local storage initially
         getDataLocally(`lists_${user.uid}_${listTypeID}`).then(localLists => {
           setLists(localLists);
-          setLoaded(true);
+          setLoading(false);
         });
       }
     }, [user]);
