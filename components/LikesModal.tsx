@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Keyboard, Modal, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, useColorScheme } from 'react-native';
+import { ActivityIndicator, Keyboard, Modal, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, useColorScheme } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import Dimensions from '@/constants/Dimensions';
@@ -14,6 +14,7 @@ import { useData } from '@/contexts/dataContext';
 import { FeedPost } from '@/constants/ImportTypes';
 import { fetchUserData } from '@/data/getComments';
 import { UsersListScreen } from './Search/UserSearchCard';
+import { useLoading } from '@/contexts/loading';
 
 const db = FIREBASE_DB;
 
@@ -25,7 +26,7 @@ const LikesModal = ({post, onClose, visible}: {post: FeedPost, onClose: () => vo
   //const { displayComments, loaded } = getComments(post);
   const { refreshFlag, requestRefresh } = useData();
   const [userList, setUserList] = useState<UserData[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { loading, setLoading } = useLoading();
   const USERS_PAGE_SIZE = 10;
 
   const gestureHandler = (event: PanGestureHandlerGestureEvent) => {
@@ -62,15 +63,18 @@ const LikesModal = ({post, onClose, visible}: {post: FeedPost, onClose: () => vo
           
   const getLikedUsers = useCallback(async () => {
     try {
+      setLoading(true);
       const updatedDoc = await getDoc(postRef);
       if (updatedDoc.exists()) {
         const updatedLikes = updatedDoc.data().likes as string[];
         const userDataPromises = updatedLikes.map(userId => fetchUserData(userId));
         const usersData = await Promise.all(userDataPromises);
         setUserList(usersData);
-      } 
+      }
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching user data:", error);
+      setLoading(false);
     }
   }, [post])
   useEffect(() => {
@@ -94,6 +98,7 @@ const LikesModal = ({post, onClose, visible}: {post: FeedPost, onClose: () => vo
                 <Animated.View style={[styles.container, animatedStyle, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                   <View style={styles.handle} />
                   <Text style={styles.text}>Likes</Text>
+                  {!loading ?
                   <View style={{ flex: 1 }}>
                     <UsersListScreen users={userList} />
                     {loading && <Text>Loading...</Text>}
@@ -101,7 +106,11 @@ const LikesModal = ({post, onClose, visible}: {post: FeedPost, onClose: () => vo
                     <TouchableOpacity onPress={loadMoreUsers} disabled={loading}>
                         <Text>Load More</Text>
                     </TouchableOpacity>}
-                  </View>
+                  </View> : (
+                    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                      <ActivityIndicator size="large" />
+                    </View>
+                  )}
                 </Animated.View>
               </PanGestureHandler>
             </TouchableWithoutFeedback>

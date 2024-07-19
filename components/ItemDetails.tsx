@@ -17,6 +17,7 @@ import { addToBookmarked } from '@/data/addItem';
 import { removeFromList } from '@/data/deleteItem';
 import { UserItem } from '@/constants/ImportTypes';
 import { ExpandableText } from './AnimatedViews.tsx/ExpandableText';
+import { useUserItemsSearch } from '@/data/userData';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -31,10 +32,11 @@ const ItemDetails = ({item}: Props) => {
     const isMovie = 'title' in item ? true : false;
     const listID = Values.seenListID;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
-    const [items, setItems] = useState<UserItem[]>([]);
+    //const [items, setItems] = useState<UserItem[]>([]);
+    const { items, loaded } = useUserItemsSearch(user!.uid, listID, listTypeID);
     const { refreshFlag, refreshListFlag } = useData();
     const [isDupe, setDupe] = useState(false);
-    const [rankButtonLoading, setRankButtonLoading] = useState(true);
+    //const [rankButtonLoading, setRankButtonLoading] = useState(true);
     const [rankVisible, setRankVisible] = useState(false);
     const [bookmarked, setBookmarked] = useState(false);
     const router = useRouter();
@@ -69,16 +71,12 @@ const ItemDetails = ({item}: Props) => {
     }
 
     useEffect(() => {
-        getDataLocally(`items_${user!.uid}_${listTypeID}_${listID}`).then(localItems => {
-          setItems(localItems);
-          if (checkDupe(localItems)) {
+        if (items && checkDupe(items)) {
             setDupe(true);
-          } else {
+        } else {
             setDupe(false);
-          }
-          setRankButtonLoading(false);
-        })
-      }, [refreshFlag, refreshListFlag])
+        }
+      }, [items, refreshFlag])
 
     return (
         <>
@@ -104,16 +102,16 @@ const ItemDetails = ({item}: Props) => {
                             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end'}}>
                                 <Text style={styles.date}>{releaseYear}</Text> 
                                 {isDupe && score &&
-                                    <View style={{borderWidth: 1, borderRadius: 50, borderColor: Colors[colorScheme ?? 'light'].text, padding: 5, marginLeft: 8, marginVertical: 3,}}>
-                                        <Text style={{fontSize: 22, fontWeight: '600', paddingVertical: 3}}>{score}</Text>
+                                    <View style={{borderWidth: 1, borderRadius: 50, borderColor: Colors[colorScheme ?? 'light'].text,
+                                        height: 45, aspectRatio: 1, marginLeft: 8, marginVertical: 3, alignItems: 'center', justifyContent: 'center'}}>
+                                        <Text style={{fontSize: 22, fontWeight: '600'}}>{score}</Text>
                                     </View>} 
                             </View>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', paddingVertical: 5 }}>
-                            {rankButtonLoading && <View style={styles.addButton}>
-                                <ActivityIndicator size="large" color="#fff" />
-                            </View>}
-                            {!rankButtonLoading &&
+                            {!loaded ? <View style={[styles.addButton, { backgroundColor: Colors[colorScheme ?? 'light'].text }]}>
+                                <ActivityIndicator size={30} color="#fff" />
+                            </View> :
                             <TouchableOpacity onPress={() => setRankVisible(true)} style={[styles.addButton, { backgroundColor: Colors[colorScheme ?? 'light'].text }]}>
                                 <Ionicons
                                 name={isDupe ? "refresh" : "add"}
@@ -122,7 +120,7 @@ const ItemDetails = ({item}: Props) => {
                                 />
                                 <Text style={[styles.buttonText, { color: Colors[colorScheme ?? 'light'].background }]}>{isDupe ? "Rerank" : "Seen"}</Text>
                             </TouchableOpacity>}
-                            {!rankButtonLoading && !isDupe &&
+                            {loaded && !isDupe &&
                             <TouchableOpacity onPress={() => {
                                     if (!bookmarked) {
                                         bookmarkFunc(item, isMovie).then(() => {

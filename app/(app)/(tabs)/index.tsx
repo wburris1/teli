@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, useColorScheme } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, useColorScheme } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { makeFeed } from '@/data/feedData';
@@ -48,13 +48,21 @@ export default function TabOneScreen() {
 
   return (
     <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
-      <FlatList
-        data={posts}
-        keyExtractor={keyExtractor}
-        renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} />}
-      />
-      <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} />
-      <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} />
+      {!loading ? (
+        <>
+          <FlatList
+            data={posts}
+            keyExtractor={keyExtractor}
+            renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} />}
+          />
+          <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} />
+          <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} />
+        </>
+      ) : (
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator size="large" />
+        </View>
+      )}
     </GestureHandlerRootView>
   );
 }
