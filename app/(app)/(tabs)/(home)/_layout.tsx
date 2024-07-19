@@ -8,7 +8,7 @@ export default function SearchLayout() {
 
     return (
       <Stack>
-        <Stack.Screen name="Home" options={{ 
+        <Stack.Screen name="index" options={{ 
           headerShown: true, 
           headerRight: () => (
             <TouchableOpacity onPress={() => router.push({ pathname: "/addPost" })} style={{paddingRight: 10,}}>

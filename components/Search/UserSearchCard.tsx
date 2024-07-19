@@ -2,11 +2,11 @@ import { Link } from "expo-router"
 import { Text, View } from "../Themed"
 import { FlatList, Image, StyleSheet, TouchableOpacity } from "react-native"
 
-export const UsersListScreen = ({users}: {users: UserData[]}) => {
+export const UsersListScreen = ({users, redirectPath}: {users: UserData[], redirectPath: string}) => {
     const renderItem = ({item, index}: {item: UserData, index: number}) => {
         return (
             <View key={item.user_id}>
-                <Link href={{pathname: "/search_user", params: { userID: item.user_id }}} asChild>
+                <Link href={{pathname: redirectPath, params: { userID: item.user_id }}} asChild>
                     <TouchableOpacity style={styles.userContainer}>
                         <Image
                             source={{ uri: item.profile_picture }}

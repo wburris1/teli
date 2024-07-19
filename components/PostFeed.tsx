@@ -1,7 +1,7 @@
 import { FeedPost } from "@/constants/ImportTypes";
 import { Timestamp, arrayRemove, arrayUnion, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
-import { Image, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
+import { Image, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Text, View } from "./Themed";
 import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
@@ -59,9 +59,14 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
             <View style={{flex: 1, alignItems: 'flex-start', paddingLeft: 7,}}>
                 <View style={{flexDirection: 'row', alignItems: 'flex-start',}}>
                     <Text numberOfLines={2} style={{fontSize: 17, marginBottom: 3, flex: 1, paddingRight: 15,}}>
-                        <Text style={{fontWeight: '500',}}>{item.first_name}</Text>
+                        <Link href={{pathname: '/home_user', params: { userID: item.user_id }}} asChild>
+                          <Text style={{fontWeight: '500',}}>{item.first_name}</Text>
+                        </Link>
+
                         <Text style = {{fontWeight: '300'}}>{item.score >= 0 ? " ranked " : (item.score == -2 ? " bookmarked " : " commented on ")}</Text>
-                        <Text style={{fontWeight: 'bold',}}>{item.item_name}</Text>
+                        <Link href={{pathname: "/home_item", params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
+                            <Text style={{fontWeight: 'bold',}}>{item.item_name}</Text>
+                        </Link>
                     </Text>
                 </View>
                 <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', paddingRight: item.score >= 0 ? 95 : 80}}>
