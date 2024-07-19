@@ -62,7 +62,9 @@ export const PostFeed = ({item, index, handleComments}: {item: FeedPost, index: 
                     <Text numberOfLines={2} style={{fontSize: 17, marginBottom: 3, flex: 1, paddingRight: 15,}}>
                         <Text style={{fontWeight: '500',}}>{item.first_name}</Text>
                         <Text style = {{fontWeight: '300'}}>{item.score >= 0 ? " ranked " : (item.score == -2 ? " bookmarked " : " commented on ")}</Text>
-                        <Text style={{fontWeight: 'bold',}}>{item.item_name}</Text>
+                        <Link href={{pathname: "/home_item", params: { id: item.item_id, groupKey: isMovie ? "movie" : "tv" }}} asChild>
+                              <Text style={{fontWeight: 'bold'}}>{item.item_name}</Text>
+                        </Link>
                     </Text>
                 </View>
                 <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', paddingRight: item.score >= 0 ? 95 : 80}}>
@@ -140,6 +142,10 @@ export const PostFeed = ({item, index, handleComments}: {item: FeedPost, index: 
       fontSize: 16,
       fontWeight: '300',
       paddingRight: 15,
+    },
+    itemName: {
+      fontSize: 16,
+      fontWeight: 'bold',
     },
     name: {
       fontSize: 24,
