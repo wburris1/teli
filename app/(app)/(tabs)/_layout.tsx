@@ -32,17 +32,13 @@ export default function TabLayout() {
         headerShown: useClientOnlyValue(false, true),
       }}>
       <Tabs.Screen
-        name="index"
+        name="(home)"
         options={{
           title: 'Home',
+          headerShown: false,
           tabBarShowLabel: false,
           headerShadowVisible: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} />,
-          headerRight: () => (
-            <TouchableOpacity onPress={() => router.push({ pathname: "/addPost" })} style={{paddingRight: 10,}}>
-              <Ionicons name="add-circle" size={30} color={Colors[colorScheme ?? 'light'].text}/>
-            </TouchableOpacity>
-          ),
         }}
         redirect={false}
       />

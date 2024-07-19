@@ -10,6 +10,7 @@ import { FIREBASE_DB } from "@/firebaseConfig";
 import Values from "@/constants/Values";
 import { formatDate } from "./Helpers/FormatDate";
 import { ExpandableText } from "./AnimatedViews.tsx/ExpandableText";
+import { Link } from "expo-router";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
@@ -101,10 +102,14 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
                 </View>
             </View>
           </View>
-          <Image
-            source={{ uri: imgUrl + item.poster_path }}
-            style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
-          />
+          <Link href={{pathname: "/home_item", params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
+              <TouchableOpacity>
+              <Image
+                source={{ uri: imgUrl + item.poster_path }}
+                style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
+              />
+              </TouchableOpacity>
+          </Link>
         </View>
       </View>
     )
