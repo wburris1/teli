@@ -17,7 +17,7 @@ import { addToBookmarked } from '@/data/addItem';
 import { removeFromList } from '@/data/deleteItem';
 import { UserItem } from '@/constants/ImportTypes';
 import { ExpandableText } from './AnimatedViews.tsx/ExpandableText';
-import { useUserItemsSearch } from '@/data/userData';
+import { useUserItemsSearch, useUserItemsSeenSearch } from '@/data/userData';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -33,7 +33,7 @@ const ItemDetails = ({item}: Props) => {
     const listID = Values.seenListID;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
     //const [items, setItems] = useState<UserItem[]>([]);
-    const { items, loaded } = useUserItemsSearch(user!.uid, listID, listTypeID);
+    const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
     const { refreshFlag, refreshListFlag } = useData();
     const [isDupe, setDupe] = useState(false);
     //const [rankButtonLoading, setRankButtonLoading] = useState(true);
