@@ -2,6 +2,7 @@ import Colors from "@/constants/Colors";
 import Values from "@/constants/Values";
 import { useData } from "@/contexts/dataContext";
 import { useTab } from "@/contexts/listContext";
+import { useLoading } from "@/contexts/loading";
 import { addAndRemoveItemFromLists } from "@/data/addToList";
 import { AdjustReorderedScores } from "@/data/itemScores";
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -11,51 +12,15 @@ import { useState } from "react";
 import { Pressable, View, useColorScheme, ActivityIndicator, StatusBar, StyleSheet, Text, Modal} from "react-native";
 
 export default function AppEntry() {
-  const router = useRouter();
-  const { movies, shows, requestRefresh } = useData();
-  const { activeTab } = useTab();
-  const reorderFunc = AdjustReorderedScores();
-  const listTypeID = activeTab === 0 ? Values.movieListsID : Values.tvListsID;
-  const colorScheme = useColorScheme();
-  const [loading, setLoading] = useState(true);
-
-  const dimLights = 0.6;
-
-  /* if(loading === true) {
-    return (
-      <Modal transparent={true} animationType="none" visible={true}>
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: `rgba(0,0,0,${dimLights})`
-          }}
-        >
-          <View
-            style={{
-              padding: 13,
-              backgroundColor: `white`,
-              borderRadius: 13
-            }}
-          >
-            <ActivityIndicator animating={true} color={"black"} size="large" />
-            <Text style={{ color: `${"black"}` }}>{"Loading..."}</Text>
-          </View>
-        </View>
-      </Modal>
-    ); */
+    const router = useRouter();
+    const { movies, shows, requestRefresh } = useData();
+    const { activeTab } = useTab();
+    const reorderFunc = AdjustReorderedScores();
+    const listTypeID = activeTab == 0 ? Values.movieListsID : Values.tvListsID;
+    const colorScheme = useColorScheme();
+    const { loading } = useLoading();
     
-    
-    
-    /*(
-      <View style={styles.loading}>
-      <ActivityIndicator size="large" color="0000ff" />
-      <Text>Loading...</Text>
-      </View>
-    ) 
-  }  */
-//           <Spinner visible={false} textContent={'Loading...'} textStyle={{ color: '#FFF' }} />
+   
   return (
       <View style={{ flex: 1 }}>
         {true && (
@@ -74,8 +39,8 @@ export default function AppEntry() {
                   },
                   headerRight: () => (
                       <Pressable onPress={() => {
-                          setLoading(true);
-                          reorderFunc(activeTab === 0 ? movies : shows, Values.seenListID, listTypeID).then(() => {
+                          if (loading) return;
+                        reorderFunc(activeTab === 0 ? movies : shows, Values.seenListID, listTypeID).then(() => {
                             requestRefresh();
                             router.replace('(tabs)');
                           }).finally(() => {

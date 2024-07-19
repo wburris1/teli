@@ -1,5 +1,5 @@
 import { set } from "lodash";
-import { Alert, KeyboardAvoidingView, Modal, Pressable, StyleSheet, TextInput, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Pressable, StyleSheet, TextInput, View, useColorScheme } from "react-native";
 import { Text } from "./Themed";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,6 +13,7 @@ import { editList } from "@/data/addList";
 import { ListModalScreen } from "./ListModal";
 import { editListItems } from "@/data/editListItems";
 import { UserItem } from "@/constants/ImportTypes";
+import { useLoading } from "@/contexts/loading";
 
 type ListProps = {
     listID: string,
@@ -35,6 +36,7 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
     const [addModalVisible, setAddModalVisible] = useState(false);
     const editListFunc = editList();
     const editItemsFunc = editListItems();
+    const { loading, setLoading } = useLoading();
 
     const onDelete = () => {
         Alert.alert(
@@ -57,7 +59,9 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
     };
 
     const handleAddRemove = (addItems: UserItem[], removedItems: UserItem[]) => {
+        setLoading(true);
         editItemsFunc(addItems, removedItems, listID, listTypeID).then(() => {
+            setLoading(false);
             onClose();
             setAddModalVisible(false);
         })
@@ -113,11 +117,19 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
                     onRequestClose={() => setEditModalVisible(false)}
                 >
                     <BlurView intensity={100} style={styles.overlay}>
+                        {loading && (
+                            <View style={styles.spinnerOverlay}>
+                                <ActivityIndicator size="large" />
+                            </View>
+                        )}
                         <KeyboardAvoidingView behavior="padding">
                             <View style={[styles.modalView, { backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
                                 <View style={styles.headerContainer}>
                                     <Text style={[styles.headerText, { color: Colors[colorScheme ?? 'light'].text}]}>Edit List</Text>
-                                    <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+                                    <TouchableOpacity onPress={() => {
+                                        if (loading) return;
+                                        setEditModalVisible(false);
+                                    }}>
                                         <Ionicons
                                             name="close"
                                             size={35}
@@ -149,7 +161,10 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
                                 />
                                 
                                 <TouchableOpacity onPress={() => {
+                                        if (loading) return;
+                                        setLoading(true);
                                         editListFunc(listID, listTypeID, newListName, newDescription).then(() => {
+                                            setLoading(false);
                                             onClose();
                                             onEdit(newListName, newDescription);
                                             setEditModalVisible(false);
@@ -261,5 +276,16 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         width: '100%',
         paddingLeft: 10,
+    },
+    spinnerOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+        zIndex: 1,
     },
 });

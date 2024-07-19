@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList, Keyboard, KeyboardAvoidingView, Modal, Platform, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, useColorScheme } from 'react-native';
+import { ActivityIndicator, FlatList, Keyboard, KeyboardAvoidingView, Modal, Platform, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, useColorScheme } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import Dimensions from '@/constants/Dimensions';
@@ -14,6 +14,7 @@ import { useData } from '@/contexts/dataContext';
 import { CommentsList } from './CommentsList';
 import { DisplayComment, FeedPost, UserComment } from '@/constants/ImportTypes';
 import { getUsersData } from '@/data/getComments';
+import { useLoading } from '@/contexts/loading';
 
 const db = FIREBASE_DB;
 
@@ -31,10 +32,13 @@ const CommentsModal = ({post, onClose, visible}: {post: FeedPost, onClose: () =>
   const [replyCommentID, setReplyCommentID] = useState('');
   const [replyParentID, setReplyParentID] = useState('');
   const { requestReply } = useData();
+  const { loading, setLoading } = useLoading();
 
   const loadComments = useCallback(async () => {
+    setLoading(true);
     const comments = await getUsersData(post);
     setDisplayComments(comments);
+    setLoading(false);
   }, [post, refreshFlag])
 
   useEffect(() => {
@@ -149,7 +153,12 @@ const CommentsModal = ({post, onClose, visible}: {post: FeedPost, onClose: () =>
                 <Animated.View style={[styles.container, animatedStyle, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                     <View style={styles.handle} />
                     <Text style={styles.text}>Comments</Text>
-                    <CommentsList comments={displayComments} post={post} handleReply={handleReply} />
+                    {!loading ?
+                    <CommentsList comments={displayComments} post={post} handleReply={handleReply} /> : (
+                      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                        <ActivityIndicator size="large" />
+                      </View>
+                    )}
                 </Animated.View>
               </PanGestureHandler>
             </TouchableWithoutFeedback>

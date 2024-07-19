@@ -15,6 +15,7 @@ import SearchTabs from './Search/SearchTabs';
 import { UserList } from './UserList';
 import Dimensions from '@/constants/Dimensions';
 import { followUser, unfollowUser } from '@/data/followUser';
+import { useLoading } from '@/contexts/loading';
 
 const db = FIREBASE_DB;
 
@@ -42,7 +43,7 @@ const UserPage = ({ userID }: {userID: string}) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [movieLists, setMovieLists] = useState<List[]>([]);
   const [tvLists, setTVLists] = useState<List[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { loading, setLoading } = useLoading();
   const [isMovies, setIsMovies] = useState(true);
   const { refreshFlag, refreshListFlag } = useData();
   const [numMoviesRanked, setNumMoviesRanked] = useState(0);
@@ -82,6 +83,7 @@ const UserPage = ({ userID }: {userID: string}) => {
   useEffect(() => {
     const fetchProfileData = async () => {
       if (userID) {
+        setLoading(true);
         try {
           const fetchUserProfile = async () => {
             const userDocRef = doc(db, 'users', userID);
@@ -206,6 +208,7 @@ const UserPage = ({ userID }: {userID: string}) => {
           });
 
           setPosts(combinedPosts);
+          setLoading(false);
         } catch (error) {
           console.error("Error fetching profile data: ", error);
         } finally {
@@ -250,7 +253,7 @@ const UserPage = ({ userID }: {userID: string}) => {
 
   const listsTabContent = useCallback(() => 
     <>
-        <View style={{flexDirection: 'row', marginBottom: 10}}>
+        <View style={{flexDirection: 'row', marginBottom: 10, position: 'absolute', top: 45, left: 5, zIndex: 1, backgroundColor: 'transparent'}}>
             <TouchableOpacity onPress={() => setIsMovies(true)} style={[styles.listButton, { borderColor: Colors[colorScheme ?? 'light'].text,
                 backgroundColor: isMovies ? Colors[colorScheme ?? 'light'].text : Colors[colorScheme ?? 'light'].background}]}>
                 <Text style={[styles.listButtonText, { 
@@ -268,7 +271,7 @@ const UserPage = ({ userID }: {userID: string}) => {
             key={'_'}
             data={isMovies ? movieLists : tvLists}
             keyExtractor={item => '_' + item.list_id}
-            renderItem={({item, index}) => <UserList list={item} listTypeID={isMovies ? Values.movieListsID : Values.tvListsID} isListTab={false} userID={userID} />}
+            renderItem={({item, index}) => <UserList list={item} listTypeID={isMovies ? Values.movieListsID : Values.tvListsID} isListTab={false} userID={userID} index={index} />}
             numColumns={3}
         />
     </>
@@ -287,7 +290,11 @@ const UserPage = ({ userID }: {userID: string}) => {
 
   return (
     <View style={styles.container}>
-      {profileData && (
+      {loading ? (
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) :  (
         <>
           <View style={{flexDirection: 'row', width: '100%', justifyContent: 'flex-start', padding: 10, alignItems: 'flex-start'}}>
             <Image
@@ -319,10 +326,8 @@ const UserPage = ({ userID }: {userID: string}) => {
                 </View>
             </View>
           </View>
-        </>
-      )}
-
       <SearchTabs tabs={tabs} onTabChange={() => {}} />
+      </>)}
     </View>
   );
 };

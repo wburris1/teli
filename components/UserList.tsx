@@ -18,7 +18,7 @@ const OverlappingImages = ({ images }: { images: string[] }) => {
             key={index}
             source={{ uri: image }}
             style={[styles.image,
-              { left: index * -90, top: index * 10, zIndex: images.length - index,
+              { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
                 opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text,
                }]}
           />
@@ -27,7 +27,7 @@ const OverlappingImages = ({ images }: { images: string[] }) => {
     );
 };
 
-export const UserList = ({ list, listTypeID, isListTab, userID }: { list: List, listTypeID: string, isListTab: boolean, userID: string }) => {
+export const UserList = ({ list, listTypeID, isListTab, userID, index }: { list: List, listTypeID: string, isListTab: boolean, userID: string, index: number }) => {
   const posters = [
     list.top_poster_path != "" ? imgUrl + list.top_poster_path : "/",
     list.second_poster_path != "" ? imgUrl + list.second_poster_path : "/",
@@ -39,7 +39,7 @@ export const UserList = ({ list, listTypeID, isListTab, userID }: { list: List, 
   return (
     <Link
       href={{pathname: isListTab ? '/list_page' : '/search_list_page', params: { listTypeID: listTypeID, listID: list.list_id, description: list.description, name: list.name, userID: userID }}}
-      style={styles.itemContainer}
+      style={[styles.itemContainer, {height: isListTab ? (itemWidth - 20) * (3/2) + 45 : (itemWidth - 20) * (3/2) + 60, marginTop: (!isListTab && (index >= 0 && index <= 2)) ? 50 : 5}]}
     >
       <View>
         {isEmpty ? 

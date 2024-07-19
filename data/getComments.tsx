@@ -9,23 +9,12 @@ import { useEffect, useState } from "react";
 const db = FIREBASE_DB;
 
 export const fetchUserData = async (userID: string) => {
-    const userDoc = await getDoc(doc(db, "users", userID));
-    if (userDoc.exists()) {
-        const userData = userDoc.data() as UserData;
-        return {
-            username: userData.username,
-            profile_picture: userData.profile_picture,
-            first_name: userData.first_name,
-            last_name: userData.last_name,
-        };
-    } else {
-        return {
-            username: "",
-            profile_picture: "",
-            first_name: "",
-            last_name: "",
-        };
-    }
+  const userDoc = await getDoc(doc(db, "users", userID));
+  if (userDoc.exists()) {
+    return userDoc.data() as UserData;
+  } else {
+    throw new Error(`User with ID ${userID} does not exist`);
+  }
 }
 
 export const getUsersData = async (post: FeedPost) => {

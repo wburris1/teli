@@ -9,6 +9,7 @@ import { removeFromList } from "./deleteItem";
 import { useTab } from "@/contexts/listContext";
 import { addAndRemoveItemFromLists } from "./addToList";
 import { Post, UserItem, UserMovie, UserShow } from "@/constants/ImportTypes";
+import { useLoading } from "@/contexts/loading";
 
 const db = FIREBASE_DB;
 
@@ -19,8 +20,10 @@ export const AddToDatabase = () => {
     const removeFunc = removeFromList();
     const {selectedLists, removeLists} = useTab();
     const addAndRemoveFunc = addAndRemoveItemFromLists();
+    const { setLoading } = useLoading();
 
     async function addToDB(newScore: number, item: Item, listID: string, isMovie: boolean, isDupe: boolean, items: UserItem[], caption: string, hasSpoilers: boolean) {
+        setLoading(true);
         var newItem: UserItem;
         const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
 
@@ -94,6 +97,7 @@ export const AddToDatabase = () => {
               } catch (err: any) {
                 console.error("Error updating item: ", err);
               }
+              setLoading(false);
               return newItem;
           } else {
             const currItems = [...items, newItem];
@@ -108,9 +112,11 @@ export const AddToDatabase = () => {
             } catch (err: any) {
               console.error("Error adding new item: ", err);
             }
+            setLoading(false);
             return newItem;
           }
         }
+        setLoading(false);
         return null;
     }
 

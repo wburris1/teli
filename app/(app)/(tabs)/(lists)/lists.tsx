@@ -64,7 +64,7 @@ const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID:
           {chunkedData.map((row, rowIndex) => (
             <View key={rowIndex} style={[styles.row, styles.rowSpacing]}>
               {row.map(list => (
-                <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={true} userID='' />
+                <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={true} userID='' index={0} />
               ))}
             </View>
           ))}
@@ -78,7 +78,7 @@ const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID:
           {chunkedUnwatched.map((row, rowIndex) => (
             <View key={rowIndex} style={styles.row}>
               {row.map(list => (
-                <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={true} userID='' />
+                <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={true} userID='' index={0} />
               ))}
             </View>
           ))}

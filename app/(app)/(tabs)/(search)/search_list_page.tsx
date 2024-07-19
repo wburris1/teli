@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Modal, Pressable } from 'react-native';
+import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Modal, Pressable, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/Themed';
 import React, { ContextType, forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
@@ -178,7 +178,13 @@ export default function TabOneScreen() {
         <EditListScreen listID={listID as string} listTypeID={listTypeID as string} name={name as string} description={description as string}
             items={items} visible={editModalVisible} onClose={onClose} onEdit={onEditDetails} />
         <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
-        <ItemList />
+
+        {loaded ? 
+        <ItemList /> : (
+          <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <ActivityIndicator size="large" />
+          </View>
+        )}
         </View>
     );
   }

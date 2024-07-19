@@ -5,6 +5,7 @@ import { FIREBASE_DB } from "@/firebaseConfig";
 import { collection, doc, getDocs, writeBatch } from "firebase/firestore";
 import { UpdateListPosters } from "./posterUpdates";
 import { UserItem } from "@/constants/ImportTypes";
+import { useLoading } from "@/contexts/loading";
 
 const db = FIREBASE_DB;
 
@@ -121,12 +122,14 @@ export const useUserAdjustScores = () => {
 export const AdjustReorderedScores = () => {
     const { user } = useAuth();
     const updateListFunc = UpdateListPosters();
+    const { setLoading } = useLoading();
 
     async function reorderScores(items: UserItem[], listID: string, listTypeID: string) {
         // Count number of good/mid/bad items:
         if (!user) {
             return;
         }
+        setLoading(true);
         var numGood = 0;
         var numMid = 0;
         var numBad = 0;
@@ -216,9 +219,11 @@ export const AdjustReorderedScores = () => {
 
         try {
             await batch.commit();
+            setLoading(false);
             updateListFunc(listTypeID);
             console.log('Score update successful');
         } catch (error) {
+            setLoading(false);
             console.error('Score update failed: ', error);
         }
     }

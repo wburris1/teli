@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { FlatList, Platform, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { Text, View } from '../../components/Themed';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +15,7 @@ import Values from '@/constants/Values';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { addAndRemoveItemFromLists, useGetItemLists } from '@/data/addToList';
 import { user } from 'firebase-functions/v1/auth';
+import { useLoading } from '@/contexts/loading';
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
@@ -36,6 +37,7 @@ export default function AddToListsScreen() {
     const router = useRouter();
     const addToListsFunc = addAndRemoveItemFromLists();
     const { requestRefresh } = useData();
+    const { loading, setLoading } = useLoading();
 
     useEffect(() => {
       setSelectedLists(inLists);
@@ -85,9 +87,12 @@ export default function AddToListsScreen() {
       navigation.setOptions({
         headerRight: () => (
           <Pressable onPress={() => {
+              if (loading) return;
+              setLoading(true);
               addToListsFunc(item, selectedLists, removeLists,
                 activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
                     requestRefresh();
+                    setLoading(false);
                     resetAddLists();
                     router.back();
                 })
@@ -104,6 +109,7 @@ export default function AddToListsScreen() {
         ),
         headerLeft: () => (
           <Pressable onPress={() => {
+              if (loading) return;
               router.back();
               resetAddLists();
           }}>
@@ -123,7 +129,12 @@ export default function AddToListsScreen() {
     return (
         <GestureHandlerRootView>
           <View style={styles.centeredView}>
-            {loaded &&
+            {loading && (
+              <View style={styles.spinnerOverlay}>
+                <ActivityIndicator size="large" />
+              </View>
+            )}
+            {loaded ?
               <FlatList
               data={[...outLists, ...inLists]}
               renderItem={({ item, index }) => 
@@ -136,7 +147,11 @@ export default function AddToListsScreen() {
               />}
               keyExtractor={item => item.list_id}
               numColumns={1}
-              />}
+              /> : (
+                <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                  <ActivityIndicator size="large" />
+                </View>
+              )}
           </View>
         </GestureHandlerRootView>
     );
@@ -190,5 +205,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-start',
     padding: 10,
+  },
+  spinnerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    zIndex: 1,
   },
 });

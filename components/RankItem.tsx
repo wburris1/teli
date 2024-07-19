@@ -14,6 +14,7 @@ import { useTab } from '@/contexts/listContext';
 import AddToListsScreen from './AddToListsModal';
 import { CommentModalScreen } from './RankComment';
 import { UserItem } from '@/constants/ImportTypes';
+import { useLoading } from '@/contexts/loading';
 
 type Props = {
     item: Item,
@@ -49,6 +50,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const [comment, setComment] = useState("");
   const [hasSpoilers, setHasSpoilers] = useState(false);
   const addToDB = AddToDatabase();
+  const { loading } = useLoading();
 
   const getNext = (minScore: number, maxScore: number) => {
     if (items) {
@@ -125,7 +127,13 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
     <>
       {item &&
         <BlurView intensity={100} style={styles.blurContainer}>
+          {loading && (
+            <View style={styles.spinnerOverlay}>
+              <ActivityIndicator size="large" />
+            </View>
+          )}
           <TouchableOpacity onPress={() => {
+              if (loading) return;
               setCompItem(null);
               setUpperScore(0);
               setLowerScore(0);
@@ -158,21 +166,30 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
               <View style={[styles.initialRankView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
                 <Text style={styles.feedbackText}>Did you like it?</Text>
                 <View style={styles.feedback}>
-                  <TouchableOpacity onPress={() => setSelectedPref("like")}>
+                  <TouchableOpacity onPress={() => {
+                    if (loading) return;
+                    setSelectedPref("like");
+                  }}>
                     <Ionicons
                       name="checkmark-circle-outline"
                       size={60}
                       color={selectedPref == "like" ? "#00ff00" : Colors[colorScheme ?? 'light'].text}
                     />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setSelectedPref("mid")}>
+                  <TouchableOpacity onPress={() => {
+                    if (loading) return;
+                    setSelectedPref("mid");
+                  }}>
                     <Ionicons
                       name="remove-circle-outline"
                       size={60}
                       color={selectedPref == "mid" ? 'gray' : Colors[colorScheme ?? 'light'].text}
                     />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setSelectedPref("dislike")}>
+                  <TouchableOpacity onPress={() => {
+                    if (loading) return;
+                    setSelectedPref("dislike");
+                  }}>
                     <Ionicons
                       name="close-circle-outline"
                       size={60}
@@ -380,6 +397,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 50
+  },
+  spinnerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    zIndex: 1,
   },
 });
 

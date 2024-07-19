@@ -186,7 +186,7 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
         );
     }, [comment, post, parentCommentID]);
 
-    const handleLike = useCallback(async () => {
+    const handleHeart = useCallback(async () => {
         if (!user) return;
 
         const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
@@ -266,7 +266,7 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
                             </View>
                         </View>
                         <View style={{ paddingHorizontal: 5, alignItems: 'center', alignSelf: 'flex-start', marginTop: 15 }}>
-                            <Pressable onPress={handleLike}>
+                            <Pressable onPress={handleHeart}>
                                 <Ionicons name={isLiked ? "heart" : "heart-outline"} size={20} color={isLiked ? '#8b0000' : Colors[colorScheme ?? 'light'].text} />
                             </Pressable>
                             {numLikes > 0 &&

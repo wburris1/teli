@@ -1,4 +1,4 @@
-import { FlatList, Modal, Platform, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, FlatList, Modal, Platform, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
@@ -7,6 +7,7 @@ import Colors from '@/constants/Colors';
 import { useUserItemsSeenSearch } from '@/data/userData';
 import Values from '@/constants/Values';
 import { UserItem } from '@/constants/ImportTypes';
+import { useLoading } from '@/contexts/loading';
 
 type RowProps = {
     item: UserItem;
@@ -22,7 +23,7 @@ type ListModalScreenProps = {
     containedItems: UserItem[],
     onClose: () => void;
     onSelectedItemsChange: (items: UserItem[], removedItems: UserItem[]) => void;
-  };
+};
 
 export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, onSelectedItemsChange }: ListModalScreenProps) => {
   const { items, loaded } = useUserItemsSeenSearch(Values.seenListID, listTypeID);
@@ -30,6 +31,7 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
   const [selectedItems, setSelectedItems] = useState<UserItem[]>(containedItems);
   const [removedItems, setRemovedItems] = useState<UserItem[]>([]);
   const colorScheme = useColorScheme();
+  const { loading, setLoading } = useLoading();
 
   useEffect(() => {
     if (items) {
@@ -87,7 +89,10 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
                 color='red'
             />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => onSelectedItemsChange(selectedItems, removedItems)} style={styles.saveButton}>
+        <TouchableOpacity onPress={() => {
+            if (loading) return;
+            onSelectedItemsChange(selectedItems, removedItems);
+        }} style={styles.saveButton}>
             <Ionicons
                 name="checkmark-circle"
                 size={45}
@@ -98,6 +103,12 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
             <View style={styles.header}>
                 <Text style={[styles.text, {fontWeight: 'bold', color: Colors[colorScheme ?? 'light'].text}]}>Add to List</Text>
             </View>
+            {loading && (
+              <View style={styles.spinnerOverlay}>
+                <ActivityIndicator size="large" />
+              </View>
+            )}
+            {loaded ?
             <FlatList
             data={listItems}
             renderItem={({ item, index }) =>
@@ -110,7 +121,11 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
                 />}
             keyExtractor={item => item.item_id}
             numColumns={1}
-            />
+            /> : (
+                <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+                  <ActivityIndicator size="large" />
+                </View>
+            )}
         </View>
     </Modal>
   );
@@ -182,6 +197,17 @@ const styles = StyleSheet.create({
         position: 'absolute',
         left: 10,
         top: 55,
+        zIndex: 1,
+    },
+    spinnerOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'transparent',
         zIndex: 1,
     },
 });

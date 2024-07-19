@@ -6,11 +6,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { Link } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { KeyboardAvoidingView, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from "react-native";
 import { ListModalScreen } from "./ListModal";
 import { useData } from "@/contexts/dataContext";
 import { CreateListDB } from "@/data/addList";
 import { UserItem } from "@/constants/ImportTypes";
+import { useLoading } from "@/contexts/loading";
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
@@ -24,6 +25,7 @@ export const AddList = () => {
     const [selectedItems, setSelectedItems] = useState<UserItem[]>([]);
     const createListFunc = CreateListDB();
     const colorScheme = useColorScheme();
+    const { loading, setLoading } = useLoading();
 
     useEffect(() => {
         setListTypeID(activeTab == 0 ? Values.movieListsID : Values.tvListsID);
@@ -35,6 +37,7 @@ export const AddList = () => {
     };
 
     const handleListCreate = () => {
+        setLoading(true);
         const list: List = {
             list_id: "",
             name: listName,
@@ -46,6 +49,7 @@ export const AddList = () => {
         }
         createListFunc(list, listTypeID, selectedItems).then(complete => {
             if (complete == true) {
+                setLoading(false);
                 handleClose();
             }
         })
@@ -67,6 +71,11 @@ export const AddList = () => {
             onRequestClose={() => setAddModalVisible(false)}
         >
             <BlurView intensity={100} style={styles.blurContainer}>
+                {loading && (
+                    <View style={styles.spinnerOverlay}>
+                        <ActivityIndicator size="large" />
+                    </View>
+                )}
                 <KeyboardAvoidingView behavior="padding">
                     <View style={[styles.modalView, { backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
                         <View style={styles.headerContainer}>
@@ -236,4 +245,15 @@ const styles = StyleSheet.create({
         width: '100%',
         paddingLeft: 10,
     },
+    spinnerOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+        zIndex: 1,
+      },
 });
