@@ -154,7 +154,7 @@ const CommentsModal = ({post, onClose, visible}: {post: FeedPost, onClose: () =>
                     <View style={styles.handle} />
                     <Text style={styles.text}>Comments</Text>
                     {!loading ?
-                    <CommentsList comments={displayComments} post={post} handleReply={handleReply} /> : (
+                    <CommentsList comments={displayComments} post={post} handleReply={handleReply} onClose={onClose}/> : (
                       <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                         <ActivityIndicator size="large" />
                       </View>

@@ -15,6 +15,7 @@ import Values from '@/constants/Values';
 import { useData } from '@/contexts/dataContext';
 import { formatDate } from './Helpers/FormatDate';
 import { toFinite } from 'lodash';
+import { Link } from 'expo-router';
 
 const screenWidth = Dimensions.screenWidth;
 const DELETE_WIDTH = 80;
@@ -25,11 +26,11 @@ if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, deleteReply }: 
+const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, deleteReply, onClose}: 
     {
         comment: DisplayComment, parentCommentID: string, post: FeedPost,
         handleReply: (username: string, comment_id: string, parentCommentID: string) => void,
-        deleteReply: (comment_id: string) => void,
+        deleteReply: (comment_id: string) => void,  onClose: () => void,
     }) => {
     const { user } = useAuth();
     const colorScheme = useColorScheme();
@@ -253,9 +254,17 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
                         backgroundColor: Colors[colorScheme ?? 'light'].background, borderBottomColor: Colors[colorScheme ?? 'light'].text,
                         paddingLeft: parentCommentID !== "" ? 55 : 0,
                     }]}>
-                        <Image source={{ uri: comment.profile_picture }} style={styles.profilePic} />
+                        <Link href={{pathname: '/home_user', params: { userID: comment.user_id }}} asChild>
+                          <TouchableOpacity onPress={onClose}>
+                            <Image source={{ uri: comment.profile_picture }} style={styles.profilePic} />
+                          </TouchableOpacity>
+                        </Link>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.name}>{comment.first_name} <Text style={styles.username}>@{comment.username}</Text></Text>
+                          <Link href={{pathname: '/home_user', params: { userID: comment.user_id }}} asChild>
+                            <TouchableOpacity onPress={onClose}>
+                              <Text style={styles.name}>{comment.first_name} <Text style={styles.username}>@{comment.username}</Text></Text>
+                            </TouchableOpacity>
+                          </Link>
                             <Text style={styles.comment}>{comment.comment}</Text>
                             <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                 <Text style={{ fontSize: 13, fontWeight: '300', marginTop: 3 }}>{formattedDate}</Text>
@@ -327,15 +336,16 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
     );
 });
 
-export const CommentsList = ({ comments, post, handleReply }: { comments: DisplayComment[], post: FeedPost,
-    handleReply: (username: string, comment_id: string, parentCommentID: string) => void }) => {
+export const CommentsList = ({ comments, post, handleReply, onClose}: { comments: DisplayComment[], post: FeedPost,
+    handleReply: (username: string, comment_id: string, parentCommentID: string) => void,
+    onClose: () => void, }) => {
     const colorScheme = useColorScheme();
 
     if (comments) {
         return (
             <FlatList
                 data={comments}
-                renderItem={({ item }) => <RenderItem comment={item} parentCommentID='' post={post} handleReply={handleReply} deleteReply={() => {}} />}
+                renderItem={({ item }) => <RenderItem comment={item} parentCommentID='' post={post} handleReply={handleReply} deleteReply={() => {}} onClose={onClose} />}
                 keyExtractor={item => item.comment_id}
                 numColumns={1}
             />
