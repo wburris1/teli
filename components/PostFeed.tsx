@@ -11,6 +11,7 @@ import Values from "@/constants/Values";
 import { formatDate } from "./Helpers/FormatDate";
 import { ExpandableText } from "./AnimatedViews.tsx/ExpandableText";
 import { Link } from "expo-router";
+import React from "react";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;

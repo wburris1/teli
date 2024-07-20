@@ -100,7 +100,7 @@ const LikesModal = ({post, onClose, visible}: {post: FeedPost, onClose: () => vo
                   <Text style={styles.text}>Likes</Text>
                   {!loading ?
                   <View style={{ flex: 1 }}>
-                    <UsersListScreen users={userList} redirectPath='/home_user' />
+                    <UsersListScreen users={userList} redirectPath='/home_user' onClose={onClose}/>
                     {loading && <Text>Loading...</Text>}
                     {userList.length == USERS_PAGE_SIZE &&
                     <TouchableOpacity onPress={loadMoreUsers} disabled={loading}>
