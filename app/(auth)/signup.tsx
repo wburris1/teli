@@ -1,14 +1,17 @@
-import { Button, TextInput, View, StyleSheet, KeyboardAvoidingView, Text } from 'react-native';
+import { Button, TextInput, StyleSheet, KeyboardAvoidingView, Image, Pressable, TouchableOpacity, useColorScheme } from 'react-native';
 //import { useAuth, useSignUp } from '@clerk/clerk-expo';
 import Spinner from 'react-native-loading-spinner-overlay';
-import { useState } from 'react';
-import { Stack } from 'expo-router';
+import { useLayoutEffect, useState } from 'react';
+import { Stack, useNavigation } from 'expo-router';
 import { User, createUserWithEmailAndPassword } from 'firebase/auth';
 import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
 import Values from '@/constants/Values';
+import { Text, View } from '@/components/Themed';
+import Colors from '@/constants/Colors';
+import { Ionicons } from '@expo/vector-icons';
 
-const Register = () => {
+const SignUpStart = () => {
   //const { isLoaded, signUp, setActive } = useSignUp();
 
   const [firstName, setFirstName] = useState("");
@@ -20,6 +23,8 @@ const Register = () => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const auth = FIREBASE_AUTH;
+  const colorScheme = useColorScheme();
+  const navigation = useNavigation();
 
   // Create the user and send the verification email
   const onSignUpPress = async () => {
@@ -130,6 +135,16 @@ const Register = () => {
     }
   }; */
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={onSignUpPress}>
+          <Text style={{fontSize: 16, fontWeight: '500'}}>Done</Text>
+        </TouchableOpacity>
+      ),
+    })
+  }, [navigation])
+
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerBackVisible: !pendingVerification }} />
@@ -137,13 +152,31 @@ const Register = () => {
       <KeyboardAvoidingView behavior='padding'>
         {!pendingVerification && (
           <>
-            <TextInput autoCapitalize="none" placeholder="First name..." value={firstName} onChangeText={setFirstName} style={styles.inputField} />
-            <TextInput autoCapitalize="none" placeholder="Last name..." value={lastName} onChangeText={setLastName} style={styles.inputField} />
-            <TextInput autoCapitalize="none" placeholder="Username..." value={username} onChangeText={setUsername} style={styles.inputField} />
-            <TextInput autoCapitalize="none" placeholder="Email..." value={emailAddress} onChangeText={setEmailAddress} style={styles.inputField} />
-            <TextInput placeholder="Password..." value={password} onChangeText={setPassword} secureTextEntry style={styles.inputField} />
-
-            <Button onPress={onSignUpPress} title="Sign up" color={'#6c47ff'}></Button>
+            <Pressable>
+              <Image source={{ uri: '/' }} style={styles.profilePic} />
+            </Pressable>
+            <TouchableOpacity >
+              <View style={[styles.picButton, { backgroundColor: Colors[colorScheme ?? 'light'].text }]}>
+                <Ionicons name="add" size={25} color={Colors[colorScheme ?? 'light'].background}/>
+                <Text style={[styles.picText, { color: Colors[colorScheme ?? 'light'].background }]}>Add Picture</Text>
+              </View>
+            </TouchableOpacity>
+            <TextInput autoCapitalize="none" placeholder="First name..." value={firstName} onChangeText={setFirstName}
+              style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray}]} />
+            <TextInput autoCapitalize="none" placeholder="Last name..." value={lastName} onChangeText={setLastName}
+              style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray}]} />
+            <TextInput autoCapitalize="none" placeholder="Username..." value={username} onChangeText={setUsername}
+              style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray}]} />
+            <TextInput autoCapitalize="none" placeholder="Email..." value={emailAddress} onChangeText={setEmailAddress}
+              style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray}]} />
+            <TextInput placeholder="Password..." value={password} onChangeText={setPassword} secureTextEntry
+              style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray}]} />
+            <TouchableOpacity>
+              <View style={[styles.bioButton, {borderColor: Colors[colorScheme ?? 'light'].gray}]}>
+                <Ionicons name="add" size={25} color={Colors[colorScheme ?? 'light'].text} />
+                <Text style={{fontSize: 16, fontWeight: '500'}}>Add Bio...</Text>
+              </View>
+            </TouchableOpacity>
           </>
         )}
 
@@ -162,22 +195,54 @@ const Register = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 20,
+    justifyContent: 'flex-start',
   },
   inputField: {
-    marginVertical: 4,
     height: 50,
-    borderWidth: 1,
-    borderColor: '#6c47ff',
-    borderRadius: 4,
+    borderBottomWidth: 1,
     padding: 10,
-    backgroundColor: '#fff',
+  },
+  bioField: {
+    height: 200,
+    padding: 10,
+    marginTop: 10,
+    borderBottomWidth: 1,
   },
   button: {
     margin: 8,
     alignItems: 'center',
   },
+  profilePic: {
+    margin: 10,
+    height: 100,
+    aspectRatio: 1,
+    backgroundColor: 'gray',
+    borderRadius: 50,
+    alignSelf: 'center',
+  },
+  picButton: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 5,
+    borderRadius: 20,
+    paddingVertical: 7,
+    paddingRight: 10,
+    paddingLeft: 7,
+  },
+  picText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  bioButton: {
+    height: 50,
+    width: '100%',
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    paddingLeft: 5,
+  },
 });
 
-export default Register;
+export default SignUpStart;

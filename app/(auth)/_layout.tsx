@@ -1,25 +1,31 @@
 import React from 'react';
 import { Stack } from 'expo-router';
+import { useColorScheme } from 'react-native';
+import Colors from '@/constants/Colors';
 
 const PublicLayout = () => {
+  const colorScheme = useColorScheme();
+
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#6c47ff',
+          backgroundColor: Colors[colorScheme ?? 'light'].background,
         },
-        headerTintColor: '#fff',
-        headerBackTitle: 'Back',
+        headerTintColor: Colors[colorScheme ?? 'light'].text,
+        headerBackTitle: '',
+        headerShadowVisible: false,
+        headerShown: true,
       }}>
       <Stack.Screen
         name="login"
         options={{
-          headerTitle: 'Clerk Auth App',
+          headerTitle: '',
         }}></Stack.Screen>
       <Stack.Screen
         name="signup"
         options={{
-          headerTitle: 'Create Account',
+          headerTitle: 'Signup',
         }}></Stack.Screen>
       <Stack.Screen
         name="reset"
