@@ -52,6 +52,13 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const addToDB = AddToDatabase();
   const { loading } = useLoading();
 
+  //Variable for keeping track of the selected lists
+  const [selectedLists, setSelectedLists] = useState<List[]>([]);
+
+  const handleSelectedListsChange = (items: List[]) => {
+    setSelectedLists(items);
+};
+
   const getNext = (minScore: number, maxScore: number) => {
     if (items) {
       const newItems = items.filter(filterItem => filterItem.score > minScore && 
@@ -213,8 +220,11 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                       setListsModalVisible(true);
                     }}>
                       <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
-                        <Text style={{fontSize: 16, fontWeight: '300'}}>Add to lists</Text>
-                        <Ionicons name="add" size={25} color={Colors[colorScheme ?? 'light'].text} />
+                        <Text style={styles.addText}>Add to lists...</Text>
+                        {selectedLists.length > 0 &&
+                                <Text style={[styles.text, { color: Colors[colorScheme ?? 'light'].text }]}>
+                                  {"Added to " + selectedLists.length}{selectedLists.length > 1 ? " lists" : " list"}</Text>
+                            }
                       </View>
                     </TouchableOpacity>
                   </View>
@@ -239,7 +249,11 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                     visible={listsModalVisible}
                     onRequestClose={() => setListsModalVisible(false)}
                   >
-                    <AddToListsScreen item_id={item.id.toString()} listTypeID={listTypeID} isRanking={true} onClose={() => setListsModalVisible(false)} />
+                    <AddToListsScreen item_id={item.id.toString()} 
+                    listTypeID={listTypeID} 
+                    isRanking={true} 
+                    onClose={() => setListsModalVisible(false)} 
+                    onSelectedListsChange = {handleSelectedListsChange}/>
                   </Modal>
                   <Modal
                     animationType="slide"

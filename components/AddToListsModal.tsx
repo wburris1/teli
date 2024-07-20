@@ -21,6 +21,7 @@ type ScreenProps = {
     listTypeID: string;
     isRanking: boolean;
     onClose: () => void;
+    onSelectedListsChange: (items: List[], removedItems: List[]) => void;
 }
 
 type RowProps = {
@@ -31,8 +32,8 @@ type RowProps = {
   isSelected: boolean;
 };
 
-export default function AddToListsScreen({item_id, listTypeID, isRanking, onClose}: ScreenProps) {
-    const { inLists, outLists, loaded } = useGetItemLists(item_id, listTypeID);
+export default function AddToListsScreen({item_id, listTypeID, isRanking, onClose, onSelectedListsChange}: ScreenProps) {
+    const { inLists, outLists, loaded} = useGetItemLists(item_id, listTypeID);
     const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item, setAddModalVisible } = useTab();
     const colorScheme = useColorScheme();
     const addToListsFunc = addAndRemoveItemFromLists();
@@ -103,6 +104,9 @@ export default function AddToListsScreen({item_id, listTypeID, isRanking, onClos
                 </Pressable>
                 <Text style={{fontSize: 16, fontWeight: 'bold'}}>Add to lists</Text>
                 <Pressable onPress={() => {
+                  if (!loading) {
+                    onSelectedListsChange(selectedLists, removeLists);
+                  }
                     if (!isRanking && !loading) {
                       setLoading(true);
                       addToListsFunc(item, selectedLists, removeLists,
