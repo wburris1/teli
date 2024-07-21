@@ -27,10 +27,8 @@ export default function EditProfileScreen () {
         if (user && userData) {
             setLoading(true);
             try {
-                let downloadedURL = "/";
-                if (profilePic != userData.profile_picture) {
-                    const downloadedURL = await uploadImage(user.uid, profilePic);
-                }
+                const downloadedURL = await uploadImage(user.uid, profilePic);
+                console.log(downloadedURL);
                 const userRef = doc(FIREBASE_DB, 'users', user.uid);
                 const updatedUserData: UserData = {
                     user_id: user.uid,
