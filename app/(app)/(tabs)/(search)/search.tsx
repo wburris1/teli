@@ -49,7 +49,7 @@ const UsersTabContent = ({ query }: { query: string }) => {
 
     return (
         <View style={{ flex: 1 }}>
-            <UsersListScreen users={userList} />
+            <UsersListScreen users={userList} redirectPath='/search_user' />
             {loading && <Text>Loading...</Text>}
             {userList.length == USERS_PAGE_SIZE &&
             <TouchableOpacity onPress={loadMoreUsers} disabled={loading}>

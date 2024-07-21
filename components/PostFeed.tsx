@@ -1,7 +1,7 @@
 import { FeedPost } from "@/constants/ImportTypes";
 import { Timestamp, arrayRemove, arrayUnion, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
-import { Image, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
+import { Image, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Text, View } from "./Themed";
 import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,6 +10,8 @@ import { FIREBASE_DB } from "@/firebaseConfig";
 import Values from "@/constants/Values";
 import { formatDate } from "./Helpers/FormatDate";
 import { ExpandableText } from "./AnimatedViews.tsx/ExpandableText";
+import { Link } from "expo-router";
+import React from "react";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
@@ -23,7 +25,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
     const [isLiked, setIsLiked] = useState(item.likes.includes(user?.uid || ""));
     const [numLikes, setNumLikes] = useState(item.likes.length);
     const id = item.user_id + "/" + (item.score >= 0 ? item.item_id : item.post_id);
-    
+    const homeFeedFontSize = 18
     const handleHeart = async () => {
       if (!user) return;
       
@@ -45,6 +47,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
         });
       }
     }
+//                         <Link href={{pathname: '/home_user', params: { userID: item.user_id }}} asChild>
 
     return (
       <View style={[styles.postContainer, {borderColor: Colors[colorScheme ?? 'light'].gray}]} key={id}>
@@ -58,9 +61,19 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
             <View style={{flex: 1, alignItems: 'flex-start', paddingLeft: 7,}}>
                 <View style={{flexDirection: 'row', alignItems: 'flex-start',}}>
                     <Text numberOfLines={2} style={{fontSize: 17, marginBottom: 3, flex: 1, paddingRight: 15,}}>
-                        <Text style={{fontWeight: '500',}}>{item.first_name}</Text>
-                        <Text style = {{fontWeight: '300'}}>{item.score >= 0 ? " ranked " : (item.score == -2 ? " bookmarked " : " commented on ")}</Text>
-                        <Text style={{fontWeight: 'bold',}}>{item.item_name}</Text>
+                      <Link href={{pathname: '/home_user', params: { userID: item.user_id }}} asChild>
+                          <TouchableOpacity>
+                            <Text style={{fontWeight: '500',fontSize: homeFeedFontSize}}>{item.first_name}</Text>
+                          </TouchableOpacity>
+                      </Link>
+                      <View>
+                        <Text style = {{fontWeight: '300', fontSize: homeFeedFontSize}}>{item.score >= 0 ? " ranked " : (item.score == -2 ? " bookmarked " : " commented on ")}</Text>
+                      </View>
+                      <Link href={{pathname: "/home_item", params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
+                          <TouchableOpacity>
+                              <Text style={{fontWeight: 'bold',fontSize: homeFeedFontSize}}>{item.item_name}</Text>
+                          </TouchableOpacity>
+                      </Link>
                     </Text>
                 </View>
                 <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', paddingRight: item.score >= 0 ? 95 : 80}}>
@@ -101,10 +114,14 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
                 </View>
             </View>
           </View>
-          <Image
-            source={{ uri: imgUrl + item.poster_path }}
-            style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
-          />
+          <Link href={{pathname: "/home_item", params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
+              <TouchableOpacity>
+              <Image
+                source={{ uri: imgUrl + item.poster_path }}
+                style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
+              />
+              </TouchableOpacity>
+          </Link>
         </View>
       </View>
     )

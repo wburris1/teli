@@ -78,6 +78,7 @@ export const makeFeed = () => {
           const recentPosts = await getRecentPosts(followedUsers);
           recentPosts.sort((a, b) => (b.created_at as any).toDate() - (a.created_at as any).toDate());
 
+          console.log(recentPosts)
           setPosts(recentPosts);
         } catch (error) {
           console.error('Error fetching home feed: ', error);
