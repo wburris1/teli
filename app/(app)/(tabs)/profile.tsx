@@ -27,6 +27,7 @@ const emptyUser = {
   is_private: false,
   profile_picture: "/",
   created_at: "",
+  bio: "",
 }
 
 const LogoutButton = () => {

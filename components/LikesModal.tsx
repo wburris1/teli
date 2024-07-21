@@ -114,7 +114,6 @@ const LikesModal = ({post, onClose, visible}: {post: FeedPost, onClose: () => vo
                 </Animated.View>
               </PanGestureHandler>
             </TouchableWithoutFeedback>
-          
         </Modal>
   );
 };
