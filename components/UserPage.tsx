@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable } from 'react-native';
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebaseConfig";
-import { Timestamp, collection, doc, getDoc, getDocs, query } from "firebase/firestore";
+import { Timestamp, collection, doc, getDoc, getDocs, query, serverTimestamp } from "firebase/firestore";
 import { useData } from '@/contexts/dataContext';
 import { Text, View } from '@/components/Themed';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { Post } from '@/constants/ImportTypes';
+import { FeedPost, Post } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { ProfilePost } from '@/components/Post';
 import SearchTabs from './Search/SearchTabs';
@@ -16,6 +16,11 @@ import { UserList } from './UserList';
 import Dimensions from '@/constants/Dimensions';
 import { followUser, unfollowUser } from '@/data/followUser';
 import { useLoading } from '@/contexts/loading';
+import { PostFeed } from './PostFeed';
+import { makeFeed } from '@/data/feedData';
+import LikesModal from './LikesModal';
+import CommentsModal from './CommentsModal';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const db = FIREBASE_DB;
 
@@ -41,7 +46,14 @@ const UserPage = ({ userID }: {userID: string}) => {
   const [profileData, setProfileData] = useState<UserData>(emptyUser);
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
+  // const [posts, setPosts] = useState<Post[]>([]);
+  const { posts } = makeFeed(userID);
+  const [post, setPost] = useState<FeedPost>({
+    post_id: "", user_id: "", score: -1, list_type_id: "", profile_picture: "", first_name: "", last_name: "",
+    num_comments: 0, likes: [], item_id: "", item_name: "", has_spoilers: false,
+    created_at: serverTimestamp(), username: "", caption: "", poster_path: ""
+  });
+
   const [movieLists, setMovieLists] = useState<List[]>([]);
   const [tvLists, setTVLists] = useState<List[]>([]);
   const { loading, setLoading } = useLoading();
@@ -54,6 +66,8 @@ const UserPage = ({ userID }: {userID: string}) => {
   const followFunc = followUser();
   const unfollowFunc = unfollowUser();
   const { requestRefresh } = useData();
+  const [showComments, setShowComments] = useState(false);
+  const [showLikes, setShowLikes] = useState(false);
 
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -208,7 +222,7 @@ const UserPage = ({ userID }: {userID: string}) => {
             return dateB - dateA;
           });
 
-          setPosts(combinedPosts);
+          // setPosts(combinedPosts);
           setLoading(false);
         } catch (error) {
           console.error("Error fetching profile data: ", error);
@@ -243,13 +257,42 @@ const UserPage = ({ userID }: {userID: string}) => {
         })
     }
   }
+  const handleComments = (show: boolean, commentPost: FeedPost) => {
+    console.log("user num comm" + commentPost.num_comments)
+    setShowComments(show);
+    setPost(commentPost);
+  }
+  const handleLikes = (show: boolean, feedPost: FeedPost) => {
+    setShowLikes(show);
+    setPost(feedPost);
+  }
+  const keyExtractor = (item: FeedPost) => {
+    // Ensure unique and correctly formatted keys
+    if (item.score && (item.score >= 0 || item.score == -2)) {
+      return `${item.user_id}/${item.item_id}`;
+    } else {
+      return `${item.user_id}/${item.post_id}`;
+    }
+  };
 
   const activityTabContent = useCallback(() => 
-    <FlatList
-        data={posts}
-        keyExtractor={item => (item.score && (item.score >= 0 || item.score == -2)) ? item.item_id : item.post_id}
-        renderItem={({item, index}) => <ProfilePost item={item} index={index} name={profileData.first_name}/>}
-    />
+    <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
+      {!loading ? (
+        <>
+          <FlatList
+            data={posts}
+            keyExtractor={keyExtractor}
+            renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} />}
+          />
+          <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} />
+          <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} />
+        </>
+      ) : (
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator size="large" />
+        </View>
+      )}
+    </GestureHandlerRootView>
   , [refreshFlag, posts]);
 
   const listsTabContent = useCallback(() => 

@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable } from 'react-native';
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebaseConfig";
-import { Timestamp, collection, doc, getDoc, getDocs, query } from "firebase/firestore";
+import { Timestamp, collection, doc, getDoc, getDocs, query, serverTimestamp } from "firebase/firestore";
 import { useData } from '@/contexts/dataContext';
 import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +11,12 @@ import { useNavigation } from 'expo-router';
 import { FeedPost, Post } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { ProfilePost } from '@/components/Post';
+import { PostFeed } from '@/components/PostFeed';
+import LikesModal from '@/components/LikesModal';
+import CommentsModal from '@/components/CommentsModal';
+import { makeFeed } from '@/data/feedData';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 
 const db = FIREBASE_DB;
 
@@ -49,11 +55,19 @@ const ProfilePage = () => {
   const [profileData, setProfileData] = useState<UserData>(emptyUser);
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { posts } = makeFeed(user!.uid);
+  // const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const { refreshFlag, refreshListFlag } = useData();
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
+  const [showComments, setShowComments] = useState(false);
+  const [showLikes, setShowLikes] = useState(false);
+  const [post, setPost] = useState<FeedPost>({
+    post_id: "", user_id: "", score: -1, list_type_id: "", profile_picture: "", first_name: "", last_name: "",
+    num_comments: 0, likes: [], item_id: "", item_name: "", has_spoilers: false,
+    created_at: serverTimestamp(), username: "", caption: "", poster_path: ""
+  });
 
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -159,7 +173,7 @@ const ProfilePage = () => {
             return dateB - dateA;
           });
 
-          setPosts(combinedPosts);
+          // setPosts(combinedPosts);
         } catch (error) {
           console.error("Error fetching profile data: ", error);
         } finally {
@@ -181,6 +195,23 @@ const ProfilePage = () => {
       },
     })
   })
+  const handleComments = (show: boolean, commentPost: FeedPost) => {
+    console.log("index num comm" + commentPost.num_comments)
+    setShowComments(show);
+    setPost(commentPost);
+  }
+  const handleLikes = (show: boolean, feedPost: FeedPost) => {
+    setShowLikes(show);
+    setPost(feedPost);
+  }
+  const keyExtractor = (item: FeedPost) => {
+    // Ensure unique and correctly formatted keys
+    if (item.score && (item.score >= 0 || item.score == -2)) {
+      return `${item.user_id}/${item.item_id}`;
+    } else {
+      return `${item.user_id}/${item.post_id}`;
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -206,11 +237,23 @@ const ProfilePage = () => {
         </>
       )}
 
-      <FlatList
-        data={posts}
-        keyExtractor={item => (item.score && (item.score >= 0 || item.score == -2)) ? item.item_id : item.post_id}
-        renderItem={({item, index}) => <ProfilePost item={item} index={index} name="You"/>}
-      />
+      <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
+        {!loading ? (
+          <>
+            <FlatList
+              data={posts}
+              keyExtractor={keyExtractor}
+              renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} />}
+            />
+            <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} />
+            <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} />
+          </>
+        ) : (
+          <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            <ActivityIndicator size="large" />
+          </View>
+        )}
+      </GestureHandlerRootView>
     </View>
   );
 };
