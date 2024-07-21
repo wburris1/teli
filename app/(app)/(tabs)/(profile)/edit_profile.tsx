@@ -35,7 +35,7 @@ export default function EditProfileScreen () {
                 const updatedUserData: UserData = {
                     user_id: user.uid,
                     email: userData.email,
-                    profile_picture: profilePic,
+                    profile_picture: downloadedURL,
                     first_name: firstName,
                     last_name: lastName,
                     username: username,
