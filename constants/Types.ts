@@ -6,6 +6,7 @@ type UserData = {
     last_name: string,
     is_private: boolean,
     profile_picture: string,
+    bio: string,
 }
 
 type BaseItem = {
