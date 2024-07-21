@@ -284,8 +284,8 @@ const UserPage = ({ userID }: {userID: string}) => {
             keyExtractor={keyExtractor}
             renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} />}
           />
-          <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} />
-          <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} />
+          <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink='/user'/>
+          <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink='/user'/>
         </>
       ) : (
         <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>

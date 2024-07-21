@@ -26,11 +26,11 @@ if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, deleteReply, onClose}: 
+const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, deleteReply, onClose, redirectLink}: 
     {
         comment: DisplayComment, parentCommentID: string, post: FeedPost,
         handleReply: (username: string, comment_id: string, parentCommentID: string) => void,
-        deleteReply: (comment_id: string) => void,  onClose: () => void,
+        deleteReply: (comment_id: string) => void,  onClose: () => void, redirectLink: string
     }) => {
     const { user } = useAuth();
     const colorScheme = useColorScheme();
@@ -254,13 +254,13 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
                         backgroundColor: Colors[colorScheme ?? 'light'].background, borderBottomColor: Colors[colorScheme ?? 'light'].text,
                         paddingLeft: parentCommentID !== "" ? 55 : 0,
                     }]}>
-                        <Link href={{pathname: '/home_user', params: { userID: comment.user_id }}} asChild>
+                        <Link href={{pathname: redirectLink + '_user', params: { userID: comment.user_id }}} asChild>
                           <TouchableOpacity onPress={onClose}>
                             <Image source={{ uri: comment.profile_picture }} style={styles.profilePic} />
                           </TouchableOpacity>
                         </Link>
                         <View style={{ flex: 1 }}>
-                          <Link href={{pathname: '/home_user', params: { userID: comment.user_id }}} asChild>
+                          <Link href={{pathname: redirectLink + '_user', params: { userID: comment.user_id }}} asChild>
                             <TouchableOpacity onPress={onClose}>
                               <Text style={styles.name}>{comment.first_name} <Text style={styles.username}>@{comment.username}</Text></Text>
                             </TouchableOpacity>
@@ -301,7 +301,7 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
                 <View>
                 {replies.map(reply => reply && (
                     <View key={reply.comment_id}>
-                        <RenderItem comment={reply} key={reply.comment_id} parentCommentID={comment.comment_id} post={post} handleReply={handleReply} deleteReply={removeFromReplies} />
+                        <RenderItem comment={reply} key={reply.comment_id} parentCommentID={comment.comment_id} post={post} handleReply={handleReply} deleteReply={removeFromReplies} redirectLink={redirectLink}/>
                     </View>
                 ))}
                 </View>}
@@ -336,16 +336,16 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
     );
 });
 
-export const CommentsList = ({ comments, post, handleReply, onClose}: { comments: DisplayComment[], post: FeedPost,
+export const CommentsList = ({ comments, post, handleReply, onClose, redirectLink}: { comments: DisplayComment[], post: FeedPost,
     handleReply: (username: string, comment_id: string, parentCommentID: string) => void,
-    onClose: () => void, }) => {
+    onClose: () => void, redirectLink: string}) => {
     const colorScheme = useColorScheme();
 
     if (comments) {
         return (
             <FlatList
                 data={comments}
-                renderItem={({ item }) => <RenderItem comment={item} parentCommentID='' post={post} handleReply={handleReply} deleteReply={() => {}} onClose={onClose} />}
+                renderItem={({ item }) => <RenderItem comment={item} parentCommentID='' post={post} handleReply={handleReply} deleteReply={() => {}} onClose={onClose} redirectLink={redirectLink}/>}
                 keyExtractor={item => item.comment_id}
                 numColumns={1}
             />

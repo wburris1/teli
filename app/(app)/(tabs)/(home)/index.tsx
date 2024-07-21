@@ -55,8 +55,8 @@ export default function TabOneScreen() {
             keyExtractor={keyExtractor}
             renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} />}
           />
-          <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} />
-          <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} />
+          <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink='/home'/>
+          <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink='/home'/>
         </>
       ) : (
         <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
