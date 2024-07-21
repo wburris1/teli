@@ -13,7 +13,7 @@ import { serverTimestamp } from 'firebase/firestore';
 import LikesModal from '@/components/LikesModal';
 
 export default function TabOneScreen() {
-  const { posts, loading } = makeFeed();
+  const { posts, loading } = makeFeed('Home');
   const { refreshFlag } = useData();
   const [showComments, setShowComments] = useState(false);
   const [showLikes, setShowLikes] = useState(false);
