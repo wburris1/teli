@@ -4,18 +4,13 @@ import Spinner from 'react-native-loading-spinner-overlay';
 import { useLayoutEffect, useState } from 'react';
 import { Stack, useNavigation } from 'expo-router';
 import { User, createUserWithEmailAndPassword } from 'firebase/auth';
-import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from '@/firebaseConfig';
+import { FIREBASE_AUTH, FIREBASE_DB } from '@/firebaseConfig';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import Values from '@/constants/Values';
 import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import ImageUploader from '@/components/ImageUploader';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { first } from 'lodash';
-
-const storage = FIREBASE_STORAGE;
-const db = FIREBASE_DB;
+import ImageUploader, { uploadImage } from '@/components/ImageUploader';
 
 const SignUpStart = () => {
   const [profilePic, setProfilePic] = useState('');
@@ -33,27 +28,6 @@ const SignUpStart = () => {
   const colorScheme = useColorScheme();
   const navigation = useNavigation();
   const [uploading, setUploading] = useState(false);
-
-  const uploadImage = async (userID: string) => {
-    if (!profilePic) return '';
-    let downloadURL = '';
-
-    //setUploading(true);
-    try {
-      const response = await fetch(profilePic);
-      const blob = await response.blob();
-
-      const storageRef = ref(storage, `profile_pics/${userID}.jpg`);
-      await uploadBytes(storageRef, blob);
-
-      downloadURL = await getDownloadURL(storageRef);
-    } catch (error: any) {
-      Alert.alert('Upload Error', error.message);
-    } finally {
-      //setUploading(false);
-      return downloadURL;
-    }
-  }
 
   // Create the user and send the verification email
   const onSignUpPress = async () => {
@@ -92,7 +66,7 @@ const SignUpStart = () => {
     };
 
     try {
-      const profileURL = await uploadImage(user.uid);
+      const profileURL = await uploadImage(user.uid, profilePic);
       userData.profile_picture = profileURL;
       await setDoc(userRef, userData);
       

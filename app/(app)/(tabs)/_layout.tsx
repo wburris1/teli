@@ -76,8 +76,9 @@ export default function TabLayout() {
         redirect={false}
       />
       <Tabs.Screen
-        name="profile"
+        name="(profile)"
         options={{
+          headerShown: false,
           tabBarShowLabel: false,
           tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
           tabBarLabel: 'Profile',

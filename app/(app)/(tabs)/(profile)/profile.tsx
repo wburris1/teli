@@ -7,7 +7,7 @@ import { useData } from '@/contexts/dataContext';
 import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
-import { useNavigation } from 'expo-router';
+import { Link, useNavigation } from 'expo-router';
 import { FeedPost, Post } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { ProfilePost } from '@/components/Post';
@@ -44,15 +44,14 @@ const LogoutButton = () => {
   };
 
   return (
-    <TouchableOpacity onPress={doLogout} style={{ marginRight: 10 }}>
+    <TouchableOpacity onPress={doLogout}>
       <Ionicons name="log-out-outline" size={30} color={Colors[colorScheme ?? 'light'].text} />
     </TouchableOpacity>
   );
 };
 
 const ProfilePage = () => {
-  const { user } = useAuth();
-  const [profileData, setProfileData] = useState<UserData>(emptyUser);
+  const { user, userData } = useAuth();
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
   const { posts } = makeFeed(user!.uid);
@@ -77,12 +76,6 @@ const ProfilePage = () => {
     const fetchProfileData = async () => {
       if (user) {
         try {
-          const fetchUserProfile = async () => {
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
-            return userDoc.data() as UserData;
-          };
-
           const fetchUserPosts = async () => {
             const userDocRef = doc(db, 'users', user.uid);
             const postsCollectionRef = collection(userDocRef, 'posts');
@@ -137,7 +130,6 @@ const ProfilePage = () => {
 
           // Run all operations concurrently
           const [
-            userData,
             postsData,
             moviesSeenData,
             moviesBookmarkedData,
@@ -146,7 +138,6 @@ const ProfilePage = () => {
             followersData,
             followingData,
           ] = await Promise.all([
-            fetchUserProfile(),
             fetchUserPosts(),
             fetchMoviesSeen(),
             fetchMoviesBookmarked(),
@@ -156,7 +147,6 @@ const ProfilePage = () => {
             fetchFollowing(),
           ]);
 
-          setProfileData(userData);
           setFollowers(followersData);
           setFollowing(followingData);
           const combinedPosts = [
@@ -187,8 +177,15 @@ const ProfilePage = () => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: profileData.first_name + " " + profileData.last_name,
+      title: userData ? userData.first_name + " " + userData.last_name : '',
       headerRight: () => <LogoutButton />,
+      headerLeft: () => (
+        <Link href={{ pathname: '/edit_profile' }} asChild>
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name="pencil" size={25} color={Colors[colorScheme ?? 'light'].text} />
+          </TouchableOpacity>
+        </Link>
+      ),
       headerTitleStyle: {
         fontSize: 22,
         fontWeight: 'bold',
@@ -215,12 +212,12 @@ const ProfilePage = () => {
 
   return (
     <View style={styles.container}>
-      {profileData && (
+      {userData && (
         <>
           <View style={{width: '100%', alignItems: 'center'}}>
-            <Text style={styles.username}>@{profileData.username}</Text>
+            <Text style={styles.username}>@{userData.username}</Text>
             <Image
-              source={{ uri: profileData.profile_picture }}
+              source={{ uri: userData.profile_picture }}
               style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text }]}
             />
           </View>

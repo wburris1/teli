@@ -13,7 +13,6 @@ import { AuthProvider, useAuth } from '@/contexts/authContext';
 import { DataProvider } from '@/contexts/dataContext';
 import { ListProvider } from '@/contexts/listContext';
 import { LoadingProvider } from '@/contexts/loading';
-import { UserProvider } from '@/contexts/userContext';
 //import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 /*
 const CLERK_PUBLISHABLE_KEY = 'pk_test_cHJvcGVyLWphY2thbC04My5jbGVyay5hY2NvdW50cy5kZXYk';
@@ -94,16 +93,14 @@ const InitialLayout = () => {
 
 function RootLayoutNav() {
   return (
-    <UserProvider>
-      <LoadingProvider>
-        <AuthProvider>
-          <DataProvider>
-            <ListProvider>
-              <InitialLayout />
-            </ListProvider>
-          </DataProvider>
-        </AuthProvider>
-      </LoadingProvider>
-    </UserProvider>
+    <LoadingProvider>
+      <AuthProvider>
+        <DataProvider>
+          <ListProvider>
+            <InitialLayout />
+          </ListProvider>
+        </DataProvider>
+      </AuthProvider>
+    </LoadingProvider>
   );
 }

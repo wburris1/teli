@@ -5,6 +5,27 @@ import * as FileSystem from 'expo-file-system';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from './Themed';
 import Colors from '@/constants/Colors';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { FIREBASE_STORAGE } from '@/firebaseConfig';
+
+export const uploadImage = async (userID: string, image: string) => {
+  if (!image) return '';
+  let downloadURL = '';
+
+  try {
+    const response = await fetch(image);
+    const blob = await response.blob();
+
+    const storageRef = ref(FIREBASE_STORAGE, `profile_pics/${userID}.jpg`);
+    await uploadBytes(storageRef, blob);
+
+    downloadURL = await getDownloadURL(storageRef);
+  } catch (error: any) {
+    Alert.alert('Upload Error', error.message);
+  } finally {
+    return downloadURL;
+  }
+}
 
 const ImageUploader = ({changeImage}: { changeImage: (imgUri: string) => void}) => {
   const [image, setImage] = useState('');
@@ -63,8 +84,8 @@ const ImageUploader = ({changeImage}: { changeImage: (imgUri: string) => void}) 
         <View style={{alignSelf: 'center'}}>
             <TouchableOpacity onPress={pickImage}>
                 <View style={[styles.picButton, { backgroundColor: Colors[colorScheme ?? 'light'].text }]}>
-                    <Ionicons name="add" size={25} color={Colors[colorScheme ?? 'light'].background}/>
-                    <Text style={[styles.picText, { color: Colors[colorScheme ?? 'light'].background }]}>Add Picture</Text>
+                    <Ionicons name={image ? "person-circle" : "add"} size={25} color={Colors[colorScheme ?? 'light'].background}/>
+                    <Text style={[styles.picText, { color: Colors[colorScheme ?? 'light'].background }]}>{image ? "Change Picture" : "Add Picture"}</Text>
                 </View>
             </TouchableOpacity>
         </View>
@@ -99,6 +120,7 @@ const styles = StyleSheet.create({
   picText: {
     fontSize: 14,
     fontWeight: '500',
+    marginLeft: 3,
   },
 });
 
