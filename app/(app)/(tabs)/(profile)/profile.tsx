@@ -16,6 +16,8 @@ import LikesModal from '@/components/LikesModal';
 import CommentsModal from '@/components/CommentsModal';
 import { makeFeed } from '@/data/feedData';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import useModalState from '@/components/ModalState';
+import PostFeedWithModals from '@/components/PostFeedWithModals';
 
 
 const db = FIREBASE_DB;
@@ -51,6 +53,7 @@ const LogoutButton = () => {
 };
 
 const ProfilePage = () => {
+  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, keyExtractor } = useModalState();
   const { user, userData } = useAuth();
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
@@ -60,13 +63,6 @@ const ProfilePage = () => {
   const { refreshFlag, refreshListFlag } = useData();
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
-  const [showComments, setShowComments] = useState(false);
-  const [showLikes, setShowLikes] = useState(false);
-  const [post, setPost] = useState<FeedPost>({
-    post_id: "", user_id: "", score: -1, list_type_id: "", profile_picture: "", first_name: "", last_name: "",
-    num_comments: 0, likes: [], item_id: "", item_name: "", has_spoilers: false,
-    created_at: serverTimestamp(), username: "", caption: "", poster_path: ""
-  });
 
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -191,24 +187,7 @@ const ProfilePage = () => {
         fontWeight: 'bold',
       },
     })
-  })
-  const handleComments = (show: boolean, commentPost: FeedPost) => {
-    console.log("index num comm" + commentPost.num_comments)
-    setShowComments(show);
-    setPost(commentPost);
-  }
-  const handleLikes = (show: boolean, feedPost: FeedPost) => {
-    setShowLikes(show);
-    setPost(feedPost);
-  }
-  const keyExtractor = (item: FeedPost) => {
-    // Ensure unique and correctly formatted keys
-    if (item.score && (item.score >= 0 || item.score == -2)) {
-      return `${item.user_id}/${item.item_id}`;
-    } else {
-      return `${item.user_id}/${item.post_id}`;
-    }
-  };
+  })  
 
   return (
     <View style={styles.container}>
@@ -233,24 +212,18 @@ const ProfilePage = () => {
           </View>
         </>
       )}
-
-      <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
-        {!loading ? (
-          <>
-            <FlatList
-              data={posts}
-              keyExtractor={keyExtractor}
-              renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink='/profile'/>}
-            />
-            <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink='/profile'/>
-            <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink='/profile'/>
-          </>
-        ) : (
-          <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-            <ActivityIndicator size="large" />
-          </View>
-        )}
-      </GestureHandlerRootView>
+      <PostFeedWithModals
+        posts={posts}
+        loading={loading}
+        post={post}
+        showComments={showComments}
+        showLikes={showLikes}
+        handleComments={handleComments}
+        handleLikes={handleLikes}
+        setShowComments={setShowComments}
+        setShowLikes={setShowLikes}
+        redirectLink='/profile'
+      />
     </View>
   );
 };

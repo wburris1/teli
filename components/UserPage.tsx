@@ -21,6 +21,7 @@ import { makeFeed } from '@/data/feedData';
 import LikesModal from './LikesModal';
 import CommentsModal from './CommentsModal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import useModalState from './ModalState';
 
 const db = FIREBASE_DB;
 
@@ -41,6 +42,8 @@ const emptyUser = {
 }
 
 const UserPage = ({ userID }: {userID: string}) => {
+  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, keyExtractor } = useModalState();
+
   const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [profileData, setProfileData] = useState<UserData>(emptyUser);
@@ -48,11 +51,7 @@ const UserPage = ({ userID }: {userID: string}) => {
   const [following, setFollowing] = useState<{ id: string }[]>([]);
   // const [posts, setPosts] = useState<Post[]>([]);
   const { posts } = makeFeed(userID);
-  const [post, setPost] = useState<FeedPost>({
-    post_id: "", user_id: "", score: -1, list_type_id: "", profile_picture: "", first_name: "", last_name: "",
-    num_comments: 0, likes: [], item_id: "", item_name: "", has_spoilers: false,
-    created_at: serverTimestamp(), username: "", caption: "", poster_path: ""
-  });
+  
 
   const [movieLists, setMovieLists] = useState<List[]>([]);
   const [tvLists, setTVLists] = useState<List[]>([]);
@@ -66,8 +65,6 @@ const UserPage = ({ userID }: {userID: string}) => {
   const followFunc = followUser();
   const unfollowFunc = unfollowUser();
   const { requestRefresh } = useData();
-  const [showComments, setShowComments] = useState(false);
-  const [showLikes, setShowLikes] = useState(false);
 
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -257,23 +254,6 @@ const UserPage = ({ userID }: {userID: string}) => {
         })
     }
   }
-  const handleComments = (show: boolean, commentPost: FeedPost) => {
-    console.log("user num comm" + commentPost.num_comments)
-    setShowComments(show);
-    setPost(commentPost);
-  }
-  const handleLikes = (show: boolean, feedPost: FeedPost) => {
-    setShowLikes(show);
-    setPost(feedPost);
-  }
-  const keyExtractor = (item: FeedPost) => {
-    // Ensure unique and correctly formatted keys
-    if (item.score && (item.score >= 0 || item.score == -2)) {
-      return `${item.user_id}/${item.item_id}`;
-    } else {
-      return `${item.user_id}/${item.post_id}`;
-    }
-  };
 
   const activityTabContent = useCallback(() => 
     <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
