@@ -15,6 +15,8 @@ import AddToListsScreen from './AddToListsModal';
 import { CommentModalScreen } from './RankComment';
 import { UserItem } from '@/constants/ImportTypes';
 import { useLoading } from '@/contexts/loading';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, { interpolate, runOnJS, useAnimatedStyle, useDerivedValue, useSharedValue, withDecay, withSpring } from 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
 
 type Props = {
@@ -52,6 +54,8 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const [hasSpoilers, setHasSpoilers] = useState(false);
   const addToDB = AddToDatabase();
   const { loading } = useLoading();
+  const translationX = useSharedValue(0);
+
   //Variable for keeping track of the selected lists
   const [selectedLists, setSelectedLists] = useState<List[]>([]);
 
@@ -86,7 +90,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
     }
   }
 
-  const handleFeedback = async (minScore: number, maxScore: number, initialScore: number) => {
+  const handleFeedback = (minScore: number, maxScore: number, initialScore: number) => {
     setLowerScore(minScore);
     setUpperScore(maxScore);
 
@@ -114,7 +118,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
     }
   }
 
-  const handleComp = async (minScore: number, maxScore: number) => {
+  const handleComp = (minScore: number, maxScore: number) => {
     setLowerScore(minScore);
     setUpperScore(maxScore);
 
@@ -140,6 +144,8 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
 
       if (newItem) {
         setCompItem(newItem);
+        translationX.value *= -1;
+        translationX.value = withSpring(0);
       } else {
         const newScore = maxScore - smallAssNumber;
         addToDB(newScore, item, listID, isMovie, isDupe, items, comment, hasSpoilers).then(addItem => {
@@ -164,8 +170,38 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
     }
   }
 
+  const gesture = Gesture.Pan()
+    .onChange((event) => {
+      translationX.value = event.translationX;
+    })
+    .onEnd((event) => {
+      translationX.value = withSpring(0);
+      if (Math.abs(event.velocityX) > 500) {
+        translationX.value = withDecay({ velocity: event.velocityX }, () => {
+          if (translationX.value > 0 && compItem) {
+            runOnJS(handleComp)(lowerScore, compItem.score);
+            console.log("finish");
+          } else if (translationX.value < 0 && compItem) {
+            runOnJS(handleComp)(compItem.score, upperScore);
+          }
+        });
+      }
+    })
+
+  const animatedCard = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateX: translationX.value,
+      },
+      {
+        rotateZ: interpolate(translationX.value, [-screenWidth / 2, 0, screenWidth / 2],
+          [-20, 0, 20]) + 'deg',
+      }
+    ]
+  }))
+
   return (
-    <>
+    <GestureHandlerRootView>
       {item &&
         <BlurView intensity={100} style={styles.blurContainer}>
           {loading && (
@@ -306,8 +342,9 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
             )}
 
               {compItem && (
-                <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
-                <View>
+                <GestureDetector gesture={gesture}>
+                <View style={[styles.modalView, {backgroundColor: 'transparent'}]}>
+                <Animated.View style={[animatedCard, {zIndex: 1}]}>
                   <Image
                     source={{ uri: imgUrl + compItem.poster_path }}
                     style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].background}]}
@@ -316,8 +353,8 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                     colors={['transparent', 'black']}
                     style={styles.gradient}
                   />
-                </View>
-                <Text style={[styles.movieTitle, {color: 'white'}]}>{'title' in compItem ? compItem.title : compItem.name}</Text>
+                  <Text style={[styles.movieTitle, {color: 'white'}]}>{'title' in compItem ? compItem.title : compItem.name}</Text>
+                </Animated.View>
                 <TouchableOpacity style={{position: 'absolute', left: -75, top: 150}} onPress={() => handleComp(compItem.score, upperScore)}>
                       <Ionicons
                         name="close-circle"
@@ -340,10 +377,11 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                       />
                     </TouchableOpacity>
                 </View>
+                </GestureDetector>
               )}
           </View>
         </BlurView>}
-    </>
+    </GestureHandlerRootView>
   );
 };
 
@@ -377,6 +415,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     height: (screenHeight / 2) - 80,
     aspectRatio: 1 / 1.5,
+    zIndex: 1,
   },
   initialRankView: {
     borderRadius: 20,
