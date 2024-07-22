@@ -14,6 +14,7 @@ import { ListModalScreen } from "./ListModal";
 import { editListItems } from "@/data/editListItems";
 import { UserItem } from "@/constants/ImportTypes";
 import { useLoading } from "@/contexts/loading";
+import Toast from "react-native-toast-message";
 
 type ListProps = {
     listID: string,
@@ -52,6 +53,14 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
                     onPress: () => {
                         deleteFunc();
                         router.back();
+                        Toast.show({
+                          type: 'info',
+                          text1: "Deleted List",
+                          text2: "You deleted list '" + name + "'",
+                          position: "bottom",
+                          visibilityTime: 3000,
+                          bottomOffset: 100
+                        });
                     }
                 }
             ]
