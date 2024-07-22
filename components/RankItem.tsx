@@ -15,6 +15,7 @@ import AddToListsScreen from './AddToListsModal';
 import { CommentModalScreen } from './RankComment';
 import { UserItem } from '@/constants/ImportTypes';
 import { useLoading } from '@/contexts/loading';
+import Toast from 'react-native-toast-message';
 
 type Props = {
     item: Item,
@@ -51,9 +52,18 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const [hasSpoilers, setHasSpoilers] = useState(false);
   const addToDB = AddToDatabase();
   const { loading } = useLoading();
-
   //Variable for keeping track of the selected lists
   const [selectedLists, setSelectedLists] = useState<List[]>([]);
+
+  let toastText1;
+  let toastText2;
+  if (isMovie) {
+    toastText1 = "You Ranked " + item.title
+    toastText2 = "You successfully ranked " + item.title
+  } else {
+    toastText1 = "You Ranked " + item.name
+    toastText2 = "You successfully ranked " + item.name
+  }
 
   const handleSelectedListsChange = (items: List[]) => {
     setSelectedLists(items);
@@ -90,6 +100,14 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
         onClose();
         requestRefresh();
         console.log("Item added!");
+        Toast.show({
+          type: 'info',
+          text1: toastText1,
+          text2: toastText2,
+          position: "bottom",
+          visibilityTime: 3000,
+          bottomOffset: 100
+        });
       }).catch(error => {
         console.error("Failed to add item:", error);
       });
@@ -106,6 +124,14 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
         onClose();
         requestRefresh();
         console.log("Item added! No score adjust necessary");
+        Toast.show({
+          type: 'info',
+          text1: toastText1,
+          text2: toastText2,
+          position: "bottom",
+          visibilityTime: 3000,
+          bottomOffset: 100
+        });
       }).catch(error => {
         console.error("Failed to add item:", error);
       });
@@ -122,6 +148,14 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
             onClose();
             requestRefresh();
             console.log("Item added!");
+            Toast.show({
+              type: 'info',
+              text1: toastText1,
+              text2: toastText2,
+              position: "bottom",
+              visibilityTime: 3000,
+              bottomOffset: 100
+            });
           }
         }).catch(error => {
           console.error("Failed to add item:", error);
@@ -210,7 +244,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                   <View style={{width: '100%'}}>
                   <TouchableOpacity onPress={() => setCommentModalVisible(true)}>
                   <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}]}>
-                    <Text style={[styles.addText, {flex: 1}]} numberOfLines={2}>{comment}</Text>
+                    <Text style={{flex: 1}} numberOfLines={2}>{comment}</Text>
                     <Ionicons name="pencil" size={25} color={Colors[colorScheme ?? 'light'].text} />
                     </View>
                   </TouchableOpacity>
