@@ -47,7 +47,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const [selectedPref, setSelectedPref] = useState("none");
   const [listsModalVisible, setListsModalVisible] = useState(false);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState("Add comment...");
   const [hasSpoilers, setHasSpoilers] = useState(false);
   const addToDB = AddToDatabase();
   const { loading } = useLoading();
@@ -209,9 +209,9 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                 <>
                   <View style={{width: '100%'}}>
                   <TouchableOpacity onPress={() => setCommentModalVisible(true)}>
-                    <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
-                      <Text style={{fontSize: 16, fontWeight: '300'}}>Comment</Text>
-                      <Ionicons name="pencil" size={25} color={Colors[colorScheme ?? 'light'].text} />
+                  <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}]}>
+                    <Text style={[styles.addText, {flex: 1}]} numberOfLines={2}>{comment}</Text>
+                    <Ionicons name="pencil" size={25} color={Colors[colorScheme ?? 'light'].text} />
                     </View>
                   </TouchableOpacity>
                   </View>
