@@ -8,7 +8,8 @@ import { useEffect, useState } from "react";
 
 const db = FIREBASE_DB;
 
-export const makeFeed = () => {
+// input userID should be 'Home' if used for home feed.
+export const makeFeed = (userID: string, ) => {
   const { user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,14 +72,20 @@ export const makeFeed = () => {
   };
 
   useEffect(() => {
-    const fetchHomeFeed = async () => {
+    const fetchFeed = async () => {
       if (user) {
         try {
-          const followedUsers = await getFollowedUsers();
-          const recentPosts = await getRecentPosts(followedUsers);
+          let recentPosts;
+
+          if (userID === 'Home') {
+            const followedUsers = await getFollowedUsers();
+            recentPosts = await getRecentPosts(followedUsers);
+          } else {
+            recentPosts = await getRecentPosts([userID]);
+          }
+
           recentPosts.sort((a, b) => (b.created_at as any).toDate() - (a.created_at as any).toDate());
 
-          console.log(recentPosts)
           setPosts(recentPosts);
         } catch (error) {
           console.error('Error fetching home feed: ', error);
@@ -88,7 +95,7 @@ export const makeFeed = () => {
       }
     };
 
-    fetchHomeFeed();
+    fetchFeed();
   }, [user, refreshFlag]);
 
   return { posts, loading };

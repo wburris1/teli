@@ -2,15 +2,23 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable } from 'react-native';
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebaseConfig";
-import { Timestamp, collection, doc, getDoc, getDocs, query } from "firebase/firestore";
+import { Timestamp, collection, doc, getDoc, getDocs, query, serverTimestamp } from "firebase/firestore";
 import { useData } from '@/contexts/dataContext';
 import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
-import { useNavigation } from 'expo-router';
+import { Link, useNavigation } from 'expo-router';
 import { FeedPost, Post } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { ProfilePost } from '@/components/Post';
+import { PostFeed } from '@/components/PostFeed';
+import LikesModal from '@/components/LikesModal';
+import CommentsModal from '@/components/CommentsModal';
+import { makeFeed } from '@/data/feedData';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import useModalState from '@/components/ModalState';
+import PostFeedWithModals from '@/components/PostFeedWithModals';
+
 
 const db = FIREBASE_DB;
 
@@ -27,6 +35,7 @@ const emptyUser = {
   is_private: false,
   profile_picture: "/",
   created_at: "",
+  bio: "",
 }
 
 const LogoutButton = () => {
@@ -37,18 +46,19 @@ const LogoutButton = () => {
   };
 
   return (
-    <TouchableOpacity onPress={doLogout} style={{ marginRight: 10 }}>
+    <TouchableOpacity onPress={doLogout}>
       <Ionicons name="log-out-outline" size={30} color={Colors[colorScheme ?? 'light'].text} />
     </TouchableOpacity>
   );
 };
 
 const ProfilePage = () => {
-  const { user } = useAuth();
-  const [profileData, setProfileData] = useState<UserData>(emptyUser);
+  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, keyExtractor } = useModalState();
+  const { user, userData } = useAuth();
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { posts } = makeFeed(user!.uid);
+  // const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const { refreshFlag, refreshListFlag } = useData();
   const navigation = useNavigation();
@@ -62,12 +72,6 @@ const ProfilePage = () => {
     const fetchProfileData = async () => {
       if (user) {
         try {
-          const fetchUserProfile = async () => {
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
-            return userDoc.data() as UserData;
-          };
-
           const fetchUserPosts = async () => {
             const userDocRef = doc(db, 'users', user.uid);
             const postsCollectionRef = collection(userDocRef, 'posts');
@@ -122,7 +126,6 @@ const ProfilePage = () => {
 
           // Run all operations concurrently
           const [
-            userData,
             postsData,
             moviesSeenData,
             moviesBookmarkedData,
@@ -131,7 +134,6 @@ const ProfilePage = () => {
             followersData,
             followingData,
           ] = await Promise.all([
-            fetchUserProfile(),
             fetchUserPosts(),
             fetchMoviesSeen(),
             fetchMoviesBookmarked(),
@@ -141,7 +143,6 @@ const ProfilePage = () => {
             fetchFollowing(),
           ]);
 
-          setProfileData(userData);
           setFollowers(followersData);
           setFollowing(followingData);
           const combinedPosts = [
@@ -158,7 +159,7 @@ const ProfilePage = () => {
             return dateB - dateA;
           });
 
-          setPosts(combinedPosts);
+          // setPosts(combinedPosts);
         } catch (error) {
           console.error("Error fetching profile data: ", error);
         } finally {
@@ -172,23 +173,30 @@ const ProfilePage = () => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: profileData.first_name + " " + profileData.last_name,
+      title: userData ? userData.first_name + " " + userData.last_name : '',
       headerRight: () => <LogoutButton />,
+      headerLeft: () => (
+        <Link href={{ pathname: '/edit_profile' }} asChild>
+          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name="pencil" size={25} color={Colors[colorScheme ?? 'light'].text} />
+          </TouchableOpacity>
+        </Link>
+      ),
       headerTitleStyle: {
         fontSize: 22,
         fontWeight: 'bold',
       },
     })
-  })
+  })  
 
   return (
     <View style={styles.container}>
-      {profileData && (
+      {userData && (
         <>
           <View style={{width: '100%', alignItems: 'center'}}>
-            <Text style={styles.username}>@{profileData.username}</Text>
+            <Text style={styles.username}>@{userData.username}</Text>
             <Image
-              source={{ uri: profileData.profile_picture }}
+              source={{ uri: userData.profile_picture }}
               style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text }]}
             />
           </View>
@@ -204,11 +212,17 @@ const ProfilePage = () => {
           </View>
         </>
       )}
-
-      <FlatList
-        data={posts}
-        keyExtractor={item => (item.score && (item.score >= 0 || item.score == -2)) ? item.item_id : item.post_id}
-        renderItem={({item, index}) => <ProfilePost item={item} index={index} name="You"/>}
+      <PostFeedWithModals
+        posts={posts}
+        loading={loading}
+        post={post}
+        showComments={showComments}
+        showLikes={showLikes}
+        handleComments={handleComments}
+        handleLikes={handleLikes}
+        setShowComments={setShowComments}
+        setShowLikes={setShowLikes}
+        redirectLink='/profile'
       />
     </View>
   );

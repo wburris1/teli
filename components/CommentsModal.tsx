@@ -18,7 +18,7 @@ import { useLoading } from '@/contexts/loading';
 
 const db = FIREBASE_DB;
 
-const CommentsModal = ({post, onClose, visible}: {post: FeedPost, onClose: () => void, visible: boolean}) => {
+const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, onClose: () => void, visible: boolean, redirectLink: string}) => {
   const { user } = useAuth();
   const translateY = useSharedValue(0);
   const [dragging, setDragging] = useState(false);
@@ -154,7 +154,7 @@ const CommentsModal = ({post, onClose, visible}: {post: FeedPost, onClose: () =>
                     <View style={styles.handle} />
                     <Text style={styles.text}>Comments</Text>
                     {!loading ?
-                    <CommentsList comments={displayComments} post={post} handleReply={handleReply} /> : (
+                    <CommentsList comments={displayComments} post={post} handleReply={handleReply} onClose={onClose} redirectLink={redirectLink}/> : (
                       <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                         <ActivityIndicator size="large" />
                       </View>

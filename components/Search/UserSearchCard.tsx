@@ -3,7 +3,7 @@ import { Text, View } from "../Themed"
 import { FlatList, Image, StyleSheet, TouchableOpacity } from "react-native"
 import React from "react"
 
-export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData[], redirectPath: string, onClose: () => void, visible: boolean}) => {
+export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData[], redirectPath: string, onClose: () => void}) => {
   
   const renderItem = ({item, index}: {item: UserData, index: number}) => {
         return (

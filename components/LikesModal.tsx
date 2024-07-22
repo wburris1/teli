@@ -18,7 +18,7 @@ import { useLoading } from '@/contexts/loading';
 
 const db = FIREBASE_DB;
 
-const LikesModal = ({post, onClose, visible}: {post: FeedPost, onClose: () => void, visible: boolean}) => {
+const LikesModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, onClose: () => void, visible: boolean, redirectLink: string}) => {
   const { user } = useAuth();
   const translateY = useSharedValue(0);
   const [dragging, setDragging] = useState(false);
@@ -100,7 +100,7 @@ const LikesModal = ({post, onClose, visible}: {post: FeedPost, onClose: () => vo
                   <Text style={styles.text}>Likes</Text>
                   {!loading ?
                   <View style={{ flex: 1 }}>
-                    <UsersListScreen users={userList} redirectPath='/home_user' onClose={onClose}/>
+                    <UsersListScreen users={userList} redirectPath= {redirectLink + '_user'} onClose={onClose}/>
                     {loading && <Text>Loading...</Text>}
                     {userList.length == USERS_PAGE_SIZE &&
                     <TouchableOpacity onPress={loadMoreUsers} disabled={loading}>
@@ -114,7 +114,6 @@ const LikesModal = ({post, onClose, visible}: {post: FeedPost, onClose: () => vo
                 </Animated.View>
               </PanGestureHandler>
             </TouchableWithoutFeedback>
-          
         </Modal>
   );
 };

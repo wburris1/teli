@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable } from 'react-native';
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebaseConfig";
-import { Timestamp, collection, doc, getDoc, getDocs, query } from "firebase/firestore";
+import { Timestamp, collection, doc, getDoc, getDocs, query, serverTimestamp } from "firebase/firestore";
 import { useData } from '@/contexts/dataContext';
 import { Text, View } from '@/components/Themed';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
-import { Post } from '@/constants/ImportTypes';
+import { FeedPost, Post } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { ProfilePost } from '@/components/Post';
 import SearchTabs from './Search/SearchTabs';
@@ -16,6 +16,12 @@ import { UserList } from './UserList';
 import Dimensions from '@/constants/Dimensions';
 import { followUser, unfollowUser } from '@/data/followUser';
 import { useLoading } from '@/contexts/loading';
+import { PostFeed } from './PostFeed';
+import { makeFeed } from '@/data/feedData';
+import LikesModal from './LikesModal';
+import CommentsModal from './CommentsModal';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import useModalState from './ModalState';
 
 const db = FIREBASE_DB;
 
@@ -32,15 +38,21 @@ const emptyUser = {
   is_private: false,
   profile_picture: "/",
   created_at: "",
+  bio: "",
 }
 
 const UserPage = ({ userID }: {userID: string}) => {
+  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, keyExtractor } = useModalState();
+
   const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [profileData, setProfileData] = useState<UserData>(emptyUser);
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
+  // const [posts, setPosts] = useState<Post[]>([]);
+  const { posts } = makeFeed(userID);
+  
+
   const [movieLists, setMovieLists] = useState<List[]>([]);
   const [tvLists, setTVLists] = useState<List[]>([]);
   const { loading, setLoading } = useLoading();
@@ -207,7 +219,7 @@ const UserPage = ({ userID }: {userID: string}) => {
             return dateB - dateA;
           });
 
-          setPosts(combinedPosts);
+          // setPosts(combinedPosts);
           setLoading(false);
         } catch (error) {
           console.error("Error fetching profile data: ", error);
@@ -244,11 +256,23 @@ const UserPage = ({ userID }: {userID: string}) => {
   }
 
   const activityTabContent = useCallback(() => 
-    <FlatList
-        data={posts}
-        keyExtractor={item => (item.score && (item.score >= 0 || item.score == -2)) ? item.item_id : item.post_id}
-        renderItem={({item, index}) => <ProfilePost item={item} index={index} name={profileData.first_name}/>}
-    />
+    <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
+      {!loading ? (
+        <>
+          <FlatList
+            data={posts}
+            keyExtractor={keyExtractor}
+            renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} />}
+          />
+          <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink='/user'/>
+          <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink='/user'/>
+        </>
+      ) : (
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator size="large" />
+        </View>
+      )}
+    </GestureHandlerRootView>
   , [refreshFlag, posts]);
 
   const listsTabContent = useCallback(() => 
