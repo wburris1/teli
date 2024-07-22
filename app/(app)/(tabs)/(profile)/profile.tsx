@@ -57,7 +57,7 @@ const ProfilePage = () => {
   const { user, userData } = useAuth();
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
-  const { posts } = makeFeed(user!.uid);
+  const { posts } = makeFeed(user ? user.uid : '');
   // const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const { refreshFlag, refreshListFlag } = useData();
@@ -188,6 +188,10 @@ const ProfilePage = () => {
       },
     })
   })  
+  // when a user signs out we want to display loading.
+  if (!user) {
+    setLoading(true)
+  }
 
   return (
     <View style={styles.container}>
@@ -212,6 +216,7 @@ const ProfilePage = () => {
           </View>
         </>
       )}
+      
       <PostFeedWithModals
         posts={posts}
         loading={loading}
