@@ -220,9 +220,9 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                       setListsModalVisible(true);
                     }}>
                       <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
-                        <Text style={styles.addText}>Add to lists...</Text>
+                        <Text>Add to lists...</Text>
                         {selectedLists.length > 0 &&
-                                <Text style={[styles.text, { color: Colors[colorScheme ?? 'light'].text }]}>
+                                <Text style={{ color: Colors[colorScheme ?? 'light'].text }}>
                                   {"Added to " + selectedLists.length}{selectedLists.length > 1 ? " lists" : " list"}</Text>
                             }
                       </View>
