@@ -16,8 +16,15 @@ import React from "react";
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
 
-export const PostFeed = ({item, index, handleComments, handleLikes}: {item: FeedPost, index: number, handleComments: 
-  (show: boolean, post: FeedPost) => void, handleLikes: (show: boolean, post: FeedPost) => void}) => {
+type PostFeedProps = {
+  item: FeedPost;
+  index: number;
+  handleComments: (show: boolean, post: FeedPost) => void;
+  handleLikes: (show: boolean, post: FeedPost) => void;
+  redirectLink?: string; // Optional parameter with default value
+};
+
+export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home'}: PostFeedProps) => {
     const colorScheme = useColorScheme();
     const { user } = useAuth();
     const formattedDate = formatDate(item.created_at as Timestamp);
@@ -51,7 +58,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
     return (
       <View style={[styles.postContainer, {borderColor: Colors[colorScheme ?? 'light'].gray}]} key={id}>
         <View style={{flexDirection: 'row', flex: 1,}}>
-            <Link href={{pathname: '/home_user', params: { userID: item.user_id }}} asChild>
+            <Link href={{pathname: redirectLink + '_user', params: { userID: item.user_id }}} asChild>
               <TouchableOpacity>
                   <Image
                       source={{ uri: item.profile_picture }}
@@ -62,7 +69,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
             <View style={{flex: 1, alignItems: 'flex-start', paddingLeft: 7,}}>
                 <View style={{flexDirection: 'row', alignItems: 'flex-start',}}>
                     <Text numberOfLines={2} style={{fontSize: 17, marginBottom: 3, flex: 1, paddingRight: 15,}}>
-                      <Link href={{pathname: '/home_user', params: { userID: item.user_id }}} asChild>
+                      <Link href={{pathname: redirectLink + '_user', params: { userID: item.user_id }}} asChild>
                           <TouchableOpacity>
                             <Text style={{fontWeight: '500',fontSize: homeFeedFontSize}}>{item.first_name}</Text>
                           </TouchableOpacity>
@@ -70,7 +77,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
                       <View>
                         <Text style = {{fontWeight: '300', fontSize: homeFeedFontSize}}>{item.score >= 0 ? " ranked " : (item.score == -2 ? " bookmarked " : " commented on ")}</Text>
                       </View>
-                      <Link href={{pathname: "/home_item", params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
+                      <Link href={{pathname: redirectLink + '_item', params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
                           <TouchableOpacity>
                               <Text style={{fontWeight: 'bold',fontSize: homeFeedFontSize}}>{item.item_name}</Text>
                           </TouchableOpacity>
@@ -78,7 +85,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
                     </Text>
                 </View>
                 <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', paddingRight: item.score >= 0 ? 95 : 80}}>
-                  <Link href={{pathname: '/home_user', params: { userID: item.user_id }}} asChild>
+                  <Link href={{pathname: redirectLink + '_user', params: { userID: item.user_id }}} asChild>
                     <TouchableOpacity style={{paddingRight: 5}}>
                         <Text numberOfLines={1} style={{fontSize: 14, fontWeight: '300',}}>@{item.username}</Text>
                     </TouchableOpacity>
@@ -117,7 +124,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes}: {item: Feed
                 </View>
             </View>
           </View>
-          <Link href={{pathname: "/home_item", params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
+          <Link href={{pathname: redirectLink + "_item", params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
               <TouchableOpacity>
               <Image
                 source={{ uri: imgUrl + item.poster_path }}
