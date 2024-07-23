@@ -57,11 +57,7 @@ export const AddList = () => {
     }
 
     const handleClose = () => {
-        setAddModalVisible(false);
-        setSelectedItems([]);
-        setListDescription("");
-        setListName("");
-        setListTypeID(activeTab == 0 ? Values.movieListsID : Values.tvListsID);
+      if (listName) {
         Toast.show({
           type: 'info',
           text1: "Created New List",
@@ -70,6 +66,13 @@ export const AddList = () => {
           visibilityTime: 3000,
           bottomOffset: 100
         });
+      }
+        setAddModalVisible(false);
+        setSelectedItems([]);
+        setListDescription("");
+        setListName("");
+        setListTypeID(activeTab == 0 ? Values.movieListsID : Values.tvListsID);
+        
     }
 
     return (
