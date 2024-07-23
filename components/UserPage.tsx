@@ -280,7 +280,7 @@ const UserPage = ({ userID }: {userID: string}) => {
           <FlatList
             data={posts}
             keyExtractor={keyExtractor}
-            renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} />}
+            renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink='/profile' />}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink='/user'/>
           <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink='/user'/>
