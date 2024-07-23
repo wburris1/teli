@@ -9,9 +9,10 @@ import PostFeedWithModals from '@/components/PostFeedWithModals';
 
 export default function TabOneScreen() {
   const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, keyExtractor} = useModalState();
-  const { posts, loading } = makeFeed('Home');
+  const { posts, loading, loadMorePosts, isLoadingMore } = makeFeed('Home', 1);
   const { refreshFlag } = useData();
   const colorScheme = useColorScheme();
+  console.log(posts.length)
 
   return (
     <View style={styles.container}>
@@ -26,6 +27,8 @@ export default function TabOneScreen() {
         setShowComments={setShowComments}
         setShowLikes={setShowLikes}
         redirectLink='/home'
+        loadMorePosts={loadMorePosts}
+        isLoadingMore={isLoadingMore}
       />
       </View>
   );

@@ -18,6 +18,8 @@ type PostListWithModalsProps = {
   setShowComments: (show: boolean) => void;
   setShowLikes: (show: boolean) => void;
   redirectLink: string;
+  loadMorePosts: () => Promise<void>;
+  isLoadingMore: boolean
 };
 
 const PostFeedWithModals = ({
@@ -30,16 +32,28 @@ const PostFeedWithModals = ({
   handleLikes,
   setShowComments,
   setShowLikes,
-  redirectLink
+  redirectLink, 
+  loadMorePosts, 
+  isLoadingMore
 }: PostListWithModalsProps) => {
   const colorScheme = useColorScheme();
 
   const keyExtractor = (item: FeedPost) => {
     if (item.score && (item.score >= 0 || item.score == -2)) {
+      if (item.item_id === '729165') {
+        console.log(item.item_name)
+      }
       return `${item.user_id}/${item.item_id}`;
     } else {
+      if (item.post_id === '729165') {
+        console.log("HELLOOOOOOOOOO post")
+      }
       return `${item.user_id}/${item.post_id}`;
     }
+  };
+  const renderFooter = () => {
+    if (!isLoadingMore) return null;
+    return <ActivityIndicator style={{ margin: 20 }} />;
   };
 
   return (
@@ -50,6 +64,9 @@ const PostFeedWithModals = ({
             data={posts}
             keyExtractor={keyExtractor}
             renderItem={({ item, index }) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink={redirectLink} />}
+            onEndReached={loadMorePosts}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink={redirectLink} />
           <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink={redirectLink} />
