@@ -492,7 +492,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                     }
                   }}>
                     <Ionicons
-                      name={swiping && direction == 1 ? "close-circle-outline" : "close-circle"}
+                      name={swiping && direction == 1 ? "close-circle" : "close-circle-outline"}
                       size={60}
                       color={'#ff0000'}
                     />
@@ -508,7 +508,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                     }
                   }}>
                     <Ionicons
-                      name={swiping && direction == 2 ? "remove-circle-outline" : "remove-circle"}
+                      name={swiping && direction == 2 ? "remove-circle" : "remove-circle-outline"}
                       size={60}
                       color={'#d3d3d3'}
                     />
@@ -524,7 +524,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                     }
                   }}>
                     <Ionicons
-                      name={swiping && direction == 3 ? "heart-circle-outline" : "heart-circle"}
+                      name={swiping && direction == 3 ? "heart-circle" : "heart-circle-outline"}
                       size={60}
                       color={'#00ff00'}
                     />
