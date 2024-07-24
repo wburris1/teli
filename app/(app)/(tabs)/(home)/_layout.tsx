@@ -3,6 +3,7 @@ import React from 'react';
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, router } from "expo-router";
 import { TouchableOpacity, useColorScheme } from "react-native";
+import { Text } from "@/components/Themed";
 
 export default function SearchLayout() {
     const colorScheme = useColorScheme();
@@ -11,12 +12,16 @@ export default function SearchLayout() {
       <Stack>
         <Stack.Screen name="index" options={{ 
           headerShown: true, 
-          title: "Home",
+          title: "",
+          headerShadowVisible: true,
           headerRight: () => (
             <TouchableOpacity onPress={() => router.push({ pathname: "/addPost" })} style={{paddingRight: 10,}}>
-              <Ionicons name="add-circle" size={30} color={Colors[colorScheme ?? 'light'].text}/>
+              <Ionicons name="add" size={35} color={Colors[colorScheme ?? 'light'].text}/>
             </TouchableOpacity>
           ),
+          headerLeft: () => (
+            <Text style={{fontSize: 25, fontWeight: 'bold', color: Colors[colorScheme ?? 'light'].text}}>Home</Text>
+          )
           }} />
         <Stack.Screen name="home_item" options={{ headerShown: false, headerBackTitle: "", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
             headerStyle: {
