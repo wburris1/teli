@@ -51,7 +51,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const [selectedPref, setSelectedPref] = useState("none");
   const [listsModalVisible, setListsModalVisible] = useState(false);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
-  const [comment, setComment] = useState("Add comment...");
+  const [comment, setComment] = useState("");
   const [hasSpoilers, setHasSpoilers] = useState(false);
   const addToDB = AddToDatabase();
   const { loading } = useLoading();
