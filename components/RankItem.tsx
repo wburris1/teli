@@ -382,7 +382,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                   <View style={{width: '100%'}}>
                   <TouchableOpacity onPress={() => setCommentModalVisible(true)}>
                   <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}]}>
-                    <Text style={{flex: 1}} numberOfLines={2}>{comment}</Text>
+                    <Text style={{flex: 1}} numberOfLines={2}>{comment ? comment : "Add comment..."}</Text>
                     <Ionicons name="pencil" size={25} color={Colors[colorScheme ?? 'light'].text} />
                     </View>
                   </TouchableOpacity>
