@@ -152,27 +152,16 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
       const newItem = getNext(minScore, maxScore);
 
       if (newItem) {
-        // setCompItem(newItem);
-        // translationX.value *= -1;
-        // translationX.value = withSpring(0, {}, () => {
-        //   runOnJS(setSwipingAway)(false);
-        // });
         if (nextActive) {
           translationX.value = -swipeDirection * screenWidth;
           translationY.value = 0;
           setCompItem(newItem);
-          translationX.value = withSpring(0, {}, () => {
-            runOnJS(setNextActive)(false);
-            runOnJS(setSwipingAway)(false);
-          });
+          translationX.value = withSpring(0);
         } else {
           nextTranslationX.value = -swipeDirection * screenWidth;
           nextTranslationY.value = 0;
           setNextComp(newItem);
-          nextTranslationX.value = withSpring(0, {}, () => {
-            runOnJS(setNextActive)(true);
-            runOnJS(setSwipingAway)(false);
-          })
+          nextTranslationX.value = withSpring(0);
         }
       } else {
         const newScore = maxScore - smallAssNumber;
@@ -242,6 +231,8 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
           } else {
             translationX.value = withSpring(Math.sign(event.translationX) * screenWidth * 1.25);
           }
+          runOnJS(setNextActive)(prev => !prev);
+          runOnJS(setSwipingAway)(false);
         } else if (event.velocityY > 800 && score != -1) {
           runOnJS(setSwipingAway)(true);
           runOnJS(handleComp)(score, score, 0);
@@ -484,12 +475,14 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                   <TouchableOpacity onPress={() => {
                     const score = (nextComp && nextActive) ? nextComp.score : compItem.score;
                     setSwipingAway(true);
-                    runOnJS(handleComp)(score, upperScore, -1);
+                    handleComp(score, upperScore, -1);
                     if (nextActive) {
-                      nextTranslationX.value = withSpring(-screenWidth * 1.25)
+                      nextTranslationX.value = withSpring(-screenWidth * 1.25);
                     } else {
-                      translationX.value = withSpring(-screenWidth * 1.25)
+                      translationX.value = withSpring(-screenWidth * 1.25);
                     }
+                    setNextActive(prev => !prev);
+                    setSwipingAway(false);
                   }}>
                     <Ionicons
                       name={swiping && direction == 1 ? "close-circle" : "close-circle-outline"}
@@ -500,12 +493,14 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                   <TouchableOpacity onPress={() => {
                     const score = (nextComp && nextActive) ? nextComp.score : compItem.score;
                     setSwipingAway(true);
-                    runOnJS(handleComp)(score, score, 0);
+                    handleComp(score, score, 0);
                     if (nextActive) {
-                      nextTranslationY.value = withSpring(screenHeight)
+                      nextTranslationY.value = withSpring(screenHeight);
                     } else {
-                      translationY.value = withSpring(screenHeight)
+                      translationY.value = withSpring(screenHeight);
                     }
+                    setNextActive(prev => !prev);
+                    setSwipingAway(false);
                   }}>
                     <Ionicons
                       name={swiping && direction == 2 ? "remove-circle" : "remove-circle-outline"}
@@ -516,12 +511,14 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                   <TouchableOpacity onPress={() => {
                     const score = (nextComp && nextActive) ? nextComp.score : compItem.score;
                     setSwipingAway(true);
-                    runOnJS(handleComp)(lowerScore, score, 1);
+                    handleComp(lowerScore, score, 1);
                     if (nextActive) {
-                      nextTranslationX.value = withSpring(screenWidth * 1.25)
+                      nextTranslationX.value = withSpring(screenWidth * 1.25);
                     } else {
-                      translationX.value = withSpring(screenWidth * 1.25)
+                      translationX.value = withSpring(screenWidth * 1.25);
                     }
+                    setNextActive(prev => !prev);
+                    setSwipingAway(false);
                   }}>
                     <Ionicons
                       name={swiping && direction == 3 ? "heart-circle" : "heart-circle-outline"}
