@@ -3,7 +3,7 @@ import { useLocalSearchParams } from 'expo-router';
 
 export default function UserFollowerScreen() {
   const { userID } = useLocalSearchParams();
-  console.log("here");
+  
 
   return (
     <>

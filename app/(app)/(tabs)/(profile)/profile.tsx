@@ -220,7 +220,7 @@ const ProfilePage = () => {
               </View>
               </View>
               </Link>
-              <Link href={{pathname: "/FollowScreen", params: { userID: user ? user.uid : "s"}}}>
+              <Link href={{pathname: "/FollowScreen", params: { userID: user ? user.uid : ""}}}>
                 <View style={styles.followContainer}>
                   <View style={{flexDirection: 'column', alignItems: 'center'}}>
                 <Text style={styles.follow}>Following</Text>

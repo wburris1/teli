@@ -42,7 +42,7 @@ const emptyUser = {
   bio: "",
 }
 
-const UserPage = ({ userID }: {userID: string}) => {
+const UserPage = ({ userID, redirectLink }: {userID: string, redirectLink: string}) => {
   const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, keyExtractor } = useModalState();
 
   const { user } = useAuth();
@@ -280,7 +280,7 @@ const UserPage = ({ userID }: {userID: string}) => {
           <FlatList
             data={posts}
             keyExtractor={keyExtractor}
-            renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink='/profile' />}
+            renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink={redirectLink} />}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink='/user'/>
           <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink='/user'/>
@@ -362,7 +362,8 @@ const UserPage = ({ userID }: {userID: string}) => {
                         <Text style={styles.follow}>Followers</Text>
                         <Text style={styles.follow}>{followers.length}</Text>
                     </View>
-                    <Link href={{pathname: "../UserFollowers", params: { userID: userID}}}></Link>
+                    </Link>
+                    <Link href={{pathname: "/UserFollowers", params: { userID: userID}}}>
                     <View style={styles.followContainer}>
                         <Text style={styles.follow}>Following</Text>
                         <Text style={styles.follow}>{following.length}</Text>

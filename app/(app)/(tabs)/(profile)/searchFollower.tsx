@@ -7,7 +7,7 @@ export default function FollowerPageScreen() {
   return (
     <>
         {userID as string && 
-            <UserPage userID={userID as string} />
+            <UserPage userID={userID as string} redirectLink={'/profile'}/>
         }
     </>
   );
