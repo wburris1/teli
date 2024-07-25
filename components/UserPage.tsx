@@ -7,7 +7,7 @@ import { useData } from '@/contexts/dataContext';
 import { Text, View } from '@/components/Themed';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
-import { useLocalSearchParams, useNavigation } from 'expo-router';
+import { Link, useLocalSearchParams, useNavigation } from 'expo-router';
 import { FeedPost, Post } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { ProfilePost } from '@/components/Post';
@@ -339,14 +339,17 @@ const UserPage = ({ userID }: {userID: string}) => {
                             {isFollowing ? "Followed" : "Follow"}
                         </Text>
                     </TouchableOpacity>}
+                    <Link href={{pathname: "/FollowScreen", params: { userID: userID}}}>
                     <View style={styles.followContainer}>
                         <Text style={styles.follow}>Followers</Text>
                         <Text style={styles.follow}>{followers.length}</Text>
                     </View>
+                    <Link href={{pathname: "../UserFollowers", params: { userID: userID}}}></Link>
                     <View style={styles.followContainer}>
                         <Text style={styles.follow}>Following</Text>
                         <Text style={styles.follow}>{following.length}</Text>
                     </View>
+                    </Link>
                 </View>
             </View>
           </View>
