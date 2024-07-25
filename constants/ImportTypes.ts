@@ -63,3 +63,22 @@ export interface DisplayComment extends UserComment {
     first_name: string,
     last_name: string,
 }
+
+export enum NotificationType {
+  LikedCommentNotification = "LikedCommentNotification",
+  CommentNotification = "CommentNotification",
+  FollowNotification = "FollowNotification",
+  LikedPostNotification = "LikedPostNotification"
+}
+
+export type AppNotification = {
+    noti_id: string,
+    receiver_id: string,
+    sender_id: string,
+    sender_username: string,
+    comment_id: string,
+    profile_picture: string,
+    created_at: Timestamp | FieldValue,
+    notification_type: NotificationType
+    item: FeedPost | null,
+}

@@ -66,7 +66,7 @@ export default function TabLayout() {
         redirect={false}
       />
       <Tabs.Screen
-        name="notifications"
+        name="(notifications)"
         options={{
           headerShown: false,
           tabBarShowLabel: false,

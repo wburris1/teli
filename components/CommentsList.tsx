@@ -6,7 +6,7 @@ import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
-import { DisplayComment, FeedPost } from '@/constants/ImportTypes';
+import { DisplayComment, FeedPost, NotificationType } from '@/constants/ImportTypes';
 import { useAuth } from '@/contexts/authContext';
 import { fetchUserData } from '@/data/getComments';
 import { FIREBASE_DB } from '@/firebaseConfig';
@@ -16,6 +16,7 @@ import { useData } from '@/contexts/dataContext';
 import { formatDate } from './Helpers/FormatDate';
 import { toFinite } from 'lodash';
 import { Link } from 'expo-router';
+import { createNotification } from './Helpers/CreatePlusAddNotification';
 
 const screenWidth = Dimensions.screenWidth;
 const DELETE_WIDTH = 80;
@@ -32,7 +33,7 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
         handleReply: (username: string, comment_id: string, parentCommentID: string) => void,
         deleteReply: (comment_id: string) => void,  onClose: () => void, redirectLink: string
     }) => {
-    const { user } = useAuth();
+    const { user, userData } = useAuth();
     const colorScheme = useColorScheme();
     const [isSwiped, setSwiped] = useState(false);
     const isUserComment = user && user.uid == comment.user_id;
@@ -58,9 +59,8 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
         const commentRef = doc(postRef, "comments", comment.comment_id);
         const replyRef = doc(commentRef, "replies", replyID);
         const replyResp = await getDoc(replyRef);
-        const userData = await fetchUserData(user.uid);
 
-        if (replyResp.exists()) {
+        if (replyResp.exists() && userData) {
             const replyData = replyResp.data() as DisplayComment;
             const newReply = {
                 comment_id: replyID,
@@ -212,6 +212,9 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
             await updateDoc(commentRef, {
                 likes: arrayUnion(user.uid)
             });
+            if (userData) {
+              createNotification(comment.user_id, NotificationType.LikedCommentNotification, userData, post, comment.comment)
+            }
         }
     }, [isLiked, numLikes, user, post, comment.comment_id, parentCommentID]);
 

@@ -12,14 +12,15 @@ import Values from '@/constants/Values';
 import { useAuth } from '@/contexts/authContext';
 import { useData } from '@/contexts/dataContext';
 import { CommentsList } from './CommentsList';
-import { DisplayComment, FeedPost, UserComment } from '@/constants/ImportTypes';
+import { AppNotification, DisplayComment, FeedPost, NotificationType, UserComment } from '@/constants/ImportTypes';
 import { getUsersData } from '@/data/getComments';
 import { useLoading } from '@/contexts/loading';
+import { createNotification } from './Helpers/CreatePlusAddNotification';
 
 const db = FIREBASE_DB;
 
 const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, onClose: () => void, visible: boolean, redirectLink: string}) => {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const translateY = useSharedValue(0);
   const [dragging, setDragging] = useState(false);
   const colorScheme = useColorScheme();
@@ -107,6 +108,9 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
       if (replyCommentID != "") {
         console.log(resp.id);
         requestReply(resp.id);
+      }
+      if (userData) {
+        createNotification(post.user_id, NotificationType.CommentNotification, userData, post, userComment.comment)
       }
     }
   }
