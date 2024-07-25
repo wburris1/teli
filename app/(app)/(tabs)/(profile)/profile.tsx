@@ -1,5 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable, Alert } from 'react-native';
+
+import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable, Alert, Modal } from 'react-native';
+
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebaseConfig";
 import { Timestamp, collection, doc, getDoc, getDocs, query, serverTimestamp } from "firebase/firestore";
@@ -7,7 +9,7 @@ import { useData } from '@/contexts/dataContext';
 import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
-import { Link, useNavigation } from 'expo-router';
+import { Link, useLocalSearchParams, useNavigation } from 'expo-router';
 import { FeedPost, Post } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { ProfilePost } from '@/components/Post';
@@ -18,7 +20,7 @@ import { makeFeed } from '@/data/feedData';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import useModalState from '@/components/ModalState';
 import PostFeedWithModals from '@/components/PostFeedWithModals';
-
+import { TOUCHABLE_STATE } from 'react-native-gesture-handler/lib/typescript/components/touchables/GenericTouchable';
 
 const db = FIREBASE_DB;
 
@@ -62,7 +64,7 @@ const LogoutButton = () => {
 
 const ProfilePage = () => {
   const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, keyExtractor } = useModalState();
-  const { user, userData } = useAuth();
+  const {user, userData } = useAuth();
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
   const { posts } = makeFeed(user ? user.uid : '');
@@ -123,7 +125,7 @@ const ProfilePage = () => {
           const fetchFollowers = async () => {
             const followersRef = collection(db, 'users', user.uid, 'followers');
             const snapshot = await getDocs(followersRef);
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()}));
           }
 
           const fetchFollowing = async () => {
@@ -209,14 +211,23 @@ const ProfilePage = () => {
             />
           </View>
           <View style={{flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', padding: 10,}}>
-            <View style={styles.followContainer}>
+          
+          <Link href={{pathname: "/FollowScreen", params: { userID: user ? user.uid : "s"}}}>
+          <View style={styles.followContainer}>
+            <View style={{flexDirection: 'column', alignItems: 'center'}}>
               <Text style={styles.follow}>Followers</Text>
               <Text style={styles.follow}>{followers.length}</Text>
-            </View>
-            <View style={styles.followContainer}>
-              <Text style={styles.follow}>Following</Text>
-              <Text style={styles.follow}>{following.length}</Text>
-            </View>
+              </View>
+              </View>
+              </Link>
+              <Link href={{pathname: "/FollowScreen", params: { userID: user ? user.uid : "s"}}}>
+                <View style={styles.followContainer}>
+                  <View style={{flexDirection: 'column', alignItems: 'center'}}>
+                <Text style={styles.follow}>Following</Text>
+                <Text style={styles.follow}>{following.length}</Text>
+                </View>
+              </View>
+              </Link>
           </View>
         </>
       )}
@@ -268,6 +279,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginVertical: 10,
     backgroundColor: 'gray',
+  },
+  linkStyle: {
+    flex: 1,
+    alignItems: 'stretch',
+    justifyContent: 'center',
+    padding: 0,
+    margin: 0,
   },
 });
 
