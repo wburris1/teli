@@ -22,6 +22,7 @@ import LikesModal from './LikesModal';
 import CommentsModal from './CommentsModal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import useModalState from './ModalState';
+import Toast from 'react-native-toast-message';
 
 const db = FIREBASE_DB;
 
@@ -246,11 +247,28 @@ const UserPage = ({ userID }: {userID: string}) => {
         unfollowFunc(userID).then(() => {
             setIsFollowing(false);
             requestRefresh();
+            Toast.show({
+              type: 'info',
+              text1: "Unfollowed " + profileData.first_name,
+              text2:  "You unfollowed " + profileData.username,
+              position: "bottom",
+              visibilityTime: 3000,
+              bottomOffset: 100
+            });
         })
+
     } else {
         followFunc(userID).then(() => {
             setIsFollowing(true);
             requestRefresh();
+            Toast.show({
+              type: 'info',
+              text1: "Followed " + profileData.first_name,
+              text2:  "You are now following " + profileData.username,
+              position: "bottom",
+              visibilityTime: 3000,
+              bottomOffset: 100
+            });
         })
     }
   }
@@ -262,7 +280,7 @@ const UserPage = ({ userID }: {userID: string}) => {
           <FlatList
             data={posts}
             keyExtractor={keyExtractor}
-            renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} />}
+            renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink='/profile' />}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink='/user'/>
           <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink='/user'/>

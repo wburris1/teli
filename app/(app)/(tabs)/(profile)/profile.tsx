@@ -1,5 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable, Modal } from 'react-native';
+
+import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable, Alert, Modal } from 'react-native';
+
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebaseConfig";
 import { Timestamp, collection, doc, getDoc, getDocs, query, serverTimestamp } from "firebase/firestore";
@@ -41,12 +43,20 @@ const emptyUser = {
 const LogoutButton = () => {
   const colorScheme = useColorScheme();
 
-  const doLogout = () => {
-    FIREBASE_AUTH.signOut();
+  const confirmLogout = () => {
+    Alert.alert('Log Out?', 'Are you sure you want to Log out?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {text: 'Log Out', onPress: () => FIREBASE_AUTH.signOut()},
+    ]);
+    
   };
+  
 
   return (
-    <TouchableOpacity onPress={doLogout}>
+    <TouchableOpacity onPress={confirmLogout}>
       <Ionicons name="log-out-outline" size={30} color={Colors[colorScheme ?? 'light'].text} />
     </TouchableOpacity>
   );
@@ -57,7 +67,7 @@ const ProfilePage = () => {
   const {user, userData } = useAuth();
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
-  const { posts } = makeFeed(user!.uid);
+  const { posts } = makeFeed(user ? user.uid : '');
   // const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const { refreshFlag, refreshListFlag } = useData();
@@ -221,6 +231,7 @@ const ProfilePage = () => {
           </View>
         </>
       )}
+      
       <PostFeedWithModals
         posts={posts}
         loading={loading}

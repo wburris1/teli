@@ -25,7 +25,7 @@ export default function TabOneScreen() {
         handleLikes={handleLikes}
         setShowComments={setShowComments}
         setShowLikes={setShowLikes}
-        redirectLink='/profile'
+        redirectLink='/home'
       />
       </View>
   );

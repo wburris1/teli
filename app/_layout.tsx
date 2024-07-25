@@ -13,6 +13,7 @@ import { AuthProvider, useAuth } from '@/contexts/authContext';
 import { DataProvider } from '@/contexts/dataContext';
 import { ListProvider } from '@/contexts/listContext';
 import { LoadingProvider } from '@/contexts/loading';
+import Toast from 'react-native-toast-message';
 //import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 /*
 const CLERK_PUBLISHABLE_KEY = 'pk_test_cHJvcGVyLWphY2thbC04My5jbGVyay5hY2NvdW50cy5kZXYk';
@@ -97,7 +98,8 @@ function RootLayoutNav() {
       <AuthProvider>
         <DataProvider>
           <ListProvider>
-            <InitialLayout />
+            <InitialLayout/>
+            <Toast/>
           </ListProvider>
         </DataProvider>
       </AuthProvider>

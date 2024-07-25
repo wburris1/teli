@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { UpdateListPosters } from "./posterUpdates";
 import { useTab } from "@/contexts/listContext";
 import { UserItem } from "@/constants/ImportTypes";
+import Toast from "react-native-toast-message";
 
 const db = FIREBASE_DB;
 
@@ -63,6 +64,7 @@ export const addAndRemoveItemFromLists = () => {
 
     async function addAndRemove(item: UserItem, addLists: List[], removeLists: List[], listTypeID: string) {
         // Add item to addLists, remove item from removeLists:
+        const isMovie = 'title' in item;
         if (user) {
             const batch = writeBatch(db);
             // Add item to addLists
@@ -86,6 +88,26 @@ export const addAndRemoveItemFromLists = () => {
             } catch (error: any) {
                 console.error('Error when adding/removing item from lists: ', error);
             }
+            if (addLists.length > 0) {
+              Toast.show({
+                type: 'info',
+                text1: "Added '" + (isMovie ? item.title : item.name) + "'",
+                text2: "You successfully added " + (isMovie ? item.title : item.name),
+                position: "bottom",
+                visibilityTime: 3000,
+                bottomOffset: 100
+              });
+            } 
+            if (removeLists.length > 0) {
+              Toast.show({
+                type: 'info',
+                text1: "Removed '" + (isMovie ? item.title : item.name),
+                text2: "Removed from " + removeLists.length + (removeLists.length === 1 ? " list" : " lists"),
+                position: "bottom",
+                visibilityTime: 3000,
+                bottomOffset: 100
+              });
+            } 
         }
     }
 

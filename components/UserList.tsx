@@ -39,16 +39,16 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index }: { list:
   return (
     <Link
       href={{pathname: isListTab ? '/list_page' : '/search_list_page', params: { listTypeID: listTypeID, listID: list.list_id, description: list.description, name: list.name, userID: userID }}}
-      style={[styles.itemContainer, {height: isListTab ? (itemWidth - 20) * (3/2) + 45 : (itemWidth - 20) * (3/2) + 60, marginTop: (!isListTab && (index >= 0 && index <= 2)) ? 50 : 5}]}
+      style={[styles.itemContainer, {height: isListTab ? (itemWidth - 20) * (3/2) + 45 : (itemWidth - 20) * (3/2) + 60, marginTop: (!isListTab && (index >= 0 && index <= 2)) ? 50 : 5}]} asChild
     >
-      <View>
+      <TouchableOpacity>
         {isEmpty ? 
         <View style={styles.emptyList}>
 
         </View> : 
         <OverlappingImages images={posters} />}
         <Text numberOfLines={2} style={!isEmpty ? styles.title : styles.emptyListTitle}>{listName}</Text>
-      </View>
+      </TouchableOpacity>
     </Link>
   )
 }

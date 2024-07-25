@@ -12,6 +12,7 @@ import { useData } from "@/contexts/dataContext";
 import { CreateListDB } from "@/data/addList";
 import { UserItem } from "@/constants/ImportTypes";
 import { useLoading } from "@/contexts/loading";
+import Toast from "react-native-toast-message";
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
@@ -56,11 +57,22 @@ export const AddList = () => {
     }
 
     const handleClose = () => {
+      if (listName) {
+        Toast.show({
+          type: 'info',
+          text1: "Created New List",
+          text2: "You created list '" + listName + "'",
+          position: "bottom",
+          visibilityTime: 3000,
+          bottomOffset: 100
+        });
+      }
         setAddModalVisible(false);
         setSelectedItems([]);
         setListDescription("");
         setListName("");
         setListTypeID(activeTab == 0 ? Values.movieListsID : Values.tvListsID);
+        
     }
 
     return (

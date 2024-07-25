@@ -9,6 +9,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { useLayoutEffect, useState } from "react";
 import { KeyboardAvoidingView, Modal, SafeAreaView, StyleSheet, TextInput, TouchableOpacity, useColorScheme } from "react-native";
 import Spinner from "react-native-loading-spinner-overlay";
+import Toast from "react-native-toast-message";
 
 export default function EditProfileScreen () {
     const colorScheme = useColorScheme();
@@ -47,7 +48,15 @@ export default function EditProfileScreen () {
             } catch (err: any) {
                 console.error("Error editing profile: ", err);
             } finally {
-                setLoading(false);
+              setLoading(false);
+              Toast.show({
+                type: 'info',
+                text1: "Profile Saved",
+                text2: "You successfully edited your profile",
+                position: "bottom",
+                visibilityTime: 3000,
+                bottomOffset: 100
+              });
             }
         }
     }
