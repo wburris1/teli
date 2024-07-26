@@ -66,27 +66,20 @@ const NotificationDisplay = ({ noti }: notiProps) => {
       .activeOffsetX([-10, 10])
       .failOffsetY([-5, 5])
       .onStart(() => {
-        console.log("started")
           if (isSwiped) {
               transX.value = withSpring(0);
           }
       })
       .onUpdate((event) => {
-        console.log("update")
-
           if (!isSwiped && event.translationX < 0) {
               transX.value = event.translationX;
           }
       })
       .onEnd(() => {
-        console.log("end")
-
           if (transX.value < -DELETE_WIDTH) {
-            console.log("we true")
               runOnJS(handleSetSwiped)(true);
               transX.value = transX.value < 0 ? withSpring(-DELETE_WIDTH) : withSpring(DELETE_WIDTH);
           } else {
-            console.log("we false")
               runOnJS(handleSetSwiped)(false);
               transX.value = withSpring(0);
           }
