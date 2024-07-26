@@ -211,8 +211,7 @@ const ProfilePage = () => {
             />
           </View>
           <View style={{flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', padding: 10,}}>
-          
-          <Link href={{pathname: "/FollowScreen", params: { userID: user ? user.uid : "s"}}}>
+          <Link href={{pathname: "/profile_follower", params: { userID: user ? user.uid : "", whichTab: 0}}}>
           <View style={styles.followContainer}>
             <View style={{flexDirection: 'column', alignItems: 'center'}}>
               <Text style={styles.follow}>Followers</Text>
@@ -220,7 +219,7 @@ const ProfilePage = () => {
               </View>
               </View>
               </Link>
-              <Link href={{pathname: "/FollowScreen", params: { userID: user ? user.uid : ""}}}>
+              <Link href={{pathname: "/profile_follower", params: { userID: user ? user.uid : "", whichTab: 1}}}>
                 <View style={styles.followContainer}>
                   <View style={{flexDirection: 'column', alignItems: 'center'}}>
                 <Text style={styles.follow}>Following</Text>

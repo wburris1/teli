@@ -3,12 +3,11 @@ import { useLocalSearchParams } from 'expo-router';
 
 export default function UserFollowerScreen() {
   const { userID } = useLocalSearchParams();
-  
 
   return (
     <>
         {
-            <FollowerModalScreen userID={userID as string} />
+            <FollowerModalScreen userID={userID as string} redirectLink='/profile'/>
         }
     </>
   );

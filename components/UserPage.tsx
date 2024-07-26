@@ -42,7 +42,7 @@ const emptyUser = {
   bio: "",
 }
 
-const UserPage = ({ userID, redirectLink }: {userID: string, redirectLink: string}) => {
+const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string}) => {
   const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, keyExtractor } = useModalState();
 
   const { user } = useAuth();
@@ -67,6 +67,12 @@ const UserPage = ({ userID, redirectLink }: {userID: string, redirectLink: strin
   const unfollowFunc = unfollowUser();
   const { requestRefresh } = useData();
 
+  const [currentUserID, setCurrentUserID] = useState('');
+  
+  if (currentUserID != userID) {
+    setCurrentUserID(userID);
+  }
+  
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
@@ -231,7 +237,7 @@ const UserPage = ({ userID, redirectLink }: {userID: string, redirectLink: strin
     };
 
     fetchProfileData();
-  }, [refreshFlag, refreshListFlag]);
+  }, [refreshFlag, refreshListFlag, currentUserID]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -357,13 +363,13 @@ const UserPage = ({ userID, redirectLink }: {userID: string, redirectLink: strin
                             {isFollowing ? "Followed" : "Follow"}
                         </Text>
                     </TouchableOpacity>}
-                    <Link href={{pathname: "/FollowScreen", params: { userID: userID}}}>
+                    <Link href={{pathname: redirectLink + "_follower", params: { userID: userID, whichTab: 0}}}>
                     <View style={styles.followContainer}>
                         <Text style={styles.follow}>Followers</Text>
                         <Text style={styles.follow}>{followers.length}</Text>
                     </View>
                     </Link>
-                    <Link href={{pathname: "/UserFollowers", params: { userID: userID}}}>
+                    <Link href={{pathname: redirectLink + "_follower", params: { userID: userID, whichTab: 1}}}>
                     <View style={styles.followContainer}>
                         <Text style={styles.follow}>Following</Text>
                         <Text style={styles.follow}>{following.length}</Text>
@@ -372,7 +378,7 @@ const UserPage = ({ userID, redirectLink }: {userID: string, redirectLink: strin
                 </View>
             </View>
           </View>
-      <SearchTabs tabs={tabs} onTabChange={() => {}} />
+      <SearchTabs tabs={tabs} onTabChange={() => {}} index={0} />
       </>)}
     </View>
   );

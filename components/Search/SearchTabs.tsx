@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated, useColo
 import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import { LoadingProvider } from '@/contexts/loading';
 import Colors from '@/constants/Colors';
+import { useLocalSearchParams } from 'expo-router';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -13,12 +14,31 @@ type Tab = {
 type Props = {
     tabs: Tab[],
     onTabChange: (index: number) => void
+    index: number
 };
 
-const SearchTabs = ({ tabs, onTabChange }: Props) => {
+const SearchTabs = ({ tabs, onTabChange, index }: Props) => {
     const colorScheme = useColorScheme();
     const [tabIndex, setTabIndex] = useState(0);
     const indicatorPosition = useRef(new Animated.Value(0)).current;
+    const tab = useLocalSearchParams();
+    if (tab.whichTab != undefined){
+    const num = tab.whichTab as string;
+    //this is the tab number passed in 
+    const whichTab = parseInt(num);
+    const [startingTab, setStartingTab] = useState(whichTab);
+    const [originalTab, setOriginalTab] = useState(whichTab);
+    //if the original tab is different from whichTab it means the page needs to be re-rendered
+    if (originalTab != whichTab){
+        setStartingTab(whichTab);
+        setOriginalTab(startingTab);
+    }
+    //sets the tab index to the startingTab and then changes the starting tab so that it doesn't re-render
+    if(startingTab != tabIndex && startingTab != 97){
+        setTabIndex(startingTab);
+        setStartingTab(97);
+    }
+  }
 
     useEffect(() => {
         Animated.timing(indicatorPosition, {

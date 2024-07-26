@@ -23,16 +23,11 @@ export default function ProfileLayout() {
                   backgroundColor: Colors[colorScheme ?? 'light'].background,
               }
             }}/>
-            <Stack.Screen name="FollowScreen" options={{ headerBackTitle: "Profile", headerShown: true, headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+            <Stack.Screen name="profile_follower" options={{ headerBackTitle: "Profile", headerShown: true, headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
               headerStyle: {
                   backgroundColor: Colors[colorScheme ?? 'light'].background,
               }
             }}/>
-            <Stack.Screen name="searchFollower" options={{ headerBackTitle: "Followers/Following", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
-                headerStyle: {
-                    backgroundColor: Colors[colorScheme ?? 'light'].background,
-                }
-             }} />
         </Stack>
     );
 }

@@ -162,7 +162,7 @@ export default function NewPostScreen() {
             </TouchableOpacity>
           </View>
           <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
-          <SearchTabs tabs={searchTabs} onTabChange={() => {}} />
+          <SearchTabs tabs={searchTabs} onTabChange={() => {}} index={0} />
         </> :
         <View>
           <View style={styles.switchContainer}>
