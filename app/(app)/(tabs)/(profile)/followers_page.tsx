@@ -35,8 +35,10 @@ const FollowersTabContent = ({ userID, query }: { userID: string, query: string 
         const followersID = await fetchFollowerIDs();
         const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
         const filteredFollowers = followersData.filter(user => {
-          return user.username.toLowerCase().includes(query.toLowerCase());
+          return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
+          user.last_name.toLowerCase().includes(query.toLowerCase());
         })
+
         setFollowers(filteredFollowers);
       }
     };
@@ -96,7 +98,8 @@ const FollowingTabContent = ({ userID, query }: { userID: string, query: string 
         const followingID = await fetchFollowingIDs();
         const followingData = await Promise.all(followingID.map(following => fetchUserData(following.id)));
         const filteredFollowing = followingData.filter(user => {
-          return user.username.toLowerCase().includes(query.toLowerCase());
+          return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
+          user.last_name.toLowerCase().includes(query.toLowerCase())
         })
         setFollowing(filteredFollowing);
       }

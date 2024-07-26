@@ -1,5 +1,5 @@
-import { FeedPost } from "@/constants/ImportTypes";
-import { Timestamp, arrayRemove, arrayUnion, doc, getDoc, updateDoc } from "firebase/firestore";
+import { AppNotification, FeedPost, NotificationType } from "@/constants/ImportTypes";
+import { Timestamp, addDoc, arrayRemove, arrayUnion, collection, doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 import { Image, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Text, View } from "./Themed";
@@ -12,6 +12,7 @@ import { formatDate } from "./Helpers/FormatDate";
 import { ExpandableText } from "./AnimatedViews.tsx/ExpandableText";
 import { Link } from "expo-router";
 import React from "react";
+import { createNotification } from "./Helpers/CreatePlusAddNotification";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
@@ -26,7 +27,7 @@ type PostFeedProps = {
 
 export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home'}: PostFeedProps) => {
     const colorScheme = useColorScheme();
-    const { user } = useAuth();
+    const { user, userData } = useAuth();
     const formattedDate = formatDate(item.created_at as Timestamp);
     const maxCaptionHeight = 65;
     const [isLiked, setIsLiked] = useState(item.likes.includes(user?.uid || ""));
@@ -48,6 +49,10 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
           likes: arrayRemove(user.uid)
         });
       } else {
+        if (userData) {
+          createNotification(item.user_id, NotificationType.LikedPostNotification, userData, item)
+        }
+
         setNumLikes(numLikes + 1);
         await updateDoc(postRef, {
           likes: arrayUnion(user.uid)
