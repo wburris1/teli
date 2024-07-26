@@ -18,7 +18,7 @@ import { useLocalSearchParams } from 'expo-router';
 //Time is too long to load
 
 
-const FollowersTabContent = ({ userID, query }: { userID: string, query: string }) => {
+const FollowersTabContent = ({ userID, query, redirectLink}: { userID: string, query: string, redirectLink: string }) => {
   const db = FIREBASE_DB;
   const { user } = useAuth();
   const [followers, setFollowers] = useState<UserData[]>([]);
@@ -70,7 +70,7 @@ const FollowersTabContent = ({ userID, query }: { userID: string, query: string 
 
   return (
     <View style={{ flex: 1 }}>
-        <UsersListScreen users={followers} redirectPath='../searchFollower' />
+        <UsersListScreen users={followers} redirectPath={redirectLink + '_user'} />
         {loading && <Text>Loading...</Text>}
         {followers.length == FOLLOWERS_PAGE_SIZE &&
         <TouchableOpacity onPress={loadMoreFollowers} disabled={loading}>
@@ -81,7 +81,7 @@ const FollowersTabContent = ({ userID, query }: { userID: string, query: string 
 }
 
 
-const FollowingTabContent = ({ userID, query }: { userID: string, query: string }) => {
+const FollowingTabContent = ({ userID, query, redirectLink }: { userID: string, query: string, redirectLink: string }) => {
   const db = FIREBASE_DB;
   const { user } = useAuth();
   const [following, setFollowing] = useState<UserData[]>([]);
@@ -128,7 +128,7 @@ const FollowingTabContent = ({ userID, query }: { userID: string, query: string 
   };
   return (
     <View style={{ flex: 1 }}>
-        <UsersListScreen users={following} redirectPath='../searchFollower' />
+        <UsersListScreen users={following} redirectPath={redirectLink + '_user'} />
         {loading && <Text>Loading...</Text>}
         {following.length == FOLLOWERS_PAGE_SIZE &&
         <TouchableOpacity onPress={loadMoreFollowing} disabled={loading}>
@@ -140,21 +140,27 @@ const FollowingTabContent = ({ userID, query }: { userID: string, query: string 
 
 
 
-export default function FollowerModalScreen({ userID }: { userID: string }) {
+export default function FollowerModalScreen({ userID, redirectLink, whichTab}: { userID: string, redirectLink : string , whichTab : number}) {
   const colorScheme = useColorScheme();
   const [search , setSearch] = useState("");
- // const userID = useLocalSearchParams().userID;
+  const [currentId , setCurrentId] = useState("");
+  if (currentId != userID){
+    setCurrentId(userID);
+    
+  }
   const followersTabContent = useCallback(() => 
   <FollowersTabContent 
   userID= {userID as string} 
   query={search}
-  />, [search]);
+  redirectLink= {redirectLink}
+  />, [search, currentId]);
 
   const followingTabContent = useCallback(() =>
   <FollowingTabContent
   userID={userID as string}
   query={search}
-  />, [search]);
+  redirectLink= {redirectLink}
+  />, [search, currentId]);
 
 
   const followingTabs = [
@@ -172,7 +178,7 @@ export default function FollowerModalScreen({ userID }: { userID: string }) {
     <View style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1 }}>
         <View style={styles.container}>
             <SearchInput search={search} setSearch={setSearch} isFocused={false} />
-            <SearchTabs tabs={followingTabs} onTabChange={() => {}} />
+            <SearchTabs tabs={followingTabs} onTabChange={() => {}} index= {whichTab} />
         </View>
     </View>
 );
