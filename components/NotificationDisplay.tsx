@@ -1,16 +1,17 @@
 import { FIREBASE_DB } from '@/firebaseConfig';
 import { Link } from 'expo-router';
 import { Text, View} from "./Themed";
-import { Alert, Image, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
+import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import Colors from "@/constants/Colors";
 import { formatDate } from "./Helpers/FormatDate";
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
-
 import { Timestamp, collection, deleteDoc, doc } from 'firebase/firestore';
 import { AppNotification, NotificationType } from '@/constants/ImportTypes';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useCallback, useState } from 'react';
+import { useData } from '@/contexts/dataContext';
+import { useLoading } from '@/contexts/loading';
 
 
 type notiProps = {
@@ -18,6 +19,8 @@ type notiProps = {
 };
 
 const NotificationDisplay = ({ noti }: notiProps) => {
+  // WE NEED TO ADD LOADING FOR WHEN A NOTIFICATION IS BEING DELETED
+  const { loading, setLoading } = useLoading();
   const imgUrl = 'https://image.tmdb.org/t/p/w500';
   const homeFeedFontSize = 18
   const colorScheme = useColorScheme();
@@ -27,8 +30,8 @@ const NotificationDisplay = ({ noti }: notiProps) => {
   const [isSwiped, setSwiped] = useState(false);
   const DELETE_WIDTH = 80;
   const db = FIREBASE_DB;
+  const { requestRefresh } = useData();
 
-  
   const getNotificationText = (notificationType: NotificationType): string => {
     switch (notificationType) {
       case NotificationType.LikedCommentNotification:
@@ -106,10 +109,13 @@ const NotificationDisplay = ({ noti }: notiProps) => {
   }, []);
   const handleDelete = useCallback(async () => {
     try {
+      setLoading(true)
       const userNotiRef = collection(db, 'users', noti.receiver_id, 'notifications');
       const docReference = doc(userNotiRef, noti.noti_id)
       await deleteDoc(docReference)
       console.log("notification deleted")
+      requestRefresh();
+      setLoading(false)
     } catch (error) {
       console.error("Error deleting notification: ", error);
     }

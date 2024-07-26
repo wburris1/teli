@@ -11,10 +11,12 @@ import NotificationDisplay from '@/components/NotificationDisplay';
 import { FIREBASE_DB } from '@/firebaseConfig';
 import { useAuth } from '@/contexts/authContext';
 import { useData } from '@/contexts/dataContext';
+import { useLoading } from '@/contexts/loading';
 
 
 export default function TabOneScreen() {
-  const [ loading, setLoading] = useState(false);
+  const { loading, setLoading } = useLoading();
+  const [ loadingNoti, setLoadingNoti] = useState(false);
   const db = FIREBASE_DB;
   const { user } = useAuth();
   const { refreshFlag } = useData();
@@ -61,6 +63,7 @@ export default function TabOneScreen() {
 
   useEffect(() => {
     const getAllNotifications = async () => {
+      setLoadingNoti(true)
       const notifications = await fetchUserNoti();
 
       if (notifications) {
@@ -69,7 +72,8 @@ export default function TabOneScreen() {
         return allNotifications;
       }
     }
-    getAllNotifications()
+    getAllNotifications();
+    setLoadingNoti(false)
 
   }, [user, refreshFlag]); 
   const keyExtractor = (item: AppNotification) => item.noti_id;
@@ -77,7 +81,7 @@ export default function TabOneScreen() {
   return (
     <View style={styles.container}>
       <GestureHandlerRootView style={{ width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background }}>
-        {!loading ? (
+        {!loadingNoti ? (
           <>
             <FlatList
               data={noti}
@@ -91,7 +95,11 @@ export default function TabOneScreen() {
           </View>
         )}
       </GestureHandlerRootView>
-      
+      {loading &&
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" />
+        </View>
+      }
     </View>
   );
 }
@@ -111,4 +119,14 @@ const styles = StyleSheet.create({
     height: 1,
     width: '80%',
   },
+  loading: {
+    position: 'absolute', 
+    top: 0, 
+    left: 0, 
+    right: 0, 
+    bottom: 0, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    backgroundColor: 'transparent',
+  }
 });
