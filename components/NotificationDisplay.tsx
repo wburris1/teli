@@ -223,7 +223,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     overflow: 'hidden',
     paddingRight: 5,
-    paddingVertical: 8,
     width: '100%',
   },
   postFooter: {
