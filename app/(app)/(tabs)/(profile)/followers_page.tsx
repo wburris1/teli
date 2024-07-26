@@ -33,11 +33,14 @@ const FollowersTabContent = ({ userID, query }: { userID: string, query: string 
           return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()}));
         };
         const followersID = await fetchFollowerIDs();
-        const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
-        const filteredFollowers = followersData.filter(user => {
-          return user.username.toLowerCase().includes(query.toLowerCase());
+        //const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
+        const filteredFollowers = followersID.filter(user => {
+          return user.id.toLowerCase().includes(query.toLowerCase());
         })
-        setFollowers(filteredFollowers);
+        const followersData = await Promise.all(filteredFollowers.map(follower => fetchUserData(follower.id)));
+
+
+        setFollowers(followersData);
       }
     };
     fetchFollowersData();
