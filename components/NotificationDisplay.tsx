@@ -47,6 +47,11 @@ const NotificationDisplay = ({ noti }: notiProps) => {
     }
   };  
   const transX = useSharedValue(0);
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+        transform: [{ translateX: transX.value }]
+    }
+});
 
   const deleteButtonStyle = useAnimatedStyle(() => ({
     opacity: interpolate(transX.value, [0, -DELETE_WIDTH], [0, 1]),
@@ -126,7 +131,10 @@ const NotificationDisplay = ({ noti }: notiProps) => {
     <GestureDetector gesture={panGesture} key={noti.noti_id}>
     
     <View>
-      
+      <Animated.View style={[styles.itemContainer, animatedStyle, {
+          backgroundColor: Colors[colorScheme ?? 'light'].background, 
+          borderBottomColor: Colors[colorScheme ?? 'light'].text,
+      }]}>
       <View style={[styles.postContainer, {borderColor: Colors[colorScheme ?? 'light'].gray}]} key={id}>
         <View style={{flexDirection: 'row', flex: 1,}}>
           <Link href={{pathname: 'notification_user', params: { userID: noti.sender_id }}} asChild>
@@ -178,6 +186,7 @@ const NotificationDisplay = ({ noti }: notiProps) => {
             </TouchableOpacity>
         </View>
       </View>
+      </Animated.View>
       <Animated.View style={[styles.deleteButtonContainer, deleteButtonStyle]}
           pointerEvents={isSwiped && transX.value <= -DELETE_WIDTH ? 'auto' : 'none'}>
           <TouchableOpacity style={[styles.fullSize, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]} onPress={() => onDelete()}>
@@ -208,6 +217,14 @@ const styles = StyleSheet.create({
     aspectRatio: 2/3,
     borderRadius: 10,
     borderWidth: 0.5,
+  },
+  itemContainer: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    overflow: 'hidden',
+    paddingRight: 5,
+    paddingVertical: 8,
+    width: '100%',
   },
   postFooter: {
     flexDirection: 'row',
