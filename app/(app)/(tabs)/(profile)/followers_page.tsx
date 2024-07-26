@@ -33,14 +33,13 @@ const FollowersTabContent = ({ userID, query }: { userID: string, query: string 
           return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()}));
         };
         const followersID = await fetchFollowerIDs();
-        //const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
-        const filteredFollowers = followersID.filter(user => {
-          return user.id.toLowerCase().includes(query.toLowerCase());
+        const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
+        const filteredFollowers = followersData.filter(user => {
+          return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
+          user.last_name.toLowerCase().includes(query.toLowerCase());
         })
-        const followersData = await Promise.all(filteredFollowers.map(follower => fetchUserData(follower.id)));
 
-
-        setFollowers(followersData);
+        setFollowers(filteredFollowers);
       }
     };
     fetchFollowersData();
@@ -99,7 +98,8 @@ const FollowingTabContent = ({ userID, query }: { userID: string, query: string 
         const followingID = await fetchFollowingIDs();
         const followingData = await Promise.all(followingID.map(following => fetchUserData(following.id)));
         const filteredFollowing = followingData.filter(user => {
-          return user.username.toLowerCase().includes(query.toLowerCase());
+          return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
+          user.last_name.toLowerCase().includes(query.toLowerCase())
         })
         setFollowing(filteredFollowing);
       }
