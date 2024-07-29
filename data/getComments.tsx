@@ -3,7 +3,7 @@ import Values from "@/constants/Values";
 import { useAuth } from "@/contexts/authContext";
 import { useData } from "@/contexts/dataContext";
 import { FIREBASE_DB } from "@/firebaseConfig"
-import { collection, deleteDoc, doc, getDoc, getDocs, increment, limit, orderBy, query, serverTimestamp, startAfter, updateDoc } from "firebase/firestore";
+import { Timestamp, collection, deleteDoc, doc, getDoc, getDocs, increment, limit, onSnapshot, orderBy, query, serverTimestamp, startAfter, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 const db = FIREBASE_DB;
@@ -44,3 +44,42 @@ export const getUsersData = async (post: FeedPost) => {
     });
     return await Promise.all(displayCommentsPromises);
 }
+
+export const getComments = (post: FeedPost) => {
+  const { refreshFlag } = useData();
+  const [loaded, setLoaded] = useState(false);
+  const [comments, setComments] = useState<any[]>([]);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user || (!post.post_id && !post.item_id)) return;
+    setLoaded(false);
+
+    let commentRef;
+
+    if (post.score >= 0) {
+      commentRef = collection(db, 'users', post.user_id, post.list_type_id, Values.seenListID, 'items', post.item_id, 'comments');
+    } else if (post.score === -2) {
+      commentRef = collection(db, 'users', post.user_id, post.list_type_id, Values.bookmarkListID, 'items', post.item_id, 'comments');
+    } else {
+      commentRef = collection(db, 'users', post.user_id, 'posts', post.post_id, 'comments');
+    }
+
+    const unsubscribe = async () => {
+      const snapshot = await getDocs(commentRef);
+
+      const commentsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() as DisplayComment }));
+      commentsData.sort((a, b) => {
+        const aDate = a.created_at instanceof Timestamp ? a.created_at.toDate() : a.created_at as any;
+        const bDate = b.created_at instanceof Timestamp ? b.created_at.toDate() : b.created_at as any;
+        return bDate - aDate;
+      });
+      setComments(commentsData);
+      setLoaded(true);
+    };
+
+    unsubscribe();
+  }, [post, user]);
+
+  return { comments, loaded };
+};
