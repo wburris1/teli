@@ -13,10 +13,11 @@ import { FIREBASE_DB } from '@/firebaseConfig';
 import { Timestamp, arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, increment, limit, orderBy, query, startAfter, updateDoc } from 'firebase/firestore';
 import Values from '@/constants/Values';
 import { useData } from '@/contexts/dataContext';
-import { formatDate } from './Helpers/FormatDate';
+import { formatDate, getDate } from './Helpers/FormatDate';
 import { toFinite } from 'lodash';
 import { Link } from 'expo-router';
 import { createNotification } from './Helpers/CreatePlusAddNotification';
+import { isDate } from 'date-fns';
 
 const screenWidth = Dimensions.screenWidth;
 const DELETE_WIDTH = 80;
@@ -27,11 +28,17 @@ if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, deleteReply, onClose, redirectLink}: 
+const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handleReply, deleteReply, onClose,
+    redirectLink, changeComments, newReply, updateNumReplies, animateComment }: 
     {
-        comment: DisplayComment, parentCommentID: string, post: FeedPost,
+        comments: any[],
+        comment: any, parentCommentID: string, post: FeedPost,
         handleReply: (username: string, comment_id: string, parentCommentID: string) => void,
-        deleteReply: (comment_id: string) => void,  onClose: () => void, redirectLink: string
+        deleteReply: (comment_id: string) => void,  onClose: () => void, redirectLink: string,
+        changeComments: (comments: any[]) => void,
+        newReply: any,
+        updateNumReplies: (parentID: string, inc: number) => void,
+        animateComment: () => void,
     }) => {
     const { user, userData } = useAuth();
     const colorScheme = useColorScheme();
@@ -39,16 +46,25 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
     const isUserComment = user && user.uid == comment.user_id;
     const [isLiked, setIsLiked] = useState(comment.likes.includes(user?.uid || ""));
     const [numLikes, setNumLikes] = useState(comment.likes.length);
-    const [replies, setReplies] = useState<DisplayComment[]>([]);
+    const [replies, setReplies] = useState<any[]>([]);
     const [lastReply, setLastReply] = useState<any>(null);
     const [loadingReplies, setLoadingReplies] = useState(false);
     const { replyID, requestRefresh } = useData();
     const [repliesOpen, setRepliesOpen] = useState(false);
-    const formattedDate = formatDate(comment.created_at as Timestamp);
+    const formattedDate = isDate(comment.created_at) ? getDate(comment.created_at) : 
+        formatDate(comment.created_at as Timestamp);
 
     useEffect(() => {
-        if (repliesOpen) fetchPostedReply();
-    }, [replyID])
+        if (newReply && newReply.parent_id == comment.id) {
+            if (!newReply.id) {
+                setReplies(prev => [newReply, ...prev]);
+                toggleReplies();
+            } else {
+                let oldReplies = replies.filter(rep => rep.id !== '');
+                setReplies([newReply, ...oldReplies]);
+            }
+        }
+    }, [newReply])
 
     const fetchPostedReply = useCallback(async () => {
         if (parentCommentID !== "" || !user || !replyID) return;
@@ -56,28 +72,16 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
             (post.score == -2 ? doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
                 doc(db, "users", post.user_id, "posts", post.post_id));
 
-        const commentRef = doc(postRef, "comments", comment.comment_id);
+        const commentRef = doc(postRef, "comments", comment.id);
         const replyRef = doc(commentRef, "replies", replyID);
         const replyResp = await getDoc(replyRef);
 
         if (replyResp.exists() && userData) {
-            const replyData = replyResp.data() as DisplayComment;
-            const newReply = {
-                comment_id: replyID,
-                user_id: user.uid,
-                username: userData.username,
-                profile_picture: userData.profile_picture,
-                first_name: userData.first_name,
-                last_name: userData.last_name,
-                comment: replyData.comment,
-                likes: replyData.likes,
-                created_at: replyData.created_at,
-                num_replies: replyData.num_replies,
-            };
-            setReplies(prev => !prev.some(reply => reply.comment_id === newReply.comment_id) ? [newReply, ...prev] : prev);
+            const replyData = replyResp.data();
+            setReplies(prev => !prev.some(reply => reply.id === replyData.id) ? [replyData, ...prev] : prev);
             toggleReplies();
         }
-    }, [parentCommentID, comment.comment_id, post, replyID])
+    }, [parentCommentID, comment.id, post, replyID])
 
     const fetchReplies = useCallback(async (fetchNum: number) => {
         if (parentCommentID !== "") return;
@@ -86,12 +90,12 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
             (post.score == -2 ? doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
                 doc(db, "users", post.user_id, "posts", post.post_id));
 
-        const commentRef = doc(postRef, "comments", comment.comment_id);
+        const commentRef = doc(postRef, "comments", comment.id);
         const repliesRef = collection(commentRef, "replies");
-        let q = query(repliesRef, orderBy("created_at", "asc"), limit(fetchNum));
+        let q = query(repliesRef, orderBy("created_at", "desc"), limit(fetchNum));
 
         if (lastReply) {
-            q = query(repliesRef, orderBy("created_at", "asc"), startAfter(lastReply), limit(REPLIES_LIMIT));
+            q = query(repliesRef, orderBy("created_at", "desc"), startAfter(lastReply), limit(REPLIES_LIMIT));
         }
 
         const snapshot = await getDocs(q);
@@ -101,28 +105,12 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
             setLastReply(snapshot.docs[snapshot.docs.length - 1]);
         }
 
-        const displayCommentsPromises = newReplies.map(async (comment) => {
-            const userData = await fetchUserData(comment.user_id);
-            return {
-                comment_id: comment.id,
-                user_id: comment.user_id,
-                username: userData.username,
-                profile_picture: userData.profile_picture,
-                first_name: userData.first_name,
-                last_name: userData.last_name,
-                comment: comment.comment,
-                likes: comment.likes,
-                created_at: comment.created_at,
-                num_replies: comment.num_replies,
-            };
-        });
-        const response = await Promise.all(displayCommentsPromises);
-        setReplies(prevReplies => [...prevReplies, ...response.filter(item => 
-            !prevReplies.some(reply => reply.comment_id === item.comment_id)
+        setReplies(prevReplies => [...prevReplies, ...newReplies.filter(item => 
+            !prevReplies.some(reply => reply.id === item.id)
         )]);
         setLoadingReplies(false);
         toggleReplies();
-    }, [parentCommentID, lastReply, comment.comment_id, post, replyID]);
+    }, [parentCommentID, lastReply, comment.id, post, replyID]);
 
     const handleSetSwiped = useCallback((value: boolean) => {
         setSwiped(value);
@@ -155,7 +143,7 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
 
     const animatedStyle = useAnimatedStyle(() => {
         return {
-            transform: [{ translateX: transX.value }]
+            transform: [{ translateX: comment.id ? transX.value : 0 }]
         }
     });
 
@@ -188,16 +176,16 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
     }, [comment, post, parentCommentID]);
 
     const handleHeart = useCallback(async () => {
-        if (!user) return;
+        if (!user || !comment.id) return;
 
         const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
             (post.score == -2 ? doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
                 doc(db, "users", post.user_id, "posts", post.post_id));
 
-        let commentRef = doc(postRef, "comments", comment.comment_id);
+        let commentRef = doc(postRef, "comments", comment.id);
 
         if (parentCommentID !== "") {
-            commentRef = doc(postRef, "comments", parentCommentID, "replies", comment.comment_id);
+            commentRef = doc(postRef, "comments", parentCommentID, "replies", comment.id);
         }
 
         setIsLiked(!isLiked);
@@ -216,42 +204,59 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
               createNotification(comment.user_id, NotificationType.LikedCommentNotification, userData, post, comment.comment)
             }
         }
-    }, [isLiked, numLikes, user, post, comment.comment_id, parentCommentID]);
+    }, [isLiked, numLikes, user, post, comment.id, parentCommentID]);
 
     const handleDelete = useCallback(async () => {
-        if (comment && user) {
-            const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
-            (post.score == -2 ?  doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
-                doc(db, "users", post.user_id, "posts", post.post_id));
-            
-            let commentRef = doc(postRef, "comments", comment.comment_id);
+        if (comment && user && comment.id) {
+            try {
+                const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
+                (post.score == -2 ?  doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
+                    doc(db, "users", post.user_id, "posts", post.post_id));
+                
+                let commentRef = doc(postRef, "comments", comment.id);
 
-            if (parentCommentID != "") {
-                commentRef = doc(postRef, "comments", parentCommentID, "replies", comment.comment_id);
+                if (parentCommentID != "") {
+                    commentRef = doc(postRef, "comments", parentCommentID, "replies", comment.id);
+                    deleteReply(comment.id);
+                } else {
+                    changeComments(comments.filter(com => com.id !== comment.id));
+                    animateComment();
+                }
+                
+                await deleteDoc(commentRef);
+                if (parentCommentID != "") {
+                    await updateDoc(doc(postRef, "comments", parentCommentID), { num_replies: increment(-1) });
+                } else {
+                    await updateDoc(postRef, { num_comments: increment(-1) });
+                }
+                requestRefresh();
+            } catch (err: any) {
+                console.error("Error deleting comment: ", err);
             }
-            
-            await deleteDoc(commentRef)
-            if (parentCommentID != "") {
-                await updateDoc(doc(postRef, "comments", parentCommentID), { num_replies: increment(-1) })
-            } else {
-                await updateDoc(postRef, { num_comments: increment(-1) })
-            }
-            requestRefresh();
-            deleteReply(comment.comment_id);
         }
-    }, [user, post, comment.comment_id, parentCommentID])
+    }, [user, post, comment.id, parentCommentID])
 
-    const removeFromReplies = (comment_id: string) => {
-        setReplies(replies.filter(reply => reply.comment_id !== comment_id));
-    }
+    const removeFromReplies = useCallback(() => (comment_id: string) => {
+        setReplies(replies.filter(reply => reply.id !== comment_id));
+        updateNumReplies(comment.id, -1);
+        toggleReplies();
+    }, [replies, updateNumReplies]);
 
     const toggleReplies = () => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     };
 
+    const countReplies = () => {
+        let count = 0;
+        replies.forEach(element => {
+            if (element.id) count++;
+        });
+        return count;
+    }
+
     return (
         <View>
-            <GestureDetector gesture={panGesture} key={comment.comment_id}>
+            <GestureDetector gesture={panGesture} key={comment.id}>
                 <View>
                     <Animated.View style={[styles.itemContainer, animatedStyle, {
                         backgroundColor: Colors[colorScheme ?? 'light'].background, borderBottomColor: Colors[colorScheme ?? 'light'].text,
@@ -270,11 +275,17 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
                           </Link>
                             <Text style={styles.comment}>{comment.comment}</Text>
                             <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                                <Text style={{ fontSize: 13, fontWeight: '300', marginTop: 3 }}>{formattedDate}</Text>
-                                <Ionicons name="ellipse" size={5} color='gray' style={{marginTop: 3, paddingHorizontal: 3}} />
-                                <TouchableOpacity onPress={() => {setRepliesOpen(true); handleReply(comment.username, comment.comment_id, parentCommentID)}} style={{ width: 40 }}>
-                                    <Text style={{ fontSize: 13, fontWeight: '300', marginTop: 3, color: 'gray' }}>Reply</Text>
-                                </TouchableOpacity>
+                                {comment.id ?
+                                <>
+                                    <Text style={{ fontSize: 13, fontWeight: '300', marginTop: 3 }}>{formattedDate}</Text>
+                                    <Ionicons name="ellipse" size={5} color='gray' style={{marginTop: 3, paddingHorizontal: 3}} />
+                                    <TouchableOpacity onPress={() => {setRepliesOpen(true); handleReply(comment.username, comment.id, parentCommentID)}} style={{ width: 40 }}>
+                                        <Text style={{ fontSize: 13, fontWeight: '300', marginTop: 3, color: 'gray' }}>Reply</Text>
+                                    </TouchableOpacity>
+                                </> : <>
+                                    <Text style={{ fontSize: 13, fontWeight: '300', marginTop: 3, }}>Posting...</Text>
+                                    <ActivityIndicator size={10} style={{marginTop: 5, marginLeft: 10}} />
+                                </>}
                             </View>
                         </View>
                         <View style={{ paddingHorizontal: 5, alignItems: 'center', alignSelf: 'flex-start', marginTop: 15 }}>
@@ -303,8 +314,10 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
             {repliesOpen && replies.length > 0 &&
                 <View>
                 {replies.map(reply => reply && (
-                    <View key={reply.comment_id}>
-                        <RenderItem comment={reply} key={reply.comment_id} parentCommentID={comment.comment_id} post={post} handleReply={handleReply} deleteReply={removeFromReplies} redirectLink={redirectLink}/>
+                    <View key={reply.id}>
+                        <RenderItem comment={reply} key={reply.id} parentCommentID={comment.id} post={post} handleReply={handleReply}
+                            deleteReply={removeFromReplies} redirectLink={redirectLink} onClose={onClose} changeComments={changeComments}
+                            comments={comments} newReply={null} updateNumReplies={() => {}} animateComment={() => {}} />
                     </View>
                 ))}
                 </View>}
@@ -317,7 +330,7 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
                         setRepliesOpen(true);
                     }}>
                         <Text style={{ fontSize: 11, fontWeight: '400', }}>
-                            View {repliesOpen && replies.length > 0 ? (comment.num_replies - replies.length) + " more" : comment.num_replies}{comment.num_replies > 1 ? " replies" : " reply"}
+                            View {repliesOpen && replies.length > 0 ? (comment.num_replies - countReplies()) + " more" : comment.num_replies}{comment.num_replies > 1 ? " replies" : " reply"}
                         </Text>
                     </TouchableOpacity>}
                     {repliesOpen && replies.length > 0 && (
@@ -339,19 +352,35 @@ const RenderItem = React.memo(({ comment, parentCommentID, post, handleReply, de
     );
 });
 
-export const CommentsList = ({ comments, post, handleReply, onClose, redirectLink}: { comments: DisplayComment[], post: FeedPost,
+export const CommentsList = ({comments, post, handleReply, onClose, redirectLink, changeComments, newReply, updateNumReplies, animateComment }:
+{ comments: any[], post: FeedPost,
     handleReply: (username: string, comment_id: string, parentCommentID: string) => void,
-    onClose: () => void, redirectLink: string}) => {
+    onClose: () => void, redirectLink: string,
+    changeComments: (comments: any[]) => void,
+    newReply: any,
+    updateNumReplies: (parentID: string, inc: number) => void,
+    animateComment: () => void,
+}) => {
     const colorScheme = useColorScheme();
+
+    const renderCallback = useCallback(({ item }: { item: any }) => 
+        <RenderItem comments={comments} comment={item} parentCommentID='' post={post} handleReply={handleReply}
+            deleteReply={() => {}} onClose={onClose} redirectLink={redirectLink} changeComments={changeComments}
+            newReply={newReply} updateNumReplies={updateNumReplies} animateComment={animateComment} />
+    , [comments, post, newReply, changeComments, redirectLink, handleReply])
 
     if (comments) {
         return (
-            <FlatList
-                data={comments}
-                renderItem={({ item }) => <RenderItem comment={item} parentCommentID='' post={post} handleReply={handleReply} deleteReply={() => {}} onClose={onClose} redirectLink={redirectLink}/>}
-                keyExtractor={item => item.comment_id}
-                numColumns={1}
-            />
+            <View style={{marginBottom: 150}}>
+                <FlatList
+                    data={comments}
+                    renderItem={renderCallback}
+                    keyExtractor={item => item.id}
+                    numColumns={1}
+                    removeClippedSubviews={true}
+                />
+            </View>
+            
         )
     } else {
         return (

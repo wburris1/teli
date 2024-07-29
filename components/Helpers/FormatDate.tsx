@@ -3,6 +3,10 @@ import { Timestamp } from "firebase/firestore";
 
 export function formatDate(created_at: Timestamp): string {
     const date = created_at ? created_at.toDate() : new Date();
+    return getDate(date);
+}
+
+export function getDate(date: Date) {
     const now = new Date();
     
     const secondsAgo = differenceInSeconds(now, date);

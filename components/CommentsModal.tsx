@@ -1,23 +1,27 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Keyboard, KeyboardAvoidingView, Modal, Platform, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, useColorScheme } from 'react-native';
+import { ActivityIndicator, FlatList, Keyboard, KeyboardAvoidingView, LayoutAnimation, Modal, Platform, StyleSheet, TextInput, TouchableOpacity, TouchableWithoutFeedback, UIManager, useColorScheme } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import Dimensions from '@/constants/Dimensions';
 import { Text, View } from './Themed';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
-import { addDoc, arrayUnion, collection, doc, getDoc, getDocs, increment, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { Timestamp, addDoc, arrayUnion, collection, doc, getDoc, getDocs, increment, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '@/firebaseConfig';
 import Values from '@/constants/Values';
 import { useAuth } from '@/contexts/authContext';
 import { useData } from '@/contexts/dataContext';
 import { CommentsList } from './CommentsList';
 import { AppNotification, DisplayComment, FeedPost, NotificationType, UserComment } from '@/constants/ImportTypes';
-import { getUsersData } from '@/data/getComments';
+import { getComments, getUsersData } from '@/data/getComments';
 import { useLoading } from '@/contexts/loading';
 import { createNotification } from './Helpers/CreatePlusAddNotification';
 
 const db = FIREBASE_DB;
+
+if (Platform.OS === 'android') {
+  UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, onClose: () => void, visible: boolean, redirectLink: string}) => {
   const { user, userData } = useAuth();
@@ -25,26 +29,36 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
   const [dragging, setDragging] = useState(false);
   const colorScheme = useColorScheme();
   const [comment, setComment] = useState('');
-  //const { displayComments, loaded } = getComments(post);
-  const [displayComments, setDisplayComments] = useState<DisplayComment[]>([]);
-  const { refreshFlag, requestRefresh } = useData();
+  const { comments, loaded } = getComments(post);
+  const [displayComments, setDisplayComments] = useState<any[]>([]);
+  const { requestRefresh } = useData();
   const textInputRef = useRef<TextInput>(null);
   const [replyUsername, setReplyUsername] = useState('');
   const [replyCommentID, setReplyCommentID] = useState('');
   const [replyParentID, setReplyParentID] = useState('');
   const { requestReply } = useData();
   const { loading, setLoading } = useLoading();
+  const [reply, setReply] = useState<any>(null);
 
-  const loadComments = useCallback(async () => {
-    setLoading(true);
-    const comments = await getUsersData(post);
-    setDisplayComments(comments);
-    setLoading(false);
-  }, [post, refreshFlag])
+  const animateComment = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+  };
 
   useEffect(() => {
-    loadComments();
-  }, [loadComments]);
+    if (comments) {
+      setDisplayComments(comments);
+    }
+  }, [comments])
+
+  useEffect(() => {
+    if (loaded) {
+      setLoading(false);
+    }
+  }, [loaded])
+
+  useEffect(() => {
+    setLoading(true);
+  }, [post])
 
   useEffect(() => {
     if (!visible) {
@@ -55,6 +69,15 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
       requestReply('');
     }
   }, [visible])
+
+  const updateNumReplies = (parentID: string, inc: number) => {
+    setDisplayComments(prevComments => prevComments.map(cmt => {
+      if (cmt.id === parentID) {
+        return { ...cmt, num_replies: cmt.num_replies + inc };
+      }
+      return cmt;
+    }));
+  }
 
   const handleReply = async (username: string, comment_id: string, parentCommentID: string) => {
     setReplyUsername(username);
@@ -67,14 +90,21 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
   }
 
   const handleComment = async () => {
-    if (comment && user) {
-      const userComment: UserComment = {
+    if (comment && user && userData) {
+      const userComment: DisplayComment = {
         user_id: user.uid,
         comment: comment,
         likes: [],
         created_at: serverTimestamp(),
         num_replies: 0,
+        username: userData.username,
+        profile_picture: userData.profile_picture,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
       }
+      const localTimestamp = new Date();
+      let displayComment = {id: '', ...userComment};
+      displayComment.created_at = localTimestamp;
 
       setComment('');
       setReplyCommentID('');
@@ -86,32 +116,52 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
           doc(db, "users", post.user_id, "posts", post.post_id));
       
       let commentRef = collection(postRef, "comments");
+      let replyData;
 
       if (replyCommentID != "") {
+        replyData = {parent_id: replyParentID ? replyParentID : replyCommentID, ...displayComment};
+        setReply(replyData);
+
         if (replyParentID != "") {
           commentRef = collection(commentRef, replyParentID, "replies"); // Replying to a reply just replies to parent comment
           // TODO: Add tagged user when replying
         } else {
           commentRef = collection(commentRef, replyCommentID, "replies");
         }
+      } else {
+        setDisplayComments([displayComment, ...displayComments]);
+        animateComment();
       }
       
-      const resp = await addDoc(commentRef, userComment)
+      const resp = await addDoc(commentRef, userComment);
+      if (!replyCommentID) {
+        let updatedComment = {id: resp.id, ...userComment};
+        updatedComment.created_at = localTimestamp;
+        setDisplayComments([updatedComment, ...displayComments]);
+      } else if (replyData) {
+        const parentID = replyParentID ? replyParentID : replyCommentID;
+        let updatedReplyData = {id: resp.id, parent_id: parentID, ...userComment};
+        updatedReplyData.created_at = localTimestamp;
+        setReply(updatedReplyData);
+        updateNumReplies(parentID, 1);
+      }
 
       if (replyCommentID === "") {
-        await updateDoc(postRef, { num_comments: increment(1) })
+        await updateDoc(postRef, { num_comments: increment(1) });
+        //setDisplayComments([displayComment, ...displayComments]);
+        //setPostLoading(false);
       } else {
-        const parentCommentRef = doc(postRef, "comments", replyParentID != "" ? replyParentID : replyCommentID)
+        const parentCommentRef = doc(postRef, "comments", replyParentID != "" ? replyParentID : replyCommentID);
         await updateDoc(parentCommentRef, { num_replies: increment(1) })
       }
       requestRefresh();
       if (replyCommentID != "") {
-        console.log(resp.id);
         requestReply(resp.id);
       }
       if (userData) {
         createNotification(post.user_id, NotificationType.CommentNotification, userData, post, userComment.comment)
       }
+      setReply(null);
     }
   }
 
@@ -142,6 +192,11 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
     }
   }, [dragging, visible])
 
+  const commentsList = useCallback(() => 
+    <CommentsList comments={displayComments} post={post} handleReply={handleReply} onClose={onClose}
+    redirectLink={redirectLink} changeComments={setDisplayComments} newReply={reply} updateNumReplies={updateNumReplies} animateComment={animateComment}/>
+  , [reply, displayComments, post, redirectLink])
+
   return (
         <Modal
             animationType="slide"
@@ -157,8 +212,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
                 <Animated.View style={[styles.container, animatedStyle, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                     <View style={styles.handle} />
                     <Text style={styles.text}>Comments</Text>
-                    {!loading ?
-                    <CommentsList comments={displayComments} post={post} handleReply={handleReply} onClose={onClose} redirectLink={redirectLink}/> : (
+                    {!loading ? commentsList() : (
                       <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                         <ActivityIndicator size="large" />
                       </View>

@@ -52,12 +52,11 @@ export type UserComment = {
     user_id: string,
     comment: string,
     likes: string[],
-    created_at: Timestamp | FieldValue,
+    created_at: Timestamp | FieldValue | Date,
     num_replies: number,
 }
 
 export interface DisplayComment extends UserComment {
-    comment_id: string,
     profile_picture: string,
     username: string,
     first_name: string,
