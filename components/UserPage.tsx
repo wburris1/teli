@@ -56,7 +56,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
 
   const [movieLists, setMovieLists] = useState<List[]>([]);
   const [tvLists, setTVLists] = useState<List[]>([]);
-  const { loading, setLoading } = useLoading();
+  const [loading, setLoading] = useState(true);
   const [isMovies, setIsMovies] = useState(true);
   const { refreshFlag, refreshListFlag } = useData();
   const [numMoviesRanked, setNumMoviesRanked] = useState(0);
@@ -76,6 +76,10 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
+
+  useEffect(() => {
+    if (!loading) setLoading(true);
+  }, [currentUserID])
 
   const reorderData = (data: List[], firstId: string, secondId: string) => {
     const firstItem = data.find(item => item.list_id === firstId);
@@ -99,10 +103,9 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
     checkIfFollowing();
   }, [user, userID]);
 
-  useEffect(() => {
+  const fetchCallback = useCallback(() => {
     const fetchProfileData = async () => {
       if (userID) {
-        setLoading(true);
         try {
           const fetchUserProfile = async () => {
             const userDocRef = doc(db, 'users', userID);
@@ -237,7 +240,11 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
     };
 
     fetchProfileData();
-  }, [refreshFlag, refreshListFlag, currentUserID]);
+  }, [refreshFlag, refreshListFlag, currentUserID])
+
+  useEffect(() => {
+    fetchCallback();
+  }, [fetchCallback]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
