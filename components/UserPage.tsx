@@ -297,7 +297,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
         </View>
       )}
     </GestureHandlerRootView>
-  , [refreshFlag, posts]);
+  , [refreshFlag, posts, showLikes, showComments, post]);
 
   const listsTabContent = useCallback(() => 
     <>
