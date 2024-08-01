@@ -15,82 +15,39 @@ import { EditListScreen } from '@/components/EditList';
 import SearchInput from '@/components/Search/SearchInput';
 import { AnimatedSearch } from '@/components/AnimatedSearch';
 import { UserItem } from '@/constants/ImportTypes';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type RowProps = {
     item: UserItem;
     index: number;
     items: UserItem[];
     listID: string;
+    popUpIndex: number;
+    setPopUpIndex: (index: number) => void;
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
-const DELETE_WIDTH = 80;
+const itemWidth = (screenWidth - 12) / 3;
 
-const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, ref) => {
+const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex }, ref) => {
     const { setItem } = useTab();
-    const [isSwiped, setSwiped] = useState(false);
     const score = item.score.toFixed(1);
     const isMovie = 'title' in item;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
     const isAll = listID == Values.seenListID ? true : false;
-    var date = "";
     const colorScheme = useColorScheme();
     const router = useRouter();
-  
-    const handleSetSwiped = (value: boolean) => {
-      setSwiped(value);
-    };
-  
-    date = isMovie ? item.release_date : item.first_air_date;
+    //const popupRef = useRef<View>(null);
+    let date = isMovie ? item.release_date : item.first_air_date;
     date = date.slice(0,4);
     const deleteItem = useUserItemDelete(item.item_id, item.score, Values.seenListID, listTypeID);
     const removeItem = removeFromList();
-  
+    const scale = useSharedValue(1);
+    const transY = useSharedValue(0);
     const transX = useSharedValue(0);
-  
-    const panGesture = Gesture.Pan()
-    .activeOffsetX([-10, 10])
-    .failOffsetY([-5, 5])
-    .onStart(() => {
-      if (isSwiped) {
-        transX.value = withSpring(0);
-      }
-    })
-    .onUpdate((event) => {
-      if (!isSwiped) {
-        transX.value = event.translationX;
-      }
-    })
-    .onEnd(() => {
-      if (transX.value > DELETE_WIDTH || transX.value < -DELETE_WIDTH) {
-        runOnJS(handleSetSwiped)(true);
-        transX.value = transX.value > 0 ? withSpring(DELETE_WIDTH) : withSpring(-DELETE_WIDTH);
-      } else {
-        runOnJS(handleSetSwiped)(false);
-        transX.value = withSpring(0);
-      }
-    });
-  
-    const animatedStyle = useAnimatedStyle(() => {
-      return {
-        transform: [{ translateX: transX.value }]
-      }
-    }, [transX.value]);
-  
-    const deleteButtonStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(transX.value, [0, DELETE_WIDTH], [0, 1]),
-      transform: [{ translateX: transX.value - screenWidth }],
-      width: transX.value > 0 ? transX.value : DELETE_WIDTH,
-    }));
-  
-    const addButtonStyle = useAnimatedStyle(() => ({
-      opacity: interpolate(transX.value, [0, -DELETE_WIDTH], [0, 1]),
-      transform: [{ translateX: 0}],
-      width: transX.value < 0 ? -transX.value : DELETE_WIDTH,
-    }));
-    
+
     const onDelete = (item_id: string) => {
       const alertHeaderText = !isAll ? "Confirm Remove" : "Confirm Delete";
       const alertText = !isAll ? "Are you sure you want to remove this item from the list?" : 
@@ -119,67 +76,96 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
         ]
       );
     };
+
+    const animatedStyle = useAnimatedStyle(() => {
+      return {
+        transform: [{ scaleX: scale.value }, { scaleY: scale.value }, { translateY: transY.value }, { translateX: transX.value }]
+      }
+    }, [scale.value, transY.value, transX.value]);
+
+    useEffect(() => {
+      if (popUpIndex !== index && scale.value > 1) {
+        handleClose();
+      }
+    }, [popUpIndex])
+
+    const handleLongPress = () => {
+      if (popUpIndex === index) {
+        setPopUpIndex(-1);
+        return;
+      }
+      setPopUpIndex(index);
+      const height = itemWidth * 1.5;
+      transY.value = withSpring(-height * 0.07);
+      if (index % 3 == 2) {
+        transX.value = withSpring(-itemWidth * 0.07);
+      } else if (index % 3 == 0) {
+        transX.value = withSpring(itemWidth * 0.07);
+      }
+      scale.value = withSpring(1.15);
+    }
+
+    const handleClose = () => {
+      transY.value = withSpring(0);
+      transX.value = withSpring(0);
+      scale.value = withSpring(1);
+    }
   
     return (
-      <GestureDetector gesture={panGesture}>
-        <View>
-        <Animated.View style={[isAll ? styles.deleteButtonContainer : styles.removeButtonContainer, deleteButtonStyle]}
-            pointerEvents={isSwiped && transX.value >= DELETE_WIDTH ? 'auto' : 'none'}>
-          <TouchableOpacity style={[styles.fullSize, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]} onPress={() => onDelete(item.item_id)}>
-            <Ionicons
-              name={isAll ? "trash" : "close"}
-              size={40}
-              color={'#fff'}
-            />
-          </TouchableOpacity>
-        </Animated.View>
-        <Animated.View style={[styles.itemContainer, animatedStyle, { backgroundColor: Colors[colorScheme ?? 'light'].background, borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
-          <Link href={{pathname: "/list_item", params: { id: item.item_id, groupKey: isMovie ? "movie" : "tv" }}} style={styles.linkStyle}>
-            <View style={styles.innerContainer}>
-              <View style={styles.rank}><Text style={styles.text}>{index + 1}.</Text></View>
+      <>
+      <View style={{zIndex: popUpIndex === index ? 2 : 0}}>
+        <Link href={{pathname: "/list_item", params: { id: item.item_id, groupKey: isMovie ? "movie" : "tv" }}} asChild>
+          <TouchableOpacity onLongPress={handleLongPress}>
+            <Animated.View style={[styles.innerContainer, animatedStyle, popUpIndex === index ? styles.shadow : {}]}>
               <Image
                   source={{ uri: imgUrl + item.poster_path }}
-                  style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
+                  style={[styles.image, { borderColor: 'black' }]}
               />
-              <View style={styles.textContainer}>
-                <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
-                <Text style={styles.dateText}>{date}</Text>
-              </View>
-              {listID != Values.bookmarkListID &&
-              <View style={styles.score}>
-                <View style={[styles.scoreCircle, {backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text}]}>
-                  <Text style={styles.scoreText}>{score}</Text>
-                </View>
-              </View>}
-              <Ionicons
-                name="chevron-forward"
-                size={15}
-                color={Colors[colorScheme ?? 'light'].text}
-              />
-            </View>
-          </Link>
-        </Animated.View>
-        <Animated.View style={[styles.addButtonContainer, addButtonStyle]}
-          pointerEvents={isSwiped && transX.value <= -DELETE_WIDTH ? 'auto' : 'none'}>
-            <TouchableOpacity onPress={() => {
-                setItem(item);
-                router.push({pathname: "/add_to_list", params: { item_id: item.item_id, listTypeID: listTypeID }});
-              }} style={[styles.fullSize, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
-              <Ionicons
-                name="add"
-                size={40}
-                color={'#fff'}
-              />
-            </TouchableOpacity>
-        </Animated.View>
-        </View>
-      </GestureDetector>
+              {popUpIndex === index && (
+                <>
+                  <TouchableOpacity style={[styles.popUpButton, {top: 7, left: 7, backgroundColor: 'red', borderColor: 'white'}]} onPress={() => onDelete(item.item_id)}>
+                    <Ionicons name="trash" size={25} color={'white'} />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.popUpButton, {top: 7, right: 7, backgroundColor: '#32CD32', borderColor: 'white'}]} onPress={() => {
+                    setItem(item);
+                    router.push({pathname: "/add_to_list", params: { item_id: item.item_id, listTypeID: listTypeID }});
+                  }}>
+                    <Ionicons name="add" size={25} color={'white'} />
+                  </TouchableOpacity>
+                </>
+              )}
+              {item.score && item.score >= 0 &&
+              <>
+                <LinearGradient
+                  colors={['transparent', 'black']}
+                  style={styles.gradient}
+                />
+                <Text style={[styles.rank, {color: 'white', fontSize: 18, fontWeight: '500'}]}>{index + 1}.</Text>
+                <Text style={[styles.scoreText, styles.score, {color: 'white'}]}>{score}</Text>
+              </>
+              }
+            </Animated.View>
+          </TouchableOpacity>
+        </Link>
+      </View>
+      {popUpIndex >= 0 && <Pressable onPress={() => setPopUpIndex(-1)} style={styles.overlay}></Pressable>}
+      </>
     );
 });
 
 const MakeList = ({ listID, listTypeID, onItemsUpdate, items }:
   {listID: string, listTypeID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[] }) => {
     const colorScheme = useColorScheme();
+    const [popUpIndex, setPopUpIndex] = useState(-1);
+    const topPadding = useSharedValue(0);
+
+    useEffect(() => {
+      if (popUpIndex >= 0 && popUpIndex < 3) {
+        topPadding.value = withSpring((itemWidth * 1.5) * 0.2);
+      } else {
+        topPadding.value = withSpring(0);
+      }
+    }, [popUpIndex])
 
     useEffect(() => {
       if (items) {
@@ -187,19 +173,28 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items }:
       }
     }, [items])
 
+    const animatedStyle = useAnimatedStyle(() => {
+      return {
+        paddingTop: topPadding.value,
+      }
+    }, [topPadding.value]);
+
     if (items) {
       items.sort((a: UserItem, b: UserItem) => b.score - a.score);
 
       return (
-        <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
+        <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1,}}>
           {items.length > 0 ? 
-          <FlatList
-            data={items}
-            renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} />}
-            keyExtractor={item => item.item_id}
-            numColumns={1}
-          /> : 
-          (
+            <Animated.FlatList
+              data={items}
+              renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} 
+                popUpIndex={popUpIndex} setPopUpIndex={setPopUpIndex} />}
+              keyExtractor={item => item.item_id}
+              numColumns={3}
+              removeClippedSubviews={true}
+              showsVerticalScrollIndicator={false}
+              style={animatedStyle}
+            /> : (
             <Text>Rank something!</Text>
           )}
         </View>
@@ -338,7 +333,6 @@ const styles = StyleSheet.create({
     },
     description: {
       padding: 10,
-      borderBottomWidth: 1,
     },
     title: {
       fontSize: 20,
@@ -363,17 +357,19 @@ const styles = StyleSheet.create({
       fontSize: 16
     },
     scoreText: {
-      fontSize: 20,
-      fontWeight: '500',
+      fontSize: 24,
+      fontWeight: 'bold',
     },
     rank: {
-      alignSelf: 'flex-start',
-      paddingHorizontal: 10,
-      paddingVertical: 15,
+      position: 'absolute',
+      bottom: 10,
+      left: 10,
       backgroundColor: 'transparent'
     },
     score: {
-      paddingHorizontal: 7,
+      position: 'absolute',
+      bottom: 10,
+      right: 10,
       backgroundColor: 'transparent'
     },
     scoreCircle: {
@@ -400,11 +396,9 @@ const styles = StyleSheet.create({
       width: '100%',
     },
     image: {
-      width: '20%',
+      width: '100%',
       aspectRatio: 1 / 1.5,
-      paddingHorizontal: 5,
-      marginVertical: 10,
-      borderWidth: 0.5,
+      borderWidth: 1,
       borderRadius: 10,
     },
     textContainer: {
@@ -458,18 +452,46 @@ const styles = StyleSheet.create({
       justifyContent: 'flex-end',
       alignItems: 'center',
     },
-    linkStyle: {
-      flex: 1,
-      alignItems: 'stretch',
-      justifyContent: 'center',
-      padding: 0,
-      margin: 0,
-    },
     innerContainer: {
-      flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'flex-start',
-      width: '100%',
-      height: '100%',
+      justifyContent: 'center',
+      width: itemWidth,
+      marginLeft: 3,
+      marginBottom: 3,
     },
+    gradient: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: 100,
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10,
+    },
+    overlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'transparent',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    shadow: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.8,
+      shadowRadius: 2,
+      elevation: 5,
+    },
+    popUpButton: {
+      borderWidth: 1,
+      width: 35,
+      height: 35,
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'absolute',
+      borderRadius: 50,
+    }
   });

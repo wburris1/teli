@@ -164,8 +164,8 @@ const ProfilePage = () => {
           ];
 
           combinedPosts.sort((a, b) => {
-            const dateA = (a.created_at as any).toDate();
-            const dateB = (b.created_at as any).toDate();
+            const dateA = a.created_at ? (a.created_at as any).toDate() : new Date();
+            const dateB = b.created_at ? (b.created_at as any).toDate() : new Date();
             return dateB - dateA;
           });
 

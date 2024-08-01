@@ -228,10 +228,11 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
           }
           if (nextActive) {
             nextTranslationX.value = withSpring(Math.sign(event.translationX) * screenWidth * 1.25);
+            runOnJS(setNextActive)(false);
           } else {
             translationX.value = withSpring(Math.sign(event.translationX) * screenWidth * 1.25);
+            runOnJS(setNextActive)(true);
           }
-          runOnJS(setNextActive)(prev => !prev);
           runOnJS(setSwipingAway)(false);
         } else if (event.velocityY > 800 && score != -1) {
           runOnJS(setSwipingAway)(true);
@@ -416,7 +417,8 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                     listTypeID={listTypeID} 
                     isRanking={true} 
                     onClose={() => setListsModalVisible(false)} 
-                    onSelectedListsChange = {handleSelectedListsChange}/>
+                    onSelectedListsChange = {handleSelectedListsChange}
+                    isWatched={true}/>
                   </Modal>
                   <Modal
                     animationType="slide"

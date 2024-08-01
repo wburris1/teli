@@ -30,7 +30,7 @@ type RowProps = {
 
 export default function AddToListsScreen() {
     const { item_id, listTypeID } = useLocalSearchParams();
-    const { inLists, outLists, loaded } = useGetItemLists(item_id as string, listTypeID as string);
+    const { inLists, outLists, loaded } = useGetItemLists(item_id as string, listTypeID as string, true);
     const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item } = useTab();
     const colorScheme = useColorScheme();
     const navigation = useNavigation();

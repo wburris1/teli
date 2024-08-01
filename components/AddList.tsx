@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { Link } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View, useColorScheme } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View, useColorScheme } from "react-native";
 import { ListModalScreen } from "./ListModal";
 import { useData } from "@/contexts/dataContext";
 import { CreateListDB } from "@/data/addList";
@@ -24,9 +24,10 @@ export const AddList = () => {
     const [listTypeID, setListTypeID] = useState(activeTab == 0 ? Values.movieListsID : Values.tvListsID);
     const [entriesModalVisible, setEntriesModalVisible] = useState(false);
     const [selectedItems, setSelectedItems] = useState<UserItem[]>([]);
+    const [isRanked, setRanked] = useState(true);
     const createListFunc = CreateListDB();
     const colorScheme = useColorScheme();
-    const { loading, setLoading } = useLoading();
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         setListTypeID(activeTab == 0 ? Values.movieListsID : Values.tvListsID);
@@ -44,6 +45,7 @@ export const AddList = () => {
             name: listName,
             description: listDescription,
             is_custom: true,
+            is_ranked: isRanked,
             top_poster_path: "",
             second_poster_path: "",
             bottom_poster_path: "",
@@ -72,7 +74,7 @@ export const AddList = () => {
         setListDescription("");
         setListName("");
         setListTypeID(activeTab == 0 ? Values.movieListsID : Values.tvListsID);
-        
+        setRanked(true);
     }
 
     return (
@@ -152,10 +154,25 @@ export const AddList = () => {
                                 </Text>
                             </TouchableOpacity>
                         </View>
+                        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingHorizontal: 10,}}>
+                            <Text style={{fontSize: 16, fontWeight: 'bold'}}>{isRanked ? "Watched" : "Unwatched"}</Text>
+                            <Switch
+                                trackColor={{ false: Colors[colorScheme ?? 'light'].text, true: "#32CD32" }}
+                                thumbColor={Colors[colorScheme ?? 'light'].background}
+                                ios_backgroundColor="#3e3e3e"
+                                onValueChange={() => setRanked(prev => !prev)}
+                                value={isRanked}
+                            />
+                        </View>
+                        
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingRight: 10}}>
-                            <TouchableOpacity onPress={() => setEntriesModalVisible(true)} style={{paddingHorizontal: 10}}>
-                                <Text style={styles.addText}>Add entries...</Text>
-                            </TouchableOpacity>
+                            {isRanked ? (
+                                <TouchableOpacity onPress={() => setEntriesModalVisible(true)} style={{paddingHorizontal: 10}}>
+                                    <Text style={styles.addText}>Add entries...</Text>
+                                </TouchableOpacity>) : (
+                                <View>
+                                </View>
+                            )}
                             {selectedItems.length > 0 &&
                                 <Text style={[styles.text, { color: Colors[colorScheme ?? 'light'].text }]}>{selectedItems.length}{selectedItems.length > 1 ? " entries added" : " entry added"}</Text>
                             }

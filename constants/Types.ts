@@ -35,6 +35,7 @@ type List = {
     list_id: string,
     name: string,
     is_custom: boolean,
+    is_ranked: boolean,
     description: string,
     top_poster_path: string,
     second_poster_path: string,

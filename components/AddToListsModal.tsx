@@ -22,6 +22,7 @@ type ScreenProps = {
     isRanking: boolean;
     onClose: () => void;
     onSelectedListsChange: (items: List[], removedItems: List[]) => void;
+    isWatched: boolean,
 }
 
 type RowProps = {
@@ -32,8 +33,8 @@ type RowProps = {
   isSelected: boolean;
 };
 
-export default function AddToListsScreen({item_id, listTypeID, isRanking, onClose, onSelectedListsChange}: ScreenProps) {
-    const { inLists, outLists, loaded} = useGetItemLists(item_id, listTypeID);
+export default function AddToListsScreen({item_id, listTypeID, isRanking, onClose, onSelectedListsChange, isWatched}: ScreenProps) {
+    const { inLists, outLists, loaded} = useGetItemLists(item_id, listTypeID, isWatched);
     const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item, setAddModalVisible } = useTab();
     const colorScheme = useColorScheme();
     const addToListsFunc = addAndRemoveItemFromLists();

@@ -2,7 +2,7 @@ import Values from "@/constants/Values";
 import { useAuth } from "@/contexts/authContext";
 import { useData } from "@/contexts/dataContext";
 import { FIREBASE_DB } from "@/firebaseConfig";
-import { collection, doc, getDoc, getDocs, writeBatch } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where, writeBatch } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { UpdateListPosters } from "./posterUpdates";
 import { useTab } from "@/contexts/listContext";
@@ -11,7 +11,7 @@ import Toast from "react-native-toast-message";
 
 const db = FIREBASE_DB;
 
-export const useGetItemLists = (item_id: string, listTypeID: string) => {
+export const useGetItemLists = (item_id: string, listTypeID: string, isWatched: boolean) => {
     // Return all lists the item is in, and all valid lists the item is not in
     const { user } = useAuth();
     const [inLists, setInLists] = useState<List[]>([]);
@@ -25,7 +25,9 @@ export const useGetItemLists = (item_id: string, listTypeID: string) => {
         var listsOut: List[] = [];
         if (user) {
             const userListsRef = collection(db, "users", user.uid, listTypeID);
-            const snapshot = await getDocs(userListsRef);
+            const q = query(userListsRef, where('is_ranked', '==', isWatched));
+            const snapshot = await getDocs(q);
+            
             if (!snapshot.empty) {
                 
                 const userLists = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));

@@ -14,6 +14,10 @@ import Values from '@/constants/Values';
 import { AddList } from '@/components/AddList';
 import { UserList } from '@/components/UserList';
 
+const filterWatched = (data: List[], watched: boolean) => {
+  return data.filter(item => item.is_ranked === watched);
+};
+
 const reorderData = (data: List[], firstId: string, secondId: string) => {
   const firstItem = data.find(item => item.list_id === firstId);
   const restItems = data.filter(item => item.list_id !== firstId && item.list_id !== secondId);
@@ -42,16 +46,15 @@ const chunkLists = (lists: List[], size: number) => {
 const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID: string}) => {
   const colorScheme = useColorScheme();
   const numRows = 2;
-  const reorderedLists = lists != null ? reorderData(lists, Values.seenListID, Values.bookmarkListID) : [];
+  // Watched lists
+  const watchedLists = lists != null ? reorderData(filterWatched(lists, true), Values.seenListID, Values.bookmarkListID) : [];
 
-  const numColumns = Math.ceil(reorderedLists.length / numRows);
-  const chunkedData = chunkLists(reorderedLists, numColumns);
-  
-  const bookmarkList = lists != null ? lists.find(item => item.list_id === Values.bookmarkListID) : null;
-  var unwatchedLists: List[] = [];
-  if (bookmarkList) {
-    unwatchedLists = [bookmarkList];
-  }
+  let numColumns = Math.ceil(watchedLists.length / numRows);
+  const chunkedData = chunkLists(watchedLists, numColumns);
+
+  // Unwatched lists
+  const unwatchedLists = lists != null ? reorderData(filterWatched(lists, false), Values.bookmarkListID, Values.seenListID) : [];
+  numColumns = Math.ceil(unwatchedLists.length / numRows);
   const chunkedUnwatched = chunkLists(unwatchedLists, numColumns);
 
   return (
@@ -76,7 +79,7 @@ const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID:
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={{flexDirection: 'column'}}>
           {chunkedUnwatched.map((row, rowIndex) => (
-            <View key={rowIndex} style={styles.row}>
+            <View key={rowIndex} style={[styles.row, styles.rowSpacing]}>
               {row.map(list => (
                 <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={true} userID='' index={0} />
               ))}

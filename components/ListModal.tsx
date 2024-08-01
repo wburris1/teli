@@ -31,7 +31,7 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
   const [selectedItems, setSelectedItems] = useState<UserItem[]>(containedItems);
   const [removedItems, setRemovedItems] = useState<UserItem[]>([]);
   const colorScheme = useColorScheme();
-  const { loading, setLoading } = useLoading();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (items) {

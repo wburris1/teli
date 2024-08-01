@@ -37,7 +37,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
   const [replyCommentID, setReplyCommentID] = useState('');
   const [replyParentID, setReplyParentID] = useState('');
   const { requestReply } = useData();
-  const { loading, setLoading } = useLoading();
+  const [loading, setLoading] = useState(true);
   const [reply, setReply] = useState<any>(null);
 
   const animateComment = () => {
