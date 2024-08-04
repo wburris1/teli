@@ -6,10 +6,10 @@ import { addDoc, collection, serverTimestamp, setDoc, updateDoc } from "firebase
 const db = FIREBASE_DB;
 
 export const MakePost = () => {
-    const { user } = useAuth();
+    const { userData } = useAuth();
 
     async function makePost(caption: string, itemID: string, posterPath: string, itemName: string, hasSpoilers: boolean, listTypeID: string) {
-        if (user) {
+        if (userData) {
             var post: Post = {
                 post_id: "",
                 caption: caption,
@@ -22,9 +22,10 @@ export const MakePost = () => {
                 likes: [],
                 score: -1,
                 created_at: serverTimestamp(),
+                userPushToken: userData.userPushToken
             }
             try {
-                const userPostsRef = collection(db, 'users', user.uid, 'posts');
+                const userPostsRef = collection(db, 'users', userData.user_id, 'posts');
                 const postRef = await addDoc(userPostsRef, post);
                 updateDoc(postRef, { post_id: postRef.id });
                 console.log("Post successfully added!");

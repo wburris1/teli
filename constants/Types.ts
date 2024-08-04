@@ -7,6 +7,7 @@ type UserData = {
     is_private: boolean,
     profile_picture: string,
     bio: string,
+    userPushToken: string,
 }
 
 type BaseItem = {

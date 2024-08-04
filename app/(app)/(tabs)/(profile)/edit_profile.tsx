@@ -40,6 +40,7 @@ export default function EditProfileScreen () {
                     username: username,
                     bio: bio,
                     is_private: userData.is_private,
+                    userPushToken: userData.userPushToken
                 };
 
                 await updateDoc(userRef, updatedUserData);
