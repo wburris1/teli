@@ -54,12 +54,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
       } else {
         if (userData) {
           createNotification(item.user_id, NotificationType.LikedPostNotification, userData, item)
-          // once all items have a token we can probably remove this if check
-          if (!item.userPushToken) {
-            throw new Error(`this item does not have a userPushToken`);
-          } else {
-            sendPushNotification(item.userPushToken, "Liked Post", `${userData.first_name} liked your post`)
-          }
+          sendPushNotification(item.userPushToken, "Liked Post", `${userData.first_name} liked your post`)
         } else {
           console.log("couldn't make notificatoin because userData not found")
         }

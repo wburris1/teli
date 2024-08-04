@@ -1,4 +1,5 @@
 import { createNotification } from "@/components/Helpers/CreatePlusAddNotification";
+import { sendPushNotification } from "@/components/Helpers/sendNotification";
 import { AppNotification, NotificationType } from "@/constants/ImportTypes";
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_DB } from "@/firebaseConfig";
@@ -7,11 +8,12 @@ import { collection, doc, setDoc, deleteDoc, serverTimestamp, addDoc, updateDoc 
 const db = FIREBASE_DB;
 
 export const followUser = () => {
-  const { user, userData } = useAuth();
+  const { userData } = useAuth();
 
-  async function follow(userID: string) {
+  async function follow(userID: string, userPushToken: string) {
     if (userData && userID) {
       createNotification(userID, NotificationType.FollowNotification, userData);
+      sendPushNotification(userPushToken, "New Follower!", `${userData.first_name} now follows you`);
       const userFollowingRef = doc(collection(db, "users", userData.user_id, "following"), userID);
       const followUserFollowersRef = doc(collection(db, "users", userID, "followers"), userData.user_id);
       try {

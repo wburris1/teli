@@ -271,7 +271,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
         })
 
     } else {
-        followFunc(userID).then(() => {
+        followFunc(userID, profileData.userPushToken).then(() => {
             setIsFollowing(true);
             requestRefresh();
             Toast.show({

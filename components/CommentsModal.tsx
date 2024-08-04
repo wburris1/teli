@@ -16,6 +16,7 @@ import { AppNotification, DisplayComment, FeedPost, NotificationType, UserCommen
 import { getComments, getUsersData } from '@/data/getComments';
 import { useLoading } from '@/contexts/loading';
 import { createNotification } from './Helpers/CreatePlusAddNotification';
+import { sendPushNotification } from './Helpers/sendNotification';
 
 const db = FIREBASE_DB;
 
@@ -101,6 +102,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
         profile_picture: userData.profile_picture,
         first_name: userData.first_name,
         last_name: userData.last_name,
+        userPushToken: userData.userPushToken,
       }
       const localTimestamp = new Date();
       let displayComment = {id: '', ...userComment};
@@ -160,6 +162,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
       }
       if (userData) {
         createNotification(post.user_id, NotificationType.CommentNotification, userData, post, userComment.comment)
+        sendPushNotification(post.userPushToken, `${post.first_name} commented on your post`, userComment.comment)
       }
       setReply(null);
     }
