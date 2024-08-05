@@ -52,7 +52,7 @@ export const usePushNotifications = (): PushNotificationState => {
       }
       return token;
     } else {
-      console.log("Error: use a physical device")
+      console.log("Error: Push Notifications only work with physical device not simulators")
     }
   }
   useEffect(() => {

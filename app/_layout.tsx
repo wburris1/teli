@@ -1,4 +1,5 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import EntryAnimationScreen from "@/components/EntryAnimationScreen";
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Slot, useRouter, useSegments } from 'expo-router';
@@ -93,7 +94,9 @@ const InitialLayout = () => {
 };
 
 function RootLayoutNav() {
+  const [animationloading, setAnimationLoading] = useState(true);
   return (
+    animationloading ? <EntryAnimationScreen setAnimationLoading={setAnimationLoading}></EntryAnimationScreen> :
     <LoadingProvider>
       <AuthProvider>
         <DataProvider>
