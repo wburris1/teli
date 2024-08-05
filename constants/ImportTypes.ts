@@ -13,6 +13,7 @@ export type Post = {
     likes: string[],
     score: number,
     created_at: Timestamp | FieldValue,
+    userPushToken: string | undefined
 }
 
 export interface FeedPost extends Post {
@@ -61,6 +62,7 @@ export interface DisplayComment extends UserComment {
     username: string,
     first_name: string,
     last_name: string,
+    userPushToken: string,
 }
 
 export enum NotificationType {

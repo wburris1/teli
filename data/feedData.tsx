@@ -48,6 +48,7 @@ export const makeFeed = (userID: string, ) => {
           first_name: userData.first_name,
           last_name: userData.last_name,
           profile_picture: userData.profile_picture,
+          userPushToken: userData.userPushToken
         }));
       } else {
         return [];

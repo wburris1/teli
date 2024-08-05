@@ -13,6 +13,8 @@ import { ExpandableText } from "./AnimatedViews.tsx/ExpandableText";
 import { Link } from "expo-router";
 import React from "react";
 import { createNotification } from "./Helpers/CreatePlusAddNotification";
+import { sendPushNotification } from "./Helpers/sendNotification";
+import { useData } from "@/contexts/dataContext";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
@@ -27,6 +29,7 @@ type PostFeedProps = {
 
 export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home'}: PostFeedProps) => {
     const colorScheme = useColorScheme();
+    const {userPushToken} = useData();
     const { user, userData } = useAuth();
     const formattedDate = formatDate(item.created_at as Timestamp);
     const maxCaptionHeight = 65;
@@ -51,6 +54,9 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
       } else {
         if (userData) {
           createNotification(item.user_id, NotificationType.LikedPostNotification, userData, item)
+          sendPushNotification(item.userPushToken, "Liked Post", `${userData.first_name} liked your post`)
+        } else {
+          console.log("couldn't make notificatoin because userData not found")
         }
 
         setNumLikes(numLikes + 1);

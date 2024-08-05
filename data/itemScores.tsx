@@ -10,7 +10,7 @@ import { useLoading } from "@/contexts/loading";
 const db = FIREBASE_DB;
 
 export const useUserAdjustScores = () => {
-    const { user } = useAuth();
+    const { user, userData } = useAuth();
     const { requestListRefresh, requestRefresh } = useData();
 
     async function adjustScores(items: UserItem[], minScore: number, maxScore: number, range: number, listID: string, listTypeID: string) {
@@ -73,7 +73,7 @@ export const useUserAdjustScores = () => {
                 lastScore = filteredItems[i].score;
             }
             const itemRef = doc(db, 'users', user.uid, listTypeID, listID, "items", filteredItems[i].item_id);
-            batch.update(itemRef, { score: newScore });
+            batch.update(itemRef, { score: newScore, userPushToken: userData?.userPushToken });
 
             if (lists) {
                 for (const list of lists) {
@@ -120,7 +120,7 @@ export const useUserAdjustScores = () => {
 }
 
 export const AdjustReorderedScores = () => {
-    const { user } = useAuth();
+    const { user, userData } = useAuth();
     const updateListFunc = UpdateListPosters();
     const { setLoading } = useLoading();
 
@@ -210,7 +210,7 @@ export const AdjustReorderedScores = () => {
                         const listItems = listDict[list.list_id];
                         if (listItems.some(listItem => listItem.item_id === items[i].item_id)) {
                             const itemRef = doc(db, "users", user.uid, listTypeID, list.list_id, "items", items[i].item_id);
-                            batch.update(itemRef, { score: newScore });
+                            batch.update(itemRef, { score: newScore, userPushToken: userData?.userPushToken});
                         }
                     }
                 }
