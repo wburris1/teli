@@ -47,8 +47,11 @@ const Login = () => {
           borderBottomWidth: 1,
           borderTopWidth: 1,
           borderColor: Colors[colorScheme ?? 'light'].gray,
+          color: Colors[colorScheme ?? 'light'].text,
         }]} />
-        <TextInput placeholder="Password..." value={password} onChangeText={setPassword} secureTextEntry style={styles.inputField} />
+        <TextInput placeholder="Password..." value={password} onChangeText={setPassword} secureTextEntry style={[styles.inputField, {
+          color: Colors[colorScheme ?? 'light'].text,
+        }]} />
 
         <TouchableOpacity onPress={onSignInPress}>
             <View style={[styles.button, { backgroundColor: "#add8e6", borderColor: Colors[colorScheme ?? 'light'].gray }]}>
