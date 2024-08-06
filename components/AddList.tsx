@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { Link } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Modal, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View, useColorScheme } from "react-native";
 import { ListModalScreen } from "./ListModal";
 import { useData } from "@/contexts/dataContext";
 import { CreateListDB } from "@/data/addList";
@@ -39,6 +39,10 @@ export const AddList = () => {
     };
 
     const handleListCreate = () => {
+      if (listName == "") {
+        Alert.alert("Please enter a name for the list");
+      }
+      else {
         setLoading(true);
         const list: List = {
             list_id: "",
@@ -56,6 +60,7 @@ export const AddList = () => {
                 handleClose();
             }
         })
+      }
     }
 
     const handleClose = () => {
