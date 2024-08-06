@@ -1,60 +1,43 @@
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, useColorScheme } from 'react-native';
-
+import { ActivityIndicator, FlatList, LayoutAnimation, RefreshControl, StyleSheet, useColorScheme } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import MovieScreen from '@/components/Search/SearchCard';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Colors from "@/constants/Colors";
 import { AppNotification, NotificationType } from '@/constants/ImportTypes';
-import { Timestamp, collection, doc, getDocs, query } from 'firebase/firestore';
+import { DocumentSnapshot, Timestamp, collection, doc, getDocs, limit, orderBy, query, startAfter } from 'firebase/firestore';
 import NotificationDisplay from '@/components/NotificationDisplay';
 import { FIREBASE_DB } from '@/firebaseConfig';
 import { useAuth } from '@/contexts/authContext';
 import { useData } from '@/contexts/dataContext';
 import { useLoading } from '@/contexts/loading';
 
-
 export default function TabOneScreen() {
   const { loading, setLoading } = useLoading();
   const [ loadingNoti, setLoadingNoti] = useState(false);
   const db = FIREBASE_DB;
-  const { user } = useAuth();
+  const { userData } = useAuth();
   const { refreshFlag } = useData();
+  const [ isLoadingMore, setIsLoadingMore] = useState(false);
   const [noti, setNoti] = useState<AppNotification[]>([])
-
   const [refreshing, setRefreshing] = useState(false);
-
-  const testMovie: Movie = {
-    id: "movie123",
-    poster_path: "/path/to/poster.jpg",
-    overview: "A thrilling adventure of a lifetime.",
-    genres: [
-        { id: "1", name: "Action" },
-        { id: "2", name: "Adventure" }
-    ],
-    backdrop_path: "/path/to/backdrop.jpg",
-    tagline: "The adventure begins.",
-    title: "Adventure Movie",
-    release_date: "2024-07-23"
-  };
-  const testUserData: UserData = {
-    user_id: "user789",
-    email: "user@example.com",
-    username: "testuser",
-    first_name: "Test",
-    last_name: "User",
-    is_private: false,
-    profile_picture: "/path/to/profile.jpg",
-    bio: "Just a test user."
-  };
   const colorScheme = useColorScheme();
-  const fetchUserNoti = async () => {
-    if (user) {
+  const [deleteNoti, setDeleteNoti] = useState('')
+  const lastFetchedNotification = useRef<DocumentSnapshot | null>(null);
+
+  const fetchUserNoti = async (limitNumber: number = 15, refresh: boolean = false) => {
+    if (userData) {
       try {
-        const userDocRef = doc(db, 'users', user.uid);
+        const userDocRef = doc(db, 'users', userData.user_id);
         const notiCollectionRef = collection(userDocRef, 'notifications');
-        const notiQuery = query(notiCollectionRef);
+        const notiQuery = !lastFetchedNotification.current || refresh
+        ? query(notiCollectionRef, orderBy('created_at', 'desc'), limit(limitNumber))
+        : query(notiCollectionRef, orderBy('created_at', 'desc'), startAfter(lastFetchedNotification.current), limit(limitNumber));
+
         const postsSnapshot = await getDocs(notiQuery);
+        if (!postsSnapshot.empty) {
+          lastFetchedNotification.current = postsSnapshot.docs[postsSnapshot.docs.length - 1];
+        }
         return postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as AppNotification }));
       } catch (error) {
         console.log("error fetch user notifications " + error);
@@ -62,35 +45,46 @@ export default function TabOneScreen() {
     }
   };
 
-  const getAllNotifications = async () => {
-    setLoadingNoti(true)
-    const notifications = await fetchUserNoti();
-
-    if (notifications) {
-      const allNotifications = notifications.sort((a, b) => (b.created_at as any).toDate() - (a.created_at as any).toDate());
-      setNoti(allNotifications);
-      return allNotifications;
-    }
-  }
+  useEffect(() => {
+    setNoti(noti.filter(noti => noti.noti_id !== deleteNoti))
+  },[deleteNoti]);
 
   useEffect(() => {
-    getAllNotifications();
-    setLoadingNoti(false)
+    // fires once when we initially load notifications
+    setLoadingNoti(true);
+    const getNotifications = async () => {
+      const newNoti =  await fetchUserNoti();
+      if (newNoti) {
+        setNoti(newNoti)
+        setLoadingNoti(false);
+      }
+    }
+    getNotifications();
+  }, [userData]);
 
-  }, [user, refreshFlag]); 
-  const keyExtractor = (item: AppNotification) => item.noti_id;
-
-  const onRefresh = useCallback(async () => {
+  const onRefresh = useCallback(async () => {    
     setRefreshing(true);
-    getAllNotifications();
-    setLoadingNoti(false);
-  }, [refreshing]);
-
-  useEffect(() => {
-    if (!loadingNoti) {
-      setRefreshing(false);
+    const newNoti = await fetchUserNoti(15, true);
+    if (newNoti) {
+      setNoti(newNoti)
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); 
     }
-  }, [noti, loadingNoti]);
+    setRefreshing(false);
+  }, []);
+
+  const loadMoreNoti = async () => {
+      setIsLoadingMore(true);
+      const newNoti = await fetchUserNoti(10);
+      if (newNoti) {
+        const combinedNotifications = [...noti, ...newNoti];
+        setNoti(combinedNotifications);
+      }
+      setIsLoadingMore(false);
+  };
+  const renderFooter = () => {
+    if (!isLoadingMore) return null;
+    return <ActivityIndicator style={{ margin: 20 }} />;
+  };
 
   return (
     <View style={styles.container}>
@@ -99,8 +93,11 @@ export default function TabOneScreen() {
           <>
             <FlatList
               data={noti}
-              keyExtractor={keyExtractor}
-              renderItem={({ item, index }) => <NotificationDisplay noti={item}  />}
+              keyExtractor={(item: AppNotification) => item.noti_id}
+              renderItem={({ item, index }) => <NotificationDisplay noti={item} setDeleteNoti={setDeleteNoti} />}
+              onEndReached={loadMoreNoti}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={renderFooter}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             />
           </>

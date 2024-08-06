@@ -1,7 +1,7 @@
 import { FIREBASE_DB } from '@/firebaseConfig';
 import { Link } from 'expo-router';
 import { Text, View} from "./Themed";
-import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
+import { ActivityIndicator, Alert, Image, LayoutAnimation, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import Colors from "@/constants/Colors";
 import { formatDate } from "./Helpers/FormatDate";
@@ -16,10 +16,10 @@ import { useLoading } from '@/contexts/loading';
 
 type notiProps = {
   noti: AppNotification
+  setDeleteNoti: (deleteNoti: string) => void,
 };
 
-const NotificationDisplay = ({ noti }: notiProps) => {
-  // WE NEED TO ADD LOADING FOR WHEN A NOTIFICATION IS BEING DELETED
+const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
   const { loading, setLoading } = useLoading();
   const imgUrl = 'https://image.tmdb.org/t/p/w500';
   const homeFeedFontSize = 18
@@ -86,7 +86,7 @@ const NotificationDisplay = ({ noti }: notiProps) => {
       });
   const onDelete = useCallback(() => {
     const alertHeaderText = "Confirm Delete";
-    const alertText = "Are you sure you want to delete this comment?";
+    const alertText = "Are you sure you want to delete this notification?";
     const alertButtonText = "Delete";
     Alert.alert(
         alertHeaderText,
@@ -105,15 +105,15 @@ const NotificationDisplay = ({ noti }: notiProps) => {
         ]
     );
   }, []);
+
   const handleDelete = useCallback(async () => {
     try {
-      setLoading(true)
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut); 
+      setDeleteNoti(noti.noti_id)
       const userNotiRef = collection(db, 'users', noti.receiver_id, 'notifications');
       const docReference = doc(userNotiRef, noti.noti_id)
       await deleteDoc(docReference)
-      console.log("notification deleted")
-      requestRefresh();
-      setLoading(false)
+      console.log("notification deleted");
     } catch (error) {
       console.error("Error deleting notification: ", error);
     }
