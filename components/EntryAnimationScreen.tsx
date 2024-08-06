@@ -1,8 +1,9 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text } from "./Themed";
 import LottieView from "lottie-react-native";
-import { Dimensions, StyleSheet} from 'react-native';
+import { Dimensions, StyleSheet, useColorScheme} from 'react-native';
 import { Dispatch, SetStateAction } from "react";
+import Colors from "@/constants/Colors";
 
 
 interface SplashScreenProps {
@@ -11,9 +12,8 @@ interface SplashScreenProps {
 
 export default function EntryAnimationScreen({ setAnimationLoading }: SplashScreenProps): JSX.Element {
   const { height } = Dimensions.get('window');
-  console.log("height" + height)
-  console.log((3 / 4) * height - 200)
-  const backgroundColor = 'white'
+  const colorScheme = useColorScheme();
+  const backgroundColor = Colors[colorScheme ?? 'light'].background;
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -58,6 +58,7 @@ export default function EntryAnimationScreen({ setAnimationLoading }: SplashScre
           justifyContent: 'center',
           alignItems: 'center',
           position: 'relative', // Ensure the container has a relative position
+          backgroundColor: backgroundColor,
         }}
       >
         <LottieView
@@ -81,7 +82,7 @@ export default function EntryAnimationScreen({ setAnimationLoading }: SplashScre
             fontWeight: 'bold',
             textAlign: 'center',
             top: 100,
-            color: 'black', // Adjust color as needed for visibility
+            color: Colors[colorScheme === 'light' ? 'dark' : 'light'].background, // 'black', // Adjust color as needed for visibility
           }}
         >
           Take Two
