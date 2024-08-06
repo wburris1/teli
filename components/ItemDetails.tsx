@@ -1,4 +1,4 @@
-import { StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, View, ScrollView } from 'react-native'
+import { StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, View, ScrollView, PixelRatio } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
@@ -108,7 +108,7 @@ const ItemDetails = ({item}: Props) => {
                                     </View>} 
                             </View>
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', paddingVertical: 5 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', paddingVertical: 0 }}>
                             {!loaded ? <View style={[styles.addButton, { backgroundColor: Colors[colorScheme ?? 'light'].text }]}>
                                 <ActivityIndicator size={30} color="#fff" />
                             </View> :
@@ -168,6 +168,9 @@ const ItemDetails = ({item}: Props) => {
         </>
     )
 };
+console.log(PixelRatio.get())
+console.log(Dimensions.screenHeight + "height")
+console.log(Dimensions.screenWidth + "width")
 
 const styles = StyleSheet.create({
     container: {
@@ -202,7 +205,7 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
         paddingRight: 10,
         justifyContent: 'flex-end',
-        height: 130 * 1.5,
+        height: 140 * 1.5, //202.5
     },
     posterContainer: {
         zIndex: 1,
@@ -214,7 +217,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 1,
     },
     image: {
-        width: 130,
+        width: screenWidth/3,
         aspectRatio: 1 / 1.5,
         borderRadius: 5,
         //borderWidth: 0.5,
@@ -232,18 +235,17 @@ const styles = StyleSheet.create({
     },
     title: {
         textAlign: 'right',
-        paddingVertical: 5,
-        fontSize: 24,
+        fontSize: screenWidth > 400 ? 24 : 20,
         fontWeight: 'bold'
     },
     buttonText: {
-        paddingHorizontal: 5,
-        fontSize: 16,
+        paddingHorizontal: 1,
+        fontSize: screenWidth > 400 ?  16 : 12, //(Dimensions.screenWidth/1000) * 34 ,//PixelRatio.get() * 4, //16,
         fontWeight: '600',
     },
     date: {
         textAlign: 'right',
-        paddingVertical: 2,
+        paddingBottom: 10,
         fontSize: 14,
         alignSelf: 'flex-start'
     },
@@ -272,14 +274,14 @@ const styles = StyleSheet.create({
         margin: 2.5,
     },
     addButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderRadius: 50,
-        paddingHorizontal: 8,
-        paddingVertical: 5,
-        marginLeft: 5,
-    },
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderRadius: 50,
+      paddingHorizontal: 8,
+      paddingVertical: 5,
+      marginLeft: 5,
+  },
 });
 
 export default ItemDetails;
