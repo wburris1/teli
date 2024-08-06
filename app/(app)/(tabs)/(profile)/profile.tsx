@@ -67,12 +67,16 @@ const ProfilePage = () => {
   const {user, userData } = useAuth();
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
-  const { posts } = makeFeed(user ? user.uid : '');
-  // const [posts, setPosts] = useState<Post[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const { posts } = makeFeed(user ? user.uid : '', refreshing, setRefreshing);
   const [loading, setLoading] = useState(true);
   const { refreshFlag, refreshListFlag } = useData();
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+  };
 
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -242,6 +246,8 @@ const ProfilePage = () => {
         setShowComments={setShowComments}
         setShowLikes={setShowLikes}
         redirectLink='/profile'
+        handleRefresh={handleRefresh}
+        refreshing={refreshing}
       />
     </View>
   );

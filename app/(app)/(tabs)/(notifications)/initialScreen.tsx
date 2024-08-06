@@ -1,9 +1,9 @@
-import { ActivityIndicator, FlatList, StyleSheet, useColorScheme } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, useColorScheme } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import MovieScreen from '@/components/Search/SearchCard';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Colors from "@/constants/Colors";
 import { AppNotification, NotificationType } from '@/constants/ImportTypes';
 import { Timestamp, collection, doc, getDocs, query } from 'firebase/firestore';
@@ -22,6 +22,7 @@ export default function TabOneScreen() {
   const { refreshFlag } = useData();
   const [noti, setNoti] = useState<AppNotification[]>([])
 
+  const [refreshing, setRefreshing] = useState(false);
 
   const testMovie: Movie = {
     id: "movie123",
@@ -61,22 +62,35 @@ export default function TabOneScreen() {
     }
   };
 
-  useEffect(() => {
-    const getAllNotifications = async () => {
-      setLoadingNoti(true)
-      const notifications = await fetchUserNoti();
+  const getAllNotifications = async () => {
+    setLoadingNoti(true)
+    const notifications = await fetchUserNoti();
 
-      if (notifications) {
-        const allNotifications = notifications.sort((a, b) => (b.created_at as any).toDate() - (a.created_at as any).toDate());
-        setNoti(allNotifications);
-        return allNotifications;
-      }
+    if (notifications) {
+      const allNotifications = notifications.sort((a, b) => (b.created_at as any).toDate() - (a.created_at as any).toDate());
+      setNoti(allNotifications);
+      return allNotifications;
     }
+  }
+
+  useEffect(() => {
     getAllNotifications();
     setLoadingNoti(false)
 
   }, [user, refreshFlag]); 
   const keyExtractor = (item: AppNotification) => item.noti_id;
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    getAllNotifications();
+    setLoadingNoti(false);
+  }, [refreshing]);
+
+  useEffect(() => {
+    if (!loadingNoti) {
+      setRefreshing(false);
+    }
+  }, [noti, loadingNoti]);
 
   return (
     <View style={styles.container}>
@@ -87,6 +101,7 @@ export default function TabOneScreen() {
               data={noti}
               keyExtractor={keyExtractor}
               renderItem={({ item, index }) => <NotificationDisplay noti={item}  />}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             />
           </>
         ) : (

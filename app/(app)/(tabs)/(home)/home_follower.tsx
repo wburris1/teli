@@ -4,6 +4,7 @@ import { useLayoutEffect } from 'react';
 
 export default function UserFollowerScreen() {
   const { userID } = useLocalSearchParams();
+  const { whichTab } = useLocalSearchParams();
   const navigation = useNavigation();
 
   useLayoutEffect(() => {
@@ -16,7 +17,7 @@ export default function UserFollowerScreen() {
   return (
     <>
         {
-            <FollowerModalScreen userID={userID as string} redirectLink='/home' />
+            <FollowerModalScreen userID={userID as string} redirectLink='/home'  whichTab={parseInt(whichTab as string)} />
         }
     </>
   );

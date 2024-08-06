@@ -13,11 +13,10 @@ export default function UserFollowerScreen() {
     });
   }, [navigation]);
   
-
   return (
     <>
         {
-            <FollowerModalScreen userID={userID as string} redirectLink= '/search'  whichTab={parseInt(whichTab as string)}/>
+            <FollowerModalScreen userID={userID as string} redirectLink='/notification'  whichTab={parseInt(whichTab as string)} />
         }
     </>
   );

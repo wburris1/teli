@@ -1,5 +1,4 @@
-import React from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, useColorScheme, View as RNView, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, useColorScheme, View as RNView, View, RefreshControl } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Colors from '@/constants/Colors';
 import { FeedPost } from '@/constants/ImportTypes';
@@ -18,6 +17,8 @@ type PostListWithModalsProps = {
   setShowComments: (show: boolean) => void;
   setShowLikes: (show: boolean) => void;
   redirectLink: string;
+  handleRefresh: () => void;
+  refreshing: boolean;
 };
 
 const PostFeedWithModals = ({
@@ -30,8 +31,11 @@ const PostFeedWithModals = ({
   handleLikes,
   setShowComments,
   setShowLikes,
-  redirectLink
-}: PostListWithModalsProps) => {
+  redirectLink,
+  handleRefresh,
+  refreshing,
+}: 
+PostListWithModalsProps) => {
   const colorScheme = useColorScheme();
 
   const keyExtractor = (item: FeedPost) => {
@@ -50,6 +54,7 @@ const PostFeedWithModals = ({
             data={posts}
             keyExtractor={keyExtractor}
             renderItem={({ item, index }) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink={redirectLink} />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink={redirectLink} />
           <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink={redirectLink} />

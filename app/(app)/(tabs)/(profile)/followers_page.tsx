@@ -14,6 +14,7 @@ import { FIREBASE_DB } from '@/firebaseConfig';
 import { useAuth } from '@/contexts/authContext';
 import { fetchUserData } from '@/data/getComments';
 import { useLocalSearchParams } from 'expo-router';
+import { useTab } from '@/contexts/listContext';
 
 //Time is too long to load
 
@@ -22,6 +23,7 @@ const FollowersTabContent = ({ userID, query, redirectLink}: { userID: string, q
   const db = FIREBASE_DB;
   const { user } = useAuth();
   const [followers, setFollowers] = useState<UserData[]>([]);
+  const [allFollowers, setAllFollowers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(false);
   const FOLLOWERS_PAGE_SIZE = 10;
   useEffect(() => {
@@ -34,16 +36,26 @@ const FollowersTabContent = ({ userID, query, redirectLink}: { userID: string, q
         };
         const followersID = await fetchFollowerIDs();
         const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
+        setAllFollowers(followersData);
         const filteredFollowers = followersData.filter(user => {
           return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
-          user.last_name.toLowerCase().includes(query.toLowerCase());
+          user.last_name.toLowerCase().includes(query.toLowerCase()) || user.username.toLowerCase().includes(query.toLowerCase());
         })
 
         setFollowers(filteredFollowers);
       }
     };
     fetchFollowersData();
-  }, [userID, query]);
+  }, [userID]);
+
+  useEffect(() => {
+    const filteredFollowers = allFollowers.filter(user => {
+      return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
+          user.last_name.toLowerCase().includes(query.toLowerCase()) || user.username.toLowerCase().includes(query.toLowerCase());
+    })
+    setFollowers(filteredFollowers);
+  }
+  , [query]);
 
 
   const loadMoreFollowers = async () => {
@@ -85,6 +97,7 @@ const FollowingTabContent = ({ userID, query, redirectLink }: { userID: string, 
   const db = FIREBASE_DB;
   const { user } = useAuth();
   const [following, setFollowing] = useState<UserData[]>([]);
+  const [allFollowing, setAllFollowing] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(false);
   const FOLLOWERS_PAGE_SIZE = 10;
   useEffect(() => {
@@ -97,15 +110,25 @@ const FollowingTabContent = ({ userID, query, redirectLink }: { userID: string, 
         };
         const followingID = await fetchFollowingIDs();
         const followingData = await Promise.all(followingID.map(following => fetchUserData(following.id)));
+        setAllFollowing(followingData);
         const filteredFollowing = followingData.filter(user => {
           return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
-          user.last_name.toLowerCase().includes(query.toLowerCase())
+          user.last_name.toLowerCase().includes(query.toLowerCase()) || user.username.toLowerCase().includes(query.toLowerCase());
         })
         setFollowing(filteredFollowing);
       }
     };
     fetchProfileData();
-  }, [userID, query]);
+  }, [userID]);
+
+  useEffect(() => {
+    const filteredFollowing = allFollowing.filter(user => {
+      return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
+          user.last_name.toLowerCase().includes(query.toLowerCase()) || user.username.toLowerCase().includes(query.toLowerCase());
+    })
+    setFollowing(filteredFollowing);
+  }
+  , [query]);
 
 
    const loadMoreFollowing = async () => {
@@ -144,6 +167,7 @@ export default function FollowerModalScreen({ userID, redirectLink, whichTab}: {
   const colorScheme = useColorScheme();
   const [search , setSearch] = useState("");
   const [currentId , setCurrentId] = useState("");
+  const { setActiveTab } = useTab();
   if (currentId != userID){
     setCurrentId(userID);
     
@@ -178,7 +202,7 @@ export default function FollowerModalScreen({ userID, redirectLink, whichTab}: {
     <View style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1 }}>
         <View style={styles.container}>
             <SearchInput search={search} setSearch={setSearch} isFocused={false} />
-            <SearchTabs tabs={followingTabs} onTabChange={() => {}} index= {whichTab} />
+            <SearchTabs tabs={followingTabs} onTabChange={index => setActiveTab(index)} index= {whichTab} />
         </View>
     </View>
 );

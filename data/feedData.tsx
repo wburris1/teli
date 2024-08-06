@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 const db = FIREBASE_DB;
 
 // input userID should be 'Home' if used for home feed.
-export const makeFeed = (userID: string, ) => {
+export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (refreshing: boolean) => void) => {
   const { user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,32 +72,38 @@ export const makeFeed = (userID: string, ) => {
     return posts;
   };
 
-  useEffect(() => {
-    const fetchFeed = async () => {
-      if (user) {
-        try {
-          let recentPosts;
+  const fetchFeed = async () => {
+    if (user) {
+      try {
+        let recentPosts;
 
-          if (userID === 'Home') {
-            const followedUsers = await getFollowedUsers();
-            recentPosts = await getRecentPosts(followedUsers);
-          } else {
-            recentPosts = await getRecentPosts([userID]);
-          }
-
-          recentPosts.sort((a, b) => (b.created_at as any).toDate() - (a.created_at as any).toDate());
-
-          setPosts(recentPosts);
-        } catch (error) {
-          console.error('Error fetching home feed: ', error);
-        } finally {
-          setLoading(false);
+        if (userID === 'Home') {
+          const followedUsers = await getFollowedUsers();
+          recentPosts = await getRecentPosts(followedUsers);
+        } else {
+          recentPosts = await getRecentPosts([userID]);
         }
+
+        recentPosts.sort((a, b) => (b.created_at as any).toDate() - (a.created_at as any).toDate());
+
+        setPosts(recentPosts);
+      } catch (error) {
+        console.error('Error fetching home feed: ', error);
+      } finally {
+        setRefreshing(false);
+        setLoading(false);
       }
-    };
+    }
+  };
+  useEffect(() => {
+    if (refreshing) {
+      fetchFeed();
+    }
+  }, [user, refreshFlag, refreshing]);
 
+  useEffect(() => {
     fetchFeed();
-  }, [user, refreshFlag]);
-
+  }, []);
+  
   return { posts, loading };
 }
