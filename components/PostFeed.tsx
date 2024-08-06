@@ -15,6 +15,7 @@ import React from "react";
 import { createNotification } from "./Helpers/CreatePlusAddNotification";
 import { sendPushNotification } from "./Helpers/sendNotification";
 import { useData } from "@/contexts/dataContext";
+import Dimensions from "@/constants/Dimensions";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
@@ -29,6 +30,7 @@ type PostFeedProps = {
 
 export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home'}: PostFeedProps) => {
     const colorScheme = useColorScheme();
+    const screenwidth = Dimensions.screenWidth;
     const {userPushToken} = useData();
     const { user, userData } = useAuth();
     const formattedDate = formatDate(item.created_at as Timestamp);
@@ -36,7 +38,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     const [isLiked, setIsLiked] = useState(item.likes.includes(user?.uid || ""));
     const [numLikes, setNumLikes] = useState(item.likes.length);
     const id = item.user_id + "/" + (item.score >= 0 ? item.item_id : item.post_id);
-    const homeFeedFontSize = 18
+    const feedFontSize = screenwidth > 400 ? 18 : 14.5
     const handleHeart = async () => {
       if (!user) return;
       
@@ -82,15 +84,15 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                     <Text numberOfLines={2} style={{fontSize: 17, marginBottom: 3, flex: 1, paddingRight: 15,}}>
                       <Link href={{pathname: redirectLink + '_user', params: { userID: item.user_id }}} asChild>
                           <TouchableOpacity>
-                            <Text style={{fontWeight: '500',fontSize: homeFeedFontSize}}>{item.first_name}</Text>
+                            <Text style={{fontWeight: '500',fontSize: feedFontSize}}>{item.first_name}</Text>
                           </TouchableOpacity>
                       </Link>
                       <View>
-                        <Text style = {{fontWeight: '300', fontSize: homeFeedFontSize}}>{item.score >= 0 ? " ranked " : (item.score == -2 ? " bookmarked " : " commented on ")}</Text>
+                        <Text style = {{fontWeight: '300', fontSize: feedFontSize}}>{item.score >= 0 ? " ranked " : (item.score == -2 ? " bookmarked " : " commented on ")}</Text>
                       </View>
                       <Link href={{pathname: redirectLink + '_item', params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
                           <TouchableOpacity>
-                              <Text style={{fontWeight: 'bold',fontSize: homeFeedFontSize}}>{item.item_name}</Text>
+                              <Text style={{fontWeight: 'bold',fontSize: feedFontSize}}>{item.item_name}</Text>
                           </TouchableOpacity>
                       </Link>
                     </Text>
