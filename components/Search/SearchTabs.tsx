@@ -20,25 +20,14 @@ type Props = {
 const SearchTabs = ({ tabs, onTabChange, index }: Props) => {
     const colorScheme = useColorScheme();
     const [tabIndex, setTabIndex] = useState(0);
+    const [startingTab, setStartingTab] = useState(0);
     const indicatorPosition = useRef(new Animated.Value(0)).current;
-    const tab = useLocalSearchParams();
-    if (tab.whichTab != undefined){
-    const num = tab.whichTab as string;
-    //this is the tab number passed in 
-    const whichTab = parseInt(num);
-    const [startingTab, setStartingTab] = useState(whichTab);
-    const [originalTab, setOriginalTab] = useState(whichTab);
-    //if the original tab is different from whichTab it means the page needs to be re-rendered
-    if (originalTab != whichTab){
-        setStartingTab(whichTab);
-        setOriginalTab(startingTab);
+
+
+    if (index != tabIndex && index != startingTab){
+      setTabIndex(index);
+      setStartingTab(index);
     }
-    //sets the tab index to the startingTab and then changes the starting tab so that it doesn't re-render
-    if(startingTab != tabIndex && startingTab != 97){
-        setTabIndex(startingTab);
-        setStartingTab(97);
-    }
-  }
 
     useEffect(() => {
         Animated.timing(indicatorPosition, {

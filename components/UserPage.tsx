@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable } from 'react-native';
+import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable, RefreshControl } from 'react-native';
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebaseConfig";
 import { Timestamp, collection, doc, getDoc, getDocs, query, serverTimestamp } from "firebase/firestore";
@@ -50,9 +50,9 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   const [profileData, setProfileData] = useState<UserData>(emptyUser);
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
-  // const [posts, setPosts] = useState<Post[]>([]);
-  const { posts } = makeFeed(userID);
-  
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { posts } = makeFeed(userID, refreshing, setRefreshing);
 
   const [movieLists, setMovieLists] = useState<List[]>([]);
   const [tvLists, setTVLists] = useState<List[]>([]);
@@ -285,6 +285,9 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
         })
     }
   }
+  const handleRefresh = () => {
+    setRefreshing(true);
+  };
 
   const activityTabContent = useCallback(() => 
     <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
@@ -294,6 +297,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
             data={posts}
             keyExtractor={keyExtractor}
             renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink={redirectLink} />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink='/user'/>
           <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink='/user'/>
@@ -304,7 +308,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
         </View>
       )}
     </GestureHandlerRootView>
-  , [refreshFlag, posts, showLikes, showComments, post]);
+  , [refreshFlag, posts, refreshing, showLikes, showComments, post]);
 
   const listsTabContent = useCallback(() => 
     <>
