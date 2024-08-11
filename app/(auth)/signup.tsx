@@ -63,6 +63,7 @@ const SignUpStart = () => {
       is_private: false,
       profile_picture: '/',
       bio: bio,
+      userPushToken: '',
     };
 
     try {

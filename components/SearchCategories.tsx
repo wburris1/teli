@@ -1,4 +1,3 @@
-import { useUserListsSearch } from "@/data/userData"
 import { StyleSheet, Text, TouchableOpacity, useColorScheme } from "react-native"
 import { ScrollView } from "react-native-gesture-handler"
 import { View } from "./Themed"
@@ -7,6 +6,7 @@ import { useState } from "react"
 import Colors from "@/constants/Colors"
 import { Ionicons } from "@expo/vector-icons"
 import { List } from "@/constants/ImportTypes"
+import { useData } from "@/contexts/dataContext"
 
 type ScreenProps = {
     listTypeID: string,
@@ -18,7 +18,7 @@ export const SearchCategories = ({listTypeID, isPost, onChange}: ScreenProps) =>
     // If post, get user lists and display in horizontal scrollView
     const [selectedID, setSelectedID] = useState('');
     const colorScheme = useColorScheme();
-    const { lists, loaded } = isPost ? useUserListsSearch(listTypeID) : { lists: [], loaded: true };
+    const { movieLists, tvLists } = useData();
     var reorderedLists: List[] = [];
 
     const reorderData = (data: List[], firstId: string, secondId: string) => {
@@ -31,8 +31,8 @@ export const SearchCategories = ({listTypeID, isPost, onChange}: ScreenProps) =>
         return [firstItem, secondItem, ...restItems];
     };
 
-    if (isPost && lists) {
-        reorderedLists = reorderData(lists, Values.seenListID, Values.bookmarkListID)
+    if (isPost) {
+        reorderedLists = reorderData(listTypeID == Values.movieListsID ? movieLists : tvLists, Values.seenListID, Values.bookmarkListID)
     }
 
     return (
