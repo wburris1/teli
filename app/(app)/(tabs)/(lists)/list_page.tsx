@@ -216,6 +216,7 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items }:
           {popUpIndex >= 0 && <TouchableWithoutFeedback onPress={() => setPopUpIndex(-1)}>
             <View style={{
               flex: 1,
+              backgroundColor: 'transparent'
             }} />
           </TouchableWithoutFeedback>}
         </View>
