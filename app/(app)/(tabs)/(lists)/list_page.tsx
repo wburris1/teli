@@ -166,7 +166,6 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
           </TouchableOpacity>
         </Link>
       </View>
-      {popUpIndex >= 0 && <Pressable onPress={() => setPopUpIndex(-1)} style={styles.overlay}></Pressable>}
       </>
     );
 });
@@ -199,7 +198,8 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items }:
 
     if (items) {
       return (
-        <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1,}}>
+        <>
+        <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
           {items.length > 0 ? 
             <Animated.FlatList
               data={items}
@@ -214,6 +214,8 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items }:
             <Text>Rank something!</Text>
           )}
         </View>
+        {popUpIndex >= 0 && <Pressable onPress={() => setPopUpIndex(-1)} style={styles.overlay}></Pressable>}
+        </>
       )
     } else {
       return (
