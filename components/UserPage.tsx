@@ -8,7 +8,7 @@ import { Text, View } from '@/components/Themed';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { Link, useLocalSearchParams, useNavigation } from 'expo-router';
-import { FeedPost, Post } from '@/constants/ImportTypes';
+import { FeedPost, List, Post } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { ProfilePost } from '@/components/Post';
 import SearchTabs from './Search/SearchTabs';
@@ -23,6 +23,7 @@ import CommentsModal from './CommentsModal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import useModalState from './ModalState';
 import Toast from 'react-native-toast-message';
+import { HorizontalListWithRows } from './ListList';
 
 const db = FIREBASE_DB;
 
@@ -40,6 +41,7 @@ const emptyUser = {
   profile_picture: "/",
   created_at: "",
   bio: "",
+  userPushToken: '',
 }
 
 const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string}) => {
@@ -312,7 +314,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
 
   const listsTabContent = useCallback(() => 
     <>
-        <View style={{flexDirection: 'row', marginBottom: 10, position: 'absolute', top: 45, left: 5, zIndex: 1, backgroundColor: 'transparent'}}>
+        <View style={{flexDirection: 'row', marginBottom: 10, position: 'absolute', top: 50, left: 5, zIndex: 1, backgroundColor: 'transparent'}}>
             <TouchableOpacity onPress={() => setIsMovies(true)} style={[styles.listButton, { borderColor: Colors[colorScheme ?? 'light'].text,
                 backgroundColor: isMovies ? Colors[colorScheme ?? 'light'].text : Colors[colorScheme ?? 'light'].background}]}>
                 <Text style={[styles.listButtonText, { 
@@ -326,13 +328,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                 }]}>Shows</Text>
             </TouchableOpacity>
         </View>
-        <FlatList
-            key={'_'}
-            data={isMovies ? movieLists : tvLists}
-            keyExtractor={item => '_' + item.list_id}
-            renderItem={({item, index}) => <UserList list={item} listTypeID={isMovies ? Values.movieListsID : Values.tvListsID} isListTab={false} userID={userID} index={index} />}
-            numColumns={3}
-        />
+        <HorizontalListWithRows lists={isMovies ? movieLists : tvLists} listTypeID={isMovies ? Values.movieListsID : Values.tvListsID} isListTab={false} userID={userID} numRows={1} />
     </>
   , [refreshFlag, movieLists, isMovies]);
 

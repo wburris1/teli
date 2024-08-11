@@ -2,7 +2,7 @@ import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, I
 import { Text } from '@/components/Themed';
 import React, { ContextType, forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { useUserItemsSearch, useUserItemsSeenSearch } from '@/data/userData';
+import { useUserItemsSearch } from '@/data/userData';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
@@ -12,6 +12,7 @@ import { removeFromList, useUserItemDelete } from '@/data/deleteItem';
 import { EditListScreen } from '@/components/EditList';
 import { AnimatedSearch } from '@/components/AnimatedSearch';
 import { UserItem } from '@/constants/ImportTypes';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type RowProps = {
     item: UserItem;
@@ -21,6 +22,8 @@ type RowProps = {
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
+
+const itemWidth = (Dimensions.screenWidth - 12) / 3;
 
 const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, ref) => {
     const score = item.score.toFixed(1);
@@ -33,32 +36,28 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID }, r
     date = date.slice(0,4);
   
     return (
-        <View style={[styles.itemContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background, borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
-          <Link href={{pathname: "/search_item", params: { id: item.item_id, groupKey: isMovie ? "movie" : "tv" }}} style={styles.linkStyle}>
-            <View style={styles.innerContainer}>
-              <View style={styles.rank}><Text style={styles.text}>{index + 1}.</Text></View>
+      <View>
+        <Link href={{pathname: "/search_item", params: { id: item.item_id, groupKey: isMovie ? "movie" : "tv" }}} style={styles.linkStyle} asChild>
+          <TouchableOpacity>
+            <View style={[styles.innerContainer, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
               <Image
                   source={{ uri: imgUrl + item.poster_path }}
                   style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
               />
-              <View style={styles.textContainer}>
-                <Text style={styles.itemText}>{'title' in item ? item.title : item.name}</Text>
-                <Text style={styles.dateText}>{date}</Text>
-              </View>
-              {listID != Values.bookmarkListID &&
-              <View style={styles.score}>
-                <View style={[styles.scoreCircle, {backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text}]}>
-                  <Text style={styles.scoreText}>{score}</Text>
-                </View>
-              </View>}
-              <Ionicons
-                name="chevron-forward"
-                size={15}
-                color={Colors[colorScheme ?? 'light'].text}
-              />
+              {item.score && item.score >= 0 &&
+              <>
+                <LinearGradient
+                  colors={['transparent', 'black']}
+                  style={styles.gradient}
+                />
+                <Text style={[styles.rank, {color: 'white', fontSize: 18, fontWeight: '500'}]}>{index + 1}.</Text>
+                <Text style={[styles.scoreText, styles.score, {color: 'white'}]}>{score}</Text>
+              </>
+              }
             </View>
-          </Link>
-        </View>
+          </TouchableOpacity>
+        </Link>
+      </View>
     );
 });
 
@@ -82,7 +81,7 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items }:
             data={items}
             renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} />}
             keyExtractor={item => item.item_id}
-            numColumns={1}
+            numColumns={3}
           /> : 
           <Text>Rank something!</Text>}
         </View>
@@ -176,7 +175,7 @@ export default function TabOneScreen() {
             <Text>{currDescription}</Text>
         </View>}
         <EditListScreen listID={listID as string} listTypeID={listTypeID as string} name={name as string} description={description as string}
-            items={items} visible={editModalVisible} onClose={onClose} onEdit={onEditDetails} />
+            items={items} visible={editModalVisible} onClose={onClose} onEdit={onEditDetails} isRanked={true} />
         <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
 
         {loaded ? 
@@ -222,48 +221,25 @@ const styles = StyleSheet.create({
       fontSize: 16
     },
     scoreText: {
-      fontSize: 20,
-      fontWeight: '500',
+      fontSize: 24,
+      fontWeight: 'bold',
     },
     rank: {
-      alignSelf: 'flex-start',
-      paddingHorizontal: 10,
-      paddingVertical: 15,
+      position: 'absolute',
+      bottom: 10,
+      left: 10,
       backgroundColor: 'transparent'
     },
     score: {
-      paddingHorizontal: 7,
+      position: 'absolute',
+      bottom: 10,
+      right: 10,
       backgroundColor: 'transparent'
     },
-    scoreCircle: {
-      width: 50,
-      height: 50,
-      backgroundColor: '#fff',
-      borderRadius: 50,
-      borderWidth: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1,
-    },
-    itemContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderLeftWidth: 0,
-      borderRightWidth: 0,
-      borderTopWidth: 0,
-      overflow: 'hidden',
-      paddingRight: 5,
-      width: '100%',
-    },
     image: {
-      width: '20%',
+      width: '100%',
       aspectRatio: 1 / 1.5,
-      paddingHorizontal: 5,
-      marginVertical: 10,
-      borderWidth: 0.5,
+      borderWidth: 1,
       borderRadius: 10,
     },
     textContainer: {
@@ -295,10 +271,19 @@ const styles = StyleSheet.create({
       margin: 0,
     },
     innerContainer: {
-      flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'flex-start',
-      width: '100%',
-      height: '100%',
+      justifyContent: 'center',
+      width: itemWidth,
+      marginLeft: 3,
+      marginBottom: 3,
+    },
+    gradient: {
+      position: 'absolute',
+      bottom: 1,
+      left: 1,
+      right: 1,
+      height: 100,
+      borderBottomLeftRadius: 10,
+      borderBottomRightRadius: 10,
     },
   });

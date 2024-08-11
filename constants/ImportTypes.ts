@@ -35,6 +35,7 @@ type BaseUserItem = {
     likes: string[],
     created_at: Timestamp | FieldValue,
     list_type_id: string,
+    lists: string[],
 }
 
 export interface UserMovie extends BaseUserItem {
@@ -82,4 +83,16 @@ export type AppNotification = {
     created_at: Timestamp | FieldValue,
     notification_type: NotificationType
     item: FeedPost | null,
+}
+
+export type List = {
+    list_id: string,
+    name: string,
+    is_custom: boolean,
+    is_ranked: boolean,
+    description: string,
+    top_poster_path: string,
+    second_poster_path: string,
+    bottom_poster_path: string,
+    last_modified: Timestamp | FieldValue,
 }

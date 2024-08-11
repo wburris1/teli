@@ -4,6 +4,7 @@ import Colors from "@/constants/Colors";
 import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Dimensions from "@/constants/Dimensions";
+import { List } from "@/constants/ImportTypes";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const itemWidth = (Dimensions.screenWidth / 3) - 20;
@@ -38,8 +39,11 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index }: { list:
 
   return (
     <Link
-      href={{pathname: isListTab ? '/list_page' : '/search_list_page', params: { listTypeID: listTypeID, listID: list.list_id, description: list.description, name: list.name, userID: userID }}}
-      style={[styles.itemContainer, {height: isListTab ? (itemWidth - 20) * (3/2) + 45 : (itemWidth - 20) * (3/2) + 60, marginTop: (!isListTab && (index >= 0 && index <= 2)) ? 50 : 5}]} asChild
+      href={{pathname: isListTab ? '/list_page' : '/search_list_page', params: { 
+        listTypeID: listTypeID, listID: list.list_id, description: list.description,
+        name: list.name, userID: userID, isRanked: list.is_ranked ? 'true' : 'false',
+      }}}
+      style={[styles.itemContainer, {height: (itemWidth - 20) * (3/2) + 45, marginTop: 5}]} asChild
     >
       <TouchableOpacity>
         {isEmpty ? 

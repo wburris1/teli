@@ -3,7 +3,6 @@ import { Text } from '@/components/Themed';
 import SearchTabs from '@/components/Search/SearchTabs';
 import React, { ContextType, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigation } from 'expo-router';
-import { useUserListsSearch } from '@/data/userData';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
@@ -13,105 +12,21 @@ import { useTab } from '@/contexts/listContext';
 import Values from '@/constants/Values';
 import { AddList } from '@/components/AddList';
 import { UserList } from '@/components/UserList';
-
-const filterWatched = (data: List[], watched: boolean) => {
-  return data.filter(item => item.is_ranked === watched);
-};
-
-const reorderData = (data: List[], firstId: string, secondId: string) => {
-  const firstItem = data.find(item => item.list_id === firstId);
-  const restItems = data.filter(item => item.list_id !== firstId && item.list_id !== secondId);
-  if (!firstItem) {
-    return data;
-  }
-  return [firstItem, ...restItems];
-};
-
-const chunkLists = (lists: List[], size: number) => {
-  var result: (List[])[] = [];
-  if (lists.length <= 3) {
-    result = [lists];
-    return result;
-  } else if (lists.length == 4) {
-    result.push(lists.slice(0, 3));
-    result.push(lists.slice(3, 4));
-    return result;
-  }
-  for (let i = 0; i < lists.length; i += size) {
-    result.push(lists.slice(i, i + size));
-  }
-  return result;
-};
-
-const HorizontalListWithRows = ({lists, listTypeID}: {lists: List[], listTypeID: string}) => {
-  const colorScheme = useColorScheme();
-  const numRows = 2;
-  // Watched lists
-  const watchedLists = lists != null ? reorderData(filterWatched(lists, true), Values.seenListID, Values.bookmarkListID) : [];
-
-  let numColumns = Math.ceil(watchedLists.length / numRows);
-  const chunkedData = chunkLists(watchedLists, numColumns);
-
-  // Unwatched lists
-  const unwatchedLists = lists != null ? reorderData(filterWatched(lists, false), Values.bookmarkListID, Values.seenListID) : [];
-  numColumns = Math.ceil(unwatchedLists.length / numRows);
-  const chunkedUnwatched = chunkLists(unwatchedLists, numColumns);
-
-  return (
-    <ScrollView style={styles.listsContainer} showsVerticalScrollIndicator={false}>
-      <View style={styles.topSeparator}>
-          <Text style={styles.separatorText}>Watched</Text>
-      </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={{flexDirection: 'column'}}>
-          {chunkedData.map((row, rowIndex) => (
-            <View key={rowIndex} style={[styles.row, styles.rowSpacing]}>
-              {row.map(list => (
-                <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={true} userID='' index={0} />
-              ))}
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-      <View style={[styles.listSeparator, { borderColor: Colors[colorScheme ?? 'light'].text}]}>
-          <Text style={styles.separatorText}>Unwatched</Text>
-      </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View style={{flexDirection: 'column'}}>
-          {chunkedUnwatched.map((row, rowIndex) => (
-            <View key={rowIndex} style={[styles.row, styles.rowSpacing]}>
-              {row.map(list => (
-                <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={true} userID='' index={0} />
-              ))}
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-    </ScrollView>
-  );
-};
-
-const MovieTabContent = () => {
-  const { lists, loaded } = useUserListsSearch(Values.movieListsID);
-  return <HorizontalListWithRows lists={lists} listTypeID={Values.movieListsID} />
-};
-
-const TVTabContent = () => {
-  const { lists, loaded } = useUserListsSearch(Values.tvListsID);
-  return <HorizontalListWithRows lists={lists} listTypeID={Values.tvListsID} />
-};
+import { List } from '@/constants/ImportTypes';
+import { HorizontalListWithRows } from '@/components/ListList';
 
 export default function TabOneScreen() {
   const colorScheme = useColorScheme();
-  const { refreshFlag, refreshListFlag } = useData();
+  const { refreshFlag, refreshListFlag, movieLists, tvLists } = useData();
   const { setActiveTab } = useTab();
 
   var moviesTabContent = useCallback(() =>  
-    <MovieTabContent />
-  , [refreshFlag, refreshListFlag]);
+    <HorizontalListWithRows lists={movieLists} listTypeID={Values.movieListsID} userID='' isListTab={true} numRows={2} />
+  , [refreshFlag, refreshListFlag, movieLists]);
+
   var showsTabContent = useCallback(() => 
-    <TVTabContent />
-  , [refreshFlag, refreshListFlag]);
+    <HorizontalListWithRows lists={tvLists} listTypeID={Values.tvListsID} userID='' isListTab={true} numRows={2} />
+  , [refreshFlag, refreshListFlag, tvLists]);
 
   const searchTabs = [
     {

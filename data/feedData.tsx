@@ -3,7 +3,7 @@ import Values from "@/constants/Values";
 import { useAuth } from "@/contexts/authContext";
 import { useData } from "@/contexts/dataContext";
 import { FIREBASE_DB } from "@/firebaseConfig"
-import { collection, doc, getDoc, getDocs, limit, orderBy, query } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, limit, orderBy, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 
 const db = FIREBASE_DB;
@@ -36,9 +36,9 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   
       if (userDoc.exists()) {
         const userData = userDoc.data() as UserData;
-        const userPostsCollectionRef = collectionName == 'posts' ? collection(db, 'users', userID, collectionName) :
-            collection(db, "users", userID, collectionName, Values.seenListID, "items");
-        const userPostsQuery = query(userPostsCollectionRef, orderBy('created_at', 'desc'), limit(10));
+        const userPostsCollectionRef = collection(db, 'users', userID, collectionName);
+        const userPostsQuery = collectionName == 'posts' ? query(userPostsCollectionRef, orderBy('created_at', 'desc'), limit(10)) :
+          query(userPostsCollectionRef, orderBy('created_at', 'desc'), limit(10), where('lists', 'array-contains', Values.seenListID));
         const userPostsSnapshot = await getDocs(userPostsQuery);
   
         return userPostsSnapshot.docs.map((doc) => ({
@@ -58,8 +58,8 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
     const promises = followedUsers.map(async (userID) => {
       const [userPosts, tvPosts, moviePosts] = await Promise.all([
         fetchPostsFromCollection(userID, 'posts'),
-        fetchPostsFromCollection(userID, Values.tvListsID),
-        fetchPostsFromCollection(userID, Values.movieListsID)
+        fetchPostsFromCollection(userID, 'shows'),
+        fetchPostsFromCollection(userID, 'movies')
       ]);
 
       return [...userPosts, ...tvPosts, ...moviePosts];

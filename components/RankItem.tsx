@@ -13,7 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTab } from '@/contexts/listContext';
 import AddToListsScreen from './AddToListsModal';
 import { CommentModalScreen } from './RankComment';
-import { UserItem } from '@/constants/ImportTypes';
+import { List, UserItem } from '@/constants/ImportTypes';
 import { useLoading } from '@/contexts/loading';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useDerivedValue, useSharedValue, withDecay, withSpring } from 'react-native-reanimated';
@@ -42,7 +42,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const listID = Values.seenListID;
   const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
 
-  const { requestRefresh } = useData();
+  const { requestRefresh, movieLists, tvLists, movies, shows } = useData();
   const [compItem, setCompItem] = useState<UserItem | null>(null);
   const [nextComp, setNextComp] = useState<UserItem | null>(null);
   const colorScheme = useColorScheme();
@@ -65,7 +65,21 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const [nextActive, setNextActive] = useState(false);
  
   //Variable for keeping track of the selected lists
-  const [selectedLists, setSelectedLists] = useState<List[]>([]);
+  const [selectedLists, setSelectedLists] = useState<List[]>(isMovie ? movieLists.filter(list => {
+    if (movies) {
+      const userItem = movies.find(movie => movie.item_id === item.id);
+      if (userItem) {
+        return userItem.lists.includes(list.list_id);
+      }
+    }
+  }) : tvLists.filter(list => {
+    if (shows) {
+      const userItem = shows.find(show => show.item_id === item.id);
+      if (userItem) {
+        return userItem.lists.includes(list.list_id);
+      }
+    }
+  }));
 
   let toastText1;
   let toastText2;
@@ -414,6 +428,8 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                     onRequestClose={() => setListsModalVisible(false)}
                   >
                     <AddToListsScreen item_id={item.id.toString()} 
+                    item_name={isMovie ? item.title : item.name}
+                    newItem={null}
                     listTypeID={listTypeID} 
                     isRanking={true} 
                     onClose={() => setListsModalVisible(false)} 

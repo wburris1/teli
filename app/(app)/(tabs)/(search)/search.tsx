@@ -11,6 +11,7 @@ import _ from 'lodash';
 import Colors from '@/constants/Colors';
 import { fetchUsers } from '@/data/searchUsers';
 import { UsersListScreen } from '@/components/Search/UserSearchCard';
+import { MoviesTabContent, ShowsTabContent } from '@/components/Search/SearchTabContent';
 
 const USERS_PAGE_SIZE = 10;
 
@@ -49,7 +50,7 @@ const UsersTabContent = ({ query }: { query: string }) => {
 
     return (
         <View style={{ flex: 1 }}>
-            <UsersListScreen users={userList} redirectPath='/search_user' />
+            <UsersListScreen users={userList} redirectPath='/search_user' onClose={() => {}} />
             {loading && <Text>Loading...</Text>}
             {userList.length == USERS_PAGE_SIZE &&
             <TouchableOpacity onPress={loadMoreUsers} disabled={loading}>
@@ -59,53 +60,17 @@ const UsersTabContent = ({ query }: { query: string }) => {
     );
 }
 
-const MoviesTabContent = ({ query }: { query: string }) => {
-    const [movieList, setMovieList] = useState<Item[]>([]);
-    
-    const debouncedFetchData = useCallback(
-        _.debounce(async (query) => {
-            const items = await useItemSearch(query, true);
-            setMovieList(items);
-        }, 300),
-        []
-    );
-
-    useEffect(() => {
-        debouncedFetchData(query);
-    }, [query, debouncedFetchData]);
-
-    return <ItemScreen movieList={movieList} />;
-};
-
-const ShowsTabContent = ({ query }: { query: string }) => {
-    const [tvList, setTvList] = useState<Item[]>([]);
-    
-    const debouncedFetchData = useCallback(
-        _.debounce(async (query) => {
-            const items = await useItemSearch(query, false);
-            setTvList(items);
-        }, 300),
-        []
-    );
-
-    useEffect(() => {
-        debouncedFetchData(query);
-    }, [query, debouncedFetchData]);
-
-    return <ItemScreen movieList={tvList} />;
-};
-
 export default function SearchScreen() {
     const colorScheme = useColorScheme();
     const [search, setSearch] = useState('');
 
     const moviesTabContent = useCallback(() => 
-        <MoviesTabContent 
-            query={search}
+        <MoviesTabContent
+            query={search} isAdding={false} addItems={[]} outItems={[]} setAddItems={() => {}} setOutItems={() => {}} listID=''
         />, [search]);
     const showsTabContent = useCallback(() => 
-        <ShowsTabContent 
-            query={search}
+        <ShowsTabContent
+            query={search} isAdding={false} addItems={[]} outItems={[]} setAddItems={() => {}} setOutItems={() => {}} listID=''
         />, [search]);
     const usersTabContent = useCallback(() => 
         <UsersTabContent 

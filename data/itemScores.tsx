@@ -1,21 +1,19 @@
 import Values from "@/constants/Values";
 import { useAuth } from "@/contexts/authContext";
-import { useData } from "@/contexts/dataContext";
 import { FIREBASE_DB } from "@/firebaseConfig";
 import { collection, doc, getDocs, writeBatch } from "firebase/firestore";
 import { UpdateListPosters } from "./posterUpdates";
-import { UserItem } from "@/constants/ImportTypes";
+import { List, UserItem } from "@/constants/ImportTypes";
 import { useLoading } from "@/contexts/loading";
 
 const db = FIREBASE_DB;
 
 export const useUserAdjustScores = () => {
     const { user, userData } = useAuth();
-    const { requestListRefresh, requestRefresh } = useData();
 
     async function adjustScores(items: UserItem[], minScore: number, maxScore: number, range: number, listID: string, listTypeID: string) {
         // Distribute scores evenly between minScore and maxScore
-        if (!user) {
+        if (!user || !userData) {
             return;
         }
         var filteredItems: UserItem[] = [];
@@ -37,29 +35,6 @@ export const useUserAdjustScores = () => {
         var scoreIncrement = range / count;
 
         const batch = writeBatch(db);
-        const userListsRef = collection(db, "users", user.uid, listTypeID);
-        const listsSnapshot = await getDocs(userListsRef);
-        const lists = listsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));
-        const listDict: { [key: string]: UserItem[] } = {};
-
-        if (lists) {
-            await Promise.all(lists.map(async (list) => {
-                const itemsRef = collection(db, "users", user.uid, listTypeID, list.list_id, "items");
-                const itemsSnapshot = await getDocs(itemsRef);
-                const currItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserItem }));
-                listDict[list.list_id] = currItems || [];
-            }));
-        }
-
-        // Fetch list ids from local storage: TODO
-        //const lists: List[] = await getDataLocally(`lists_${user.uid}_${listTypeID}`);
-        // Get all items from all lists
-        /*if (lists) {
-            for (const list of lists) {
-              const items: UserItem[] = await getDataLocally(`items_${user.uid}_${listTypeID}_${list.list_id}`);
-              listDict[list.list_id] = items || [];
-            }
-        }*/
 
         var lastScore = -1;
         var lastNewScoreIndex = 0;
@@ -72,20 +47,8 @@ export const useUserAdjustScores = () => {
             } else if (lastScore < 0) {
                 lastScore = filteredItems[i].score;
             }
-            const itemRef = doc(db, 'users', user.uid, listTypeID, listID, "items", filteredItems[i].item_id);
-            batch.update(itemRef, { score: newScore, userPushToken: userData?.userPushToken });
-
-            if (lists) {
-                for (const list of lists) {
-                    if (listDict.hasOwnProperty(list.list_id)) {
-                        var listItems = listDict[list.list_id];
-                        if (listItems.some(listItem => listItem.item_id === filteredItems[i].item_id)) {
-                            const itemRef = doc(db, "users", user.uid, listTypeID, list.list_id, "items", filteredItems[i].item_id);
-                            batch.update(itemRef, { score: newScore });
-                        }
-                    }
-                }
-            }
+            const itemRef = doc(db, 'users', user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", filteredItems[i].item_id);
+            batch.update(itemRef, { score: newScore, userPushToken: userData.userPushToken });
         }
 
         try {
@@ -111,9 +74,7 @@ export const useUserAdjustScores = () => {
         } else {
             maxScore = Values.minMidScore;
         }
-        adjustScores(items, minScore, maxScore, range, listID, listTypeID).then(() => {
-            //requestRefresh();
-        })
+        adjustScores(items, minScore, maxScore, range, listID, listTypeID);
     }
 
     return reactToScoresAdjust;
@@ -126,7 +87,7 @@ export const AdjustReorderedScores = () => {
 
     async function reorderScores(items: UserItem[], listID: string, listTypeID: string) {
         // Count number of good/mid/bad items:
-        if (!user) {
+        if (!user || !userData) {
             return;
         }
         setLoading(true);
@@ -164,19 +125,6 @@ export const AdjustReorderedScores = () => {
         var index = 0;
         prevScore = -1;
         var lastNewScore = -1;
-        const userListsRef = collection(db, "users", user.uid, listTypeID);
-        const listsSnapshot = await getDocs(userListsRef);
-        const lists = listsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));
-        const listDict: { [key: string]: UserItem[] } = {};
-
-        if (lists) {
-            await Promise.all(lists.map(async (list) => {
-                const itemsRef = collection(db, "users", user.uid, listTypeID, list.list_id, "items");
-                const itemsSnapshot = await getDocs(itemsRef);
-                const currItems = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserItem }));
-                listDict[list.list_id] = currItems || [];
-            }));
-        }
         
         for (let i = 0; i < items.length; i++) {
             var newScore = 0;
@@ -204,17 +152,8 @@ export const AdjustReorderedScores = () => {
                 newScore = lastNewScore;
             }
 
-            if (lists) {
-                for (const list of lists) {
-                    if (listDict.hasOwnProperty(list.list_id)) {
-                        const listItems = listDict[list.list_id];
-                        if (listItems.some(listItem => listItem.item_id === items[i].item_id)) {
-                            const itemRef = doc(db, "users", user.uid, listTypeID, list.list_id, "items", items[i].item_id);
-                            batch.update(itemRef, { score: newScore, userPushToken: userData?.userPushToken});
-                        }
-                    }
-                }
-            }
+            const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", items[i].item_id);
+            batch.update(itemRef, { score: newScore, userPushToken: userData.userPushToken});
         }
 
         try {

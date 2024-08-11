@@ -2,12 +2,11 @@ import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, I
 import { Text } from '@/components/Themed';
 import React, { ContextType, forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
-import { useUserItemsSeenSearch } from '@/data/userData';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { interpolate, runOnJS, useAnimatedStyle, useSharedValue, withClamp, withSpring } from 'react-native-reanimated';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withClamp, withSpring } from 'react-native-reanimated';
 import Values from '@/constants/Values';
 import { useTab } from '@/contexts/listContext';
 import { removeFromList, useUserItemDelete } from '@/data/deleteItem';
@@ -16,6 +15,7 @@ import SearchInput from '@/components/Search/SearchInput';
 import { AnimatedSearch } from '@/components/AnimatedSearch';
 import { UserItem } from '@/constants/ImportTypes';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useData } from '@/contexts/dataContext';
 
 type RowProps = {
     item: UserItem;
@@ -44,6 +44,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
     date = date.slice(0,4);
     const deleteItem = useUserItemDelete(item.item_id, item.score, Values.seenListID, listTypeID);
     const removeItem = removeFromList();
+    const opacity = useSharedValue(0);
     const scale = useSharedValue(1);
     const transY = useSharedValue(0);
     const transX = useSharedValue(0);
@@ -103,13 +104,21 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
         transX.value = withSpring(itemWidth * 0.07);
       }
       scale.value = withSpring(1.15);
+      opacity.value = withSpring(1);
     }
 
     const handleClose = () => {
       transY.value = withSpring(0);
       transX.value = withSpring(0);
       scale.value = withSpring(1);
+      opacity.value = withSpring(0);
     }
+
+    const animatedOpacity = useAnimatedStyle(() => {
+      return {
+        opacity: opacity.value,
+      }
+    }, [opacity.value])
   
     return (
       <>
@@ -119,20 +128,29 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
             <Animated.View style={[styles.innerContainer, animatedStyle, popUpIndex === index ? styles.shadow : {}]}>
               <Image
                   source={{ uri: imgUrl + item.poster_path }}
-                  style={[styles.image, { borderColor: 'black' }]}
+                  style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
               />
               {popUpIndex === index && (
-                <>
-                  <TouchableOpacity style={[styles.popUpButton, {top: 7, left: 7, backgroundColor: 'red', borderColor: 'white'}]} onPress={() => onDelete(item.item_id)}>
-                    <Ionicons name="trash" size={25} color={'white'} />
+                <Animated.View style={[animatedOpacity, {position: 'absolute', flexDirection: 'row', justifyContent: 'space-between', top: 0, width: '100%'}]}>
+                  <TouchableOpacity style={styles.popUpButton} onPress={() => onDelete(item.item_id)}>
+                    <Ionicons name={listID == Values.seenListID ? "trash" : "close"} size={25} color={'white'} />
                   </TouchableOpacity>
-                  <TouchableOpacity style={[styles.popUpButton, {top: 7, right: 7, backgroundColor: '#32CD32', borderColor: 'white'}]} onPress={() => {
+                  <TouchableOpacity style={styles.popUpButton} onPress={() => {
                     setItem(item);
-                    router.push({pathname: "/add_to_list", params: { item_id: item.item_id, listTypeID: listTypeID }});
+                    router.push({pathname: "/add_to_list", params: { item_id: item.item_id, item_name: item.item_name, listTypeID: listTypeID, isWatched: item.lists.includes(Values.seenListID) ? 'true' : 'false' }});
                   }}>
-                    <Ionicons name="add" size={25} color={'white'} />
+                    <Ionicons name="add" size={28} color={'white'} />
                   </TouchableOpacity>
-                </>
+                  <LinearGradient
+                    colors={['black', 'transparent']}
+                    style={{position: 'absolute', top: 1,
+                      left: 1,
+                      right: 1,
+                      height: 100,
+                      borderTopLeftRadius: 10,
+                      borderTopRightRadius: 10,}}
+                  />
+                </Animated.View>
               )}
               {item.score && item.score >= 0 &&
               <>
@@ -180,8 +198,6 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items }:
     }, [topPadding.value]);
 
     if (items) {
-      items.sort((a: UserItem, b: UserItem) => b.score - a.score);
-
       return (
         <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1,}}>
           {items.length > 0 ? 
@@ -207,7 +223,7 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items }:
 }
 
 export default function TabOneScreen() {
-    const { listTypeID, listID, description, name } = useLocalSearchParams();
+    const { listTypeID, listID, description, name, isRanked } = useLocalSearchParams();
     const navigation = useNavigation();
     const colorScheme = useColorScheme();
     const isCustomList = (listID == Values.seenListID || listID == Values.bookmarkListID) ? false : true;
@@ -216,8 +232,9 @@ export default function TabOneScreen() {
     const [currName, setCurrName] = useState("");
     const [searchVisible, setSearchVisible] = useState(false);
     const [filteredItems, setFilteredItems] = useState<UserItem[]>([]);
-    const { items, loaded } = useUserItemsSeenSearch(listID as string, listTypeID as string);
     const [search, setSearch] = useState('');
+    const { movies, shows } = useData();
+    const [items, setItems ] = useState<UserItem[]>([]);
 
     useEffect(() => {
       if (description) {
@@ -228,15 +245,25 @@ export default function TabOneScreen() {
       }
     }, [name, description])
 
-    const onItemsUpdate = (items: UserItem[]) => {
-      setFilteredItems(items);
+    const onItemsUpdate = (newItems: UserItem[]) => {
+      setFilteredItems(newItems);
+    }
+
+    const filterByList = (toFilter: UserItem[]) => {
+      return toFilter.filter(item => item.lists.includes(listID as string));
     }
 
     useEffect(() => {
-      if (loaded) {
-          setFilteredItems(items);
+      if (movies && listTypeID == Values.movieListsID) {
+        const filtered = filterByList(movies);
+        setItems(filtered);
+        setFilteredItems(filtered);
+      } else if (shows && listTypeID == Values.tvListsID) {
+        const filtered = filterByList(shows);
+        setItems(filtered);
+        setFilteredItems(filtered);
       }
-    }, [items, loaded]);
+    }, [movies, shows]);
 
     const onClose = () => {
       setEditModalVisible(false);
@@ -249,6 +276,7 @@ export default function TabOneScreen() {
 
     const handleSearch = (query: string) => {
       setSearch(query);
+      //const items = listTypeID == Values.movieListsID ? movies : shows;
       const filtered = items.filter(item => {
         const title = 'title' in item ? item.title : item.name;
         return title.toLowerCase().includes(query.toLowerCase());
@@ -312,9 +340,9 @@ export default function TabOneScreen() {
               <Text>{currDescription}</Text>
             </View>}
             <EditListScreen listID={listID as string} listTypeID={listTypeID as string} name={name as string} description={description as string}
-              items={items} visible={editModalVisible} onClose={onClose} onEdit={onEditDetails} />
+              items={items} visible={editModalVisible} onClose={onClose} onEdit={onEditDetails} isRanked={isRanked as string == 'true'} />
             <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
-            {loaded ? 
+            {((listTypeID == Values.movieListsID && movies) || (listTypeID == Values.tvListsID && shows)) ? 
             <ItemList /> :
             <View style={{flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
               <ActivityIndicator size="large" />
@@ -382,19 +410,6 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       zIndex: 1,
     },
-    itemContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'flex-start',
-      flexDirection: 'row',
-      borderBottomWidth: 1,
-      borderLeftWidth: 0,
-      borderRightWidth: 0,
-      borderTopWidth: 0,
-      overflow: 'hidden',
-      paddingRight: 5,
-      width: '100%',
-    },
     image: {
       width: '100%',
       aspectRatio: 1 / 1.5,
@@ -461,9 +476,9 @@ const styles = StyleSheet.create({
     },
     gradient: {
       position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
+      bottom: 1,
+      left: 1,
+      right: 1,
       height: 100,
       borderBottomLeftRadius: 10,
       borderBottomRightRadius: 10,
@@ -486,12 +501,8 @@ const styles = StyleSheet.create({
       elevation: 5,
     },
     popUpButton: {
-      borderWidth: 1,
-      width: 35,
-      height: 35,
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'absolute',
-      borderRadius: 50,
+      marginHorizontal: 7,
+      marginTop: 10,
+      zIndex: 1,
     }
   });

@@ -11,10 +11,11 @@ import { useState } from "react";
 import { BlurView } from "expo-blur";
 import { editList } from "@/data/addList";
 import { ListModalScreen } from "./ListModal";
-import { editListItems } from "@/data/editListItems";
+import { editListItems, editUnwatchedItems } from "@/data/editListItems";
 import { UserItem } from "@/constants/ImportTypes";
 import { useLoading } from "@/contexts/loading";
 import Toast from "react-native-toast-message";
+import { AddUnwatchedScreen } from "./AddUnwatched";
 
 type ListProps = {
     listID: string,
@@ -25,9 +26,10 @@ type ListProps = {
     visible: boolean,
     onClose: () => void;
     onEdit: (newName: string, newDescription: string) => void;
+    isRanked: boolean,
 }
 
-export const EditListScreen = ({ listID, listTypeID, name, description, items, visible, onClose, onEdit }: ListProps) => {
+export const EditListScreen = ({ listID, listTypeID, name, description, items, visible, onClose, onEdit, isRanked }: ListProps) => {
     const colorScheme = useColorScheme();
     const router = useRouter();
     const deleteFunc = deleteList(listID, listTypeID);
@@ -37,6 +39,7 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
     const [addModalVisible, setAddModalVisible] = useState(false);
     const editListFunc = editList();
     const editItemsFunc = editListItems();
+    const editItemsFuncUnseen = editUnwatchedItems();
     const { loading, setLoading } = useLoading();
 
     const onDelete = () => {
@@ -70,6 +73,15 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
     const handleAddRemove = (addItems: UserItem[], removedItems: UserItem[]) => {
         setLoading(true);
         editItemsFunc(addItems, removedItems, listID, listTypeID).then(() => {
+            setLoading(false);
+            onClose();
+            setAddModalVisible(false);
+        })
+    }
+
+    const handleAddRemoveUnseen = (addItems: Item[], removedItems: Item[]) => {
+        setLoading(true);
+        editItemsFuncUnseen(addItems, removedItems, listID, listTypeID).then(() => {
             setLoading(false);
             onClose();
             setAddModalVisible(false);
@@ -189,14 +201,25 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
                         </KeyboardAvoidingView>
                     </BlurView>
                 </Modal>
-                {addModalVisible && (
+                {addModalVisible && (isRanked ?
                     <ListModalScreen
                         listTypeID={listTypeID}
                         visible={addModalVisible}
                         containedItems={items}
                         onClose={() => setAddModalVisible(false)}
                         onSelectedItemsChange={handleAddRemove}
-                    />
+                    /> :
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={addModalVisible}
+                        onRequestClose={() => setAddModalVisible(false)}
+                    >
+                        <AddUnwatchedScreen listID={listID} listTypeID={listTypeID}
+                            onClose={() => setAddModalVisible(false)} onSave={(addItems, removeItems) => {
+                                handleAddRemoveUnseen(addItems, removeItems);
+                            }} />
+                    </Modal>
                 )}
         </Modal>
     );

@@ -12,12 +12,15 @@ import { addAndRemoveItemFromLists, useGetItemLists } from '@/data/addToList';
 import { Text, View } from './Themed';
 import { AddList } from './AddList';
 import { useLoading } from '@/contexts/loading';
+import { List } from '@/constants/ImportTypes';
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
 
 type ScreenProps = {
     item_id: string;
+    item_name: string;
+    newItem: Item | null,
     listTypeID: string;
     isRanking: boolean;
     onClose: () => void;
@@ -33,8 +36,8 @@ type RowProps = {
   isSelected: boolean;
 };
 
-export default function AddToListsScreen({item_id, listTypeID, isRanking, onClose, onSelectedListsChange, isWatched}: ScreenProps) {
-    const { inLists, outLists, loaded} = useGetItemLists(item_id, listTypeID, isWatched);
+export default function AddToListsScreen({item_id, item_name, newItem, listTypeID, isRanking, onClose, onSelectedListsChange, isWatched}: ScreenProps) {
+    const { inLists, outLists } = useGetItemLists(item_id, listTypeID, isWatched);
     const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item, setAddModalVisible } = useTab();
     const colorScheme = useColorScheme();
     const addToListsFunc = addAndRemoveItemFromLists();
@@ -108,18 +111,18 @@ export default function AddToListsScreen({item_id, listTypeID, isRanking, onClos
                   if (!loading) {
                     onSelectedListsChange(selectedLists, removeLists);
                   }
-                    if (!isRanking && !loading) {
-                      setLoading(true);
-                      addToListsFunc(item, selectedLists, removeLists,
-                      activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
-                          requestRefresh();
-                          setLoading(false);
-                          resetAddLists();
-                          onClose();
-                      })
-                    } else {
+                  if (!isRanking && !loading) {
+                    setLoading(true);
+                    addToListsFunc(item_id, item_name, newItem, selectedLists, removeLists,
+                    activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
+                        requestRefresh();
+                        setLoading(false);
+                        resetAddLists();
                         onClose();
-                    }
+                    })
+                  } else {
+                      onClose();
+                  }
                 }}>
                 {({ pressed }) => (
                     <Ionicons
@@ -152,24 +155,19 @@ export default function AddToListsScreen({item_id, listTypeID, isRanking, onClos
                 <ActivityIndicator size="large" />
               </View>
             )}
-            {loaded ?
-              <FlatList
-              data={[...outLists, ...inLists]}
-              renderItem={({ item, index }) => 
-              <RenderItem
-                list={item}
-                index={index}
-                onSelect={handleSelect}
-                onDeselect={handleDeselect}
-                isSelected={selectedLists.some(i => i.list_id === item.list_id)}
-              />}
-              keyExtractor={item => item.list_id}
-              numColumns={1}
-              /> : (
-                <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-                  <ActivityIndicator size="large" />
-                </View>
-              )}
+            <FlatList
+            data={[...outLists, ...inLists]}
+            renderItem={({ item, index }) => 
+            <RenderItem
+              list={item}
+              index={index}
+              onSelect={handleSelect}
+              onDeselect={handleDeselect}
+              isSelected={selectedLists.some(i => i.list_id === item.list_id)}
+            />}
+            keyExtractor={item => item.list_id}
+            numColumns={1}
+            />
           </View>
           <AddList />
         </GestureHandlerRootView>

@@ -1,24 +1,18 @@
-import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { Text, View } from '../../components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useLayoutEffect, useState } from 'react';
-import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
 import Dimensions from '@/constants/Dimensions';
 import Colors from '@/constants/Colors';
-import { useUserItemsSeenSearch, useUserListsSearch } from '@/data/userData';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTab } from '@/contexts/listContext';
 import { useData } from '@/contexts/dataContext';
 import Values from '@/constants/Values';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { addAndRemoveItemFromLists, useGetItemLists } from '@/data/addToList';
-import { user } from 'firebase-functions/v1/auth';
 import { useLoading } from '@/contexts/loading';
-
-const screenWidth = Dimensions.screenWidth;
-const screenHeight = Dimensions.screenHeight;
+import { List } from '@/constants/ImportTypes';
 
 type RowProps = {
   list: List;
@@ -29,9 +23,9 @@ type RowProps = {
 };
 
 export default function AddToListsScreen() {
-    const { item_id, listTypeID } = useLocalSearchParams();
-    const { inLists, outLists, loaded } = useGetItemLists(item_id as string, listTypeID as string, true);
-    const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item } = useTab();
+    const { item_id, item_name, listTypeID, isWatched } = useLocalSearchParams();
+    const { inLists, outLists } = useGetItemLists(item_id as string, listTypeID as string, isWatched as string === 'true');
+    const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists } = useTab();
     const colorScheme = useColorScheme();
     const navigation = useNavigation();
     const router = useRouter();
@@ -89,7 +83,7 @@ export default function AddToListsScreen() {
           <Pressable onPress={() => {
               if (loading) return;
               setLoading(true);
-              addToListsFunc(item, selectedLists, removeLists,
+              addToListsFunc(item_id as string, item_name as string, null, selectedLists, removeLists,
                 activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
                     requestRefresh();
                     setLoading(false);
@@ -134,24 +128,19 @@ export default function AddToListsScreen() {
                 <ActivityIndicator size="large" />
               </View>
             )}
-            {loaded ?
-              <FlatList
-              data={[...outLists, ...inLists]}
-              renderItem={({ item, index }) => 
-              <RenderItem
-                list={item}
-                index={index}
-                onSelect={handleSelect}
-                onDeselect={handleDeselect}
-                isSelected={selectedLists.some(i => i.list_id === item.list_id)}
-              />}
-              keyExtractor={item => item.list_id}
-              numColumns={1}
-              /> : (
-                <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-                  <ActivityIndicator size="large" />
-                </View>
-              )}
+            <FlatList
+            data={[...outLists, ...inLists]}
+            renderItem={({ item, index }) => 
+            <RenderItem
+              list={item}
+              index={index}
+              onSelect={handleSelect}
+              onDeselect={handleDeselect}
+              isSelected={selectedLists.some(i => i.list_id === item.list_id)}
+            />}
+            keyExtractor={item => item.list_id}
+            numColumns={1}
+            />
           </View>
         </GestureHandlerRootView>
     );

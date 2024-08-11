@@ -1,15 +1,12 @@
 import { StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, View, ScrollView, PixelRatio } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/TemplateFiles/useColorScheme';
 import { Link, useRouter } from 'expo-router';
-import { BlurView } from 'expo-blur';
 import Rank from './RankItem';
 import { Text } from './Themed';
-import { getDataLocally } from '@/data/userLocalData';
-import { useAuth } from '@/contexts/authContext';
 import Values from '@/constants/Values';
 import { useData } from '@/contexts/dataContext';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,7 +14,7 @@ import { addToBookmarked } from '@/data/addItem';
 import { removeFromList } from '@/data/deleteItem';
 import { UserItem } from '@/constants/ImportTypes';
 import { ExpandableText } from './AnimatedViews.tsx/ExpandableText';
-import { useUserItemsSearch, useUserItemsSeenSearch } from '@/data/userData';
+import AddToListsScreen from './AddToListsModal';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -28,13 +25,11 @@ type Props = {
 };
 
 const ItemDetails = ({item}: Props) => {
-    const { user } = useAuth();
     const isMovie = 'title' in item ? true : false;
     const listID = Values.seenListID;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
     //const [items, setItems] = useState<UserItem[]>([]);
-    const { items, loaded } = useUserItemsSeenSearch(listID, listTypeID);
-    const { refreshFlag, refreshListFlag } = useData();
+    const { refreshFlag, refreshListFlag, movies, shows } = useData();
     const [isDupe, setDupe] = useState(false);
     //const [rankButtonLoading, setRankButtonLoading] = useState(true);
     const [rankVisible, setRankVisible] = useState(false);
@@ -43,6 +38,8 @@ const ItemDetails = ({item}: Props) => {
     const bookmarkFunc = addToBookmarked();
     const removeFunc = removeFromList();
     const [score, setScore] = useState("");
+    const [seenItems, setSeenItems] = useState<UserItem[]>([]);
+    const [listsModalVisible, setListsModalVisible] = useState(false);
 
     var releaseYear = "";
     var title = "";
@@ -70,13 +67,45 @@ const ItemDetails = ({item}: Props) => {
         return exists;
     }
 
+    const filterByList = (toFilter: UserItem[]) => {
+        return toFilter.filter(item => item.lists.includes(Values.seenListID));
+    }
+
     useEffect(() => {
-        if (items && checkDupe(items)) {
-            setDupe(true);
-        } else {
-            setDupe(false);
+        const items = filterByList(movies && listTypeID == Values.movieListsID ? movies :
+            (shows && listTypeID == Values.tvListsID ? shows : []))
+        setSeenItems(items);
+        setDupe(checkDupe(items));
+        if (movies && shows) {
+            const itemData = isMovie ? movies.find(movie => movie.item_id == item.id) : shows.find(show => show.item_id == item.id);
+            if (itemData) {
+                setBookmarked(itemData.lists.includes(Values.bookmarkListID));
+            }
         }
-      }, [items, refreshFlag])
+    }, [movies, shows, refreshFlag])
+
+    const listsModal = useCallback(() => {
+        const isNew = isMovie && movies ? !movies.find(movie => movie.item_id == item.id) :
+            (!isMovie && shows ? !shows.find(show => show.item_id == item.id) : false);
+        return (
+            <Modal
+            animationType="slide"
+            transparent={true}
+            visible={listsModalVisible}
+            onRequestClose={() => setListsModalVisible(false)}
+            >
+            <AddToListsScreen item_id={item.id.toString()} 
+                item_name={isMovie ? item.title : item.name}
+                newItem={isNew ? item : null}
+                listTypeID={listTypeID} 
+                isRanking={false} 
+                onClose={() => setListsModalVisible(false)} 
+                onSelectedListsChange = {() => {}}
+                isWatched={isDupe}
+            />
+            </Modal>
+        )
+    }, [movies, shows, listsModalVisible])
 
     return (
         <>
@@ -109,38 +138,38 @@ const ItemDetails = ({item}: Props) => {
                             </View>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', paddingVertical: 0 }}>
-                            {!loaded ? <View style={[styles.addButton, { backgroundColor: Colors[colorScheme ?? 'light'].text }]}>
-                                <ActivityIndicator size={30} color="#fff" />
-                            </View> :
-                            <TouchableOpacity onPress={() => setRankVisible(true)} style={[styles.addButton, { backgroundColor: Colors[colorScheme ?? 'light'].text }]}>
+                            <TouchableOpacity onPress={() => setRankVisible(true)} style={{}}>
                                 <Ionicons
-                                name={isDupe ? "refresh" : "add"}
-                                size={30}
-                                color={Colors[colorScheme ?? 'light'].background}
+                                name={isDupe ? "eye" : "eye-outline"}
+                                size={35}
+                                color={Colors[colorScheme ?? 'light'].text}
                                 />
-                                <Text style={[styles.buttonText, { color: Colors[colorScheme ?? 'light'].background }]}>{isDupe ? "Rerank" : "Seen"}</Text>
-                            </TouchableOpacity>}
-                            {loaded && !isDupe &&
+                            </TouchableOpacity>
+                            {((isMovie && movies) || (!isMovie && shows)) && !isDupe &&
                             <TouchableOpacity onPress={() => {
                                     if (!bookmarked) {
-                                        bookmarkFunc(item, isMovie).then(() => {
-                                            setBookmarked(true);
-                                        })
+                                        setBookmarked(true);
+                                        bookmarkFunc(item, isMovie);
                                     } else {
-                                        removeFunc(Values.bookmarkListID, listTypeID, item.id.toString()).then(() => {
-                                            setBookmarked(false);
-                                        })
+                                        setBookmarked(false);
+                                        removeFunc(Values.bookmarkListID, listTypeID, item.id.toString());
                                     }
                                 }}
-                                style={[styles.addButton, { backgroundColor: Colors[colorScheme ?? 'light'].text }]}
+                                style={{ paddingLeft: 5 }}
                             >
                                 <Ionicons
                                 name={bookmarked ? "bookmark" : "bookmark-outline"}
                                 size={30}
-                                color={Colors[colorScheme ?? 'light'].background}
+                                color={Colors[colorScheme ?? 'light'].text}
                                 />
-                                <Text style={[styles.buttonText, { color: Colors[colorScheme ?? 'light'].background }]}>{bookmarked ? "Bookmarked" : "Bookmark"}</Text>
                             </TouchableOpacity>}
+                            <TouchableOpacity onPress={() => setListsModalVisible(true)} style={{paddingLeft: 5}}>
+                                <Ionicons
+                                    name={"add-circle-outline"}
+                                    size={35}
+                                    color={Colors[colorScheme ?? 'light'].text}
+                                />
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
@@ -161,10 +190,11 @@ const ItemDetails = ({item}: Props) => {
                     visible={rankVisible}
                     onRequestClose={() => setRankVisible(false)}
                 >
-                    <Rank item={item} items={items} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} />
+                    <Rank item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} />
                 </Modal>
             </View>
         </ScrollView>
+        {listsModal()}
         </>
     )
 };

@@ -4,10 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import Dimensions from '@/constants/Dimensions';
 import Colors from '@/constants/Colors';
-import { useUserItemsSeenSearch } from '@/data/userData';
 import Values from '@/constants/Values';
 import { UserItem } from '@/constants/ImportTypes';
 import { useLoading } from '@/contexts/loading';
+import { useData } from '@/contexts/dataContext';
 
 type RowProps = {
     item: UserItem;
@@ -26,19 +26,20 @@ type ListModalScreenProps = {
 };
 
 export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, onSelectedItemsChange }: ListModalScreenProps) => {
-  const { items, loaded } = useUserItemsSeenSearch(Values.seenListID, listTypeID);
+  const { movies, shows } = useData();
   const [listItems, setListItems] = useState<UserItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<UserItem[]>(containedItems);
   const [removedItems, setRemovedItems] = useState<UserItem[]>([]);
   const colorScheme = useColorScheme();
-  const [loading, setLoading] = useState(false);
+  const { loading } = useLoading();
 
   useEffect(() => {
-    if (items) {
-        items.sort((a: UserItem, b: UserItem) => b.score - a.score);
-        setListItems(items);
+    if (listTypeID == Values.movieListsID && movies) {
+        setListItems(movies.filter(movie => movie.lists.includes(Values.seenListID)))
+    } else if (listTypeID == Values.tvListsID && shows) {
+        setListItems(shows.filter(show => show.lists.includes(Values.seenListID)))
     }
-  }, [items])
+  }, [movies, shows])
 
   const handleSelect = (item: UserItem) => {
     if (removedItems.some(removedItem => removedItem.item_id == item.item_id)) {
@@ -108,7 +109,6 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
                 <ActivityIndicator size="large" />
               </View>
             )}
-            {loaded ?
             <FlatList
             data={listItems}
             renderItem={({ item, index }) =>
@@ -121,11 +121,7 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
                 />}
             keyExtractor={item => item.item_id}
             numColumns={1}
-            /> : (
-                <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-                  <ActivityIndicator size="large" />
-                </View>
-            )}
+            />
         </View>
     </Modal>
   );

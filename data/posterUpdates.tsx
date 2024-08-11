@@ -1,8 +1,9 @@
-import { UserItem } from "@/constants/ImportTypes";
+import { List, UserItem } from "@/constants/ImportTypes";
+import Values from "@/constants/Values";
 import { useAuth } from "@/contexts/authContext";
 import { useData } from "@/contexts/dataContext";
 import { FIREBASE_DB } from "@/firebaseConfig";
-import { collection, doc, getDocs, limit, orderBy, query, updateDoc, writeBatch } from "firebase/firestore";
+import { collection, doc, getDocs, limit, orderBy, query, updateDoc, where, writeBatch } from "firebase/firestore";
 
 const db = FIREBASE_DB;
 
@@ -11,10 +12,11 @@ async function getListPosters(listID: string, listTypeID: string, userID: string
     var second_poster_path = "";
     var bottom_poster_path = "";
 
-    const listItemsRef = collection(db, "users", userID, listTypeID, listID, "items");
+    const listItemsRef = collection(db, "users", userID, listTypeID == Values.movieListsID ? "movies" : "shows");
     const itemQuery = query(listItemsRef,
         orderBy('score', 'desc'),
         limit(3),
+        where('lists', 'array-contains', listID)
     );
     const itemsSnapshot = await getDocs(itemQuery);
     if (!itemsSnapshot.empty) {

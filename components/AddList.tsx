@@ -10,9 +10,11 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, StyleSheet, Swit
 import { ListModalScreen } from "./ListModal";
 import { useData } from "@/contexts/dataContext";
 import { CreateListDB } from "@/data/addList";
-import { UserItem } from "@/constants/ImportTypes";
+import { List, UserItem } from "@/constants/ImportTypes";
 import { useLoading } from "@/contexts/loading";
 import Toast from "react-native-toast-message";
+import { serverTimestamp } from "firebase/firestore";
+import { AddUnwatchedScreen } from "./AddUnwatched";
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
@@ -24,6 +26,7 @@ export const AddList = () => {
     const [listTypeID, setListTypeID] = useState(activeTab == 0 ? Values.movieListsID : Values.tvListsID);
     const [entriesModalVisible, setEntriesModalVisible] = useState(false);
     const [selectedItems, setSelectedItems] = useState<UserItem[]>([]);
+    const [selectedUnseen, setSelectedUnseen] = useState<Item[]>([]);
     const [isRanked, setRanked] = useState(true);
     const createListFunc = CreateListDB();
     const colorScheme = useColorScheme();
@@ -53,10 +56,11 @@ export const AddList = () => {
             top_poster_path: "",
             second_poster_path: "",
             bottom_poster_path: "",
+            last_modified: serverTimestamp(),
         }
-        createListFunc(list, listTypeID, selectedItems).then(complete => {
+        createListFunc(list, listTypeID, isRanked ? selectedItems : [], isRanked ? [] : selectedUnseen).then(complete => {
+            setLoading(false);
             if (complete == true) {
-                setLoading(false);
                 handleClose();
             }
         })
@@ -76,6 +80,7 @@ export const AddList = () => {
       }
         setAddModalVisible(false);
         setSelectedItems([]);
+        setSelectedUnseen([]);
         setListDescription("");
         setListName("");
         setListTypeID(activeTab == 0 ? Values.movieListsID : Values.tvListsID);
@@ -136,6 +141,7 @@ export const AddList = () => {
                                 onPress={() => {
                                     if (listTypeID != Values.movieListsID) {
                                         setSelectedItems([]);
+                                        setSelectedUnseen([]);
                                     }
                                     setListTypeID(Values.movieListsID);
                                 }}
@@ -150,6 +156,7 @@ export const AddList = () => {
                                 onPress={() => {
                                     if (listTypeID != Values.tvListsID) {
                                         setSelectedItems([]);
+                                        setSelectedUnseen([]);
                                     }
                                     setListTypeID(Values.tvListsID);
                                 }}
@@ -165,21 +172,24 @@ export const AddList = () => {
                                 trackColor={{ false: Colors[colorScheme ?? 'light'].text, true: "#32CD32" }}
                                 thumbColor={Colors[colorScheme ?? 'light'].background}
                                 ios_backgroundColor="#3e3e3e"
-                                onValueChange={() => setRanked(prev => !prev)}
+                                onValueChange={() => {
+                                    setRanked(prev => !prev);
+                                    setSelectedItems([]);
+                                    setSelectedUnseen([]);
+                                }}
                                 value={isRanked}
                             />
                         </View>
                         
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingRight: 10}}>
-                            {isRanked ? (
-                                <TouchableOpacity onPress={() => setEntriesModalVisible(true)} style={{paddingHorizontal: 10}}>
-                                    <Text style={styles.addText}>Add entries...</Text>
-                                </TouchableOpacity>) : (
-                                <View>
-                                </View>
-                            )}
-                            {selectedItems.length > 0 &&
-                                <Text style={[styles.text, { color: Colors[colorScheme ?? 'light'].text }]}>{selectedItems.length}{selectedItems.length > 1 ? " entries added" : " entry added"}</Text>
+                            <TouchableOpacity onPress={() => setEntriesModalVisible(true)} style={{paddingHorizontal: 10}}>
+                                <Text style={styles.addText}>Add entries...</Text>
+                            </TouchableOpacity>
+                            {((isRanked && selectedItems.length > 0) || (!isRanked && selectedUnseen.length > 0)) &&
+                                <Text style={[styles.text, { color: Colors[colorScheme ?? 'light'].text }]}>
+                                    {isRanked ? selectedItems.length : selectedUnseen.length}
+                                    {(isRanked && selectedItems.length > 1) || (!isRanked && selectedUnseen.length > 1) ? " entries added" : " entry added"}
+                                </Text>
                             }
                         </View>
                         <TouchableOpacity onPress={handleListCreate}>
@@ -192,14 +202,26 @@ export const AddList = () => {
                     </View>
                 </KeyboardAvoidingView>
             </BlurView>
-            {entriesModalVisible && (
+            {entriesModalVisible && (isRanked ?
                 <ListModalScreen
                     listTypeID={listTypeID}
                     visible={entriesModalVisible}
                     containedItems={[]}
                     onClose={() => setEntriesModalVisible(false)}
                     onSelectedItemsChange={handleSelectedItemsChange}
-                />
+                /> : 
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={entriesModalVisible}
+                    onRequestClose={() => setEntriesModalVisible(false)}
+                >
+                    <AddUnwatchedScreen listID={''} listTypeID={listTypeID}
+                        onClose={() => setEntriesModalVisible(false)} onSave={(addItems) => {
+                            setSelectedUnseen(addItems);
+                            setEntriesModalVisible(false);
+                        }} />
+                </Modal>
             )}
         </Modal>
     );

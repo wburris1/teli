@@ -6,6 +6,7 @@ import Values from "@/constants/Values"
 import { useState } from "react"
 import Colors from "@/constants/Colors"
 import { Ionicons } from "@expo/vector-icons"
+import { List } from "@/constants/ImportTypes"
 
 type ScreenProps = {
     listTypeID: string,

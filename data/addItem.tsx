@@ -4,10 +4,8 @@ import { useUserAdjustScores } from "./itemScores";
 import Values from "@/constants/Values";
 import { FIREBASE_DB } from "@/firebaseConfig";
 import { doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
-import { storeDataLocally } from "./userLocalData";
 import { removeFromList } from "./deleteItem";
 import { useTab } from "@/contexts/listContext";
-import { addAndRemoveItemFromLists } from "./addToList";
 import { Post, UserItem, UserMovie, UserShow } from "@/constants/ImportTypes";
 import { useLoading } from "@/contexts/loading";
 
@@ -19,7 +17,6 @@ export const AddToDatabase = () => {
     const adjustScoreFunc = useUserAdjustScores();
     const removeFunc = removeFromList();
     const {selectedLists, removeLists} = useTab();
-    const addAndRemoveFunc = addAndRemoveItemFromLists();
     const { setLoading } = useLoading();
 
     async function addToDB(newScore: number, item: Item, listID: string, isMovie: boolean, isDupe: boolean, items: UserItem[], caption: string, hasSpoilers: boolean) {
@@ -42,6 +39,7 @@ export const AddToDatabase = () => {
             likes: [],
             created_at: serverTimestamp(),
             list_type_id: Values.movieListsID,
+            lists: [listID, ...selectedLists.map(list => list.list_id)]
           };
         } else {
           newItem = {
@@ -57,18 +55,18 @@ export const AddToDatabase = () => {
             likes: [],
             created_at: serverTimestamp(),
             list_type_id: Values.tvListsID,
+            lists: [listID, ...selectedLists.map(list => list.list_id)]
           };
         }
     
         if (user) {
-          const itemRef = doc(db, "users", user.uid, listTypeID, listID, "items", item.id.toString());
+          const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id.toString());
           if (isDupe) {
             var otherItems: UserItem[] = [];
             if (items) {
               otherItems = items.filter(otherItem => otherItem.item_id !== item.id);
             }
             otherItems.push(newItem);
-            const mapItems = otherItems.map(doc => ({ id: doc.item_id, ...doc as UserItem }));
 
             items.forEach(seenItem => {
                 if (seenItem.item_id == item.id) {
@@ -77,22 +75,26 @@ export const AddToDatabase = () => {
             });
             const updateData = isMovie
             ? {
+                created_at: serverTimestamp(),
+                caption: newItem.caption,
                 title: (newItem as UserMovie).title,
                 poster_path: newItem.poster_path,
                 score: newScore,
                 release_date: (newItem as UserMovie).release_date,
+                lists: [listID, ...selectedLists.map(list => list.list_id)]
               }
             : {
+                created_at: serverTimestamp(),
+                caption: newItem.caption,
                 name: (newItem as UserShow).name,
                 poster_path: newItem.poster_path,
                 score: newScore,
                 first_air_date: (newItem as UserShow).first_air_date,
+                lists: [listID, ...selectedLists.map(list => list.list_id)]
               };
               try {
                 await updateDoc(itemRef, updateData);
                 await adjustScoreFunc(items, newScore, listID, listTypeID);
-                await storeDataLocally(`items_${user!.uid}_${listTypeID}_${listID}`, mapItems);
-                addAndRemoveFunc(newItem, selectedLists, removeLists, listTypeID);
                 updateListFunc(listTypeID);
               } catch (err: any) {
                 console.error("Error updating item: ", err);
@@ -101,13 +103,9 @@ export const AddToDatabase = () => {
               return newItem;
           } else {
             const currItems = [...items, newItem];
-            const mapItems = currItems.map(doc => ({ id: doc.item_id, ...doc as UserItem }));
             try {
               await setDoc(itemRef, newItem);
               await adjustScoreFunc(currItems, newScore, listID, listTypeID);
-              await storeDataLocally(`items_${user!.uid}_${listTypeID}_${listID}`, mapItems);
-              addAndRemoveFunc(newItem, selectedLists, removeLists, listTypeID);
-              removeFunc(Values.bookmarkListID, listTypeID, itemRef.id);
               updateListFunc(listTypeID);
             } catch (err: any) {
               console.error("Error adding new item: ", err);
@@ -146,6 +144,7 @@ export const addToBookmarked = () => {
         likes: [],
         created_at: serverTimestamp(),
         list_type_id: Values.movieListsID,
+        lists: [listID]
       };
     } else {
       newItem = {
@@ -161,11 +160,12 @@ export const addToBookmarked = () => {
         likes: [],
         created_at: serverTimestamp(),
         list_type_id: Values.tvListsID,
+        lists: [listID]
       };
     }
 
     if (user) {
-      const itemRef = doc(db, "users", user.uid, listTypeID, listID, "items", item.id.toString());
+      const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item.id.toString());
       try {
         await setDoc(itemRef, newItem);
         updatePosters(listID, listTypeID);
