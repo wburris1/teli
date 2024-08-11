@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Modal, Pressable, ActivityIndicator } from 'react-native';
+import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Modal, Pressable, ActivityIndicator, TouchableWithoutFeedback } from 'react-native';
 import { Text } from '@/components/Themed';
 import React, { ContextType, forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
@@ -166,6 +166,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
           </TouchableOpacity>
         </Link>
       </View>
+      {popUpIndex >= 0 && <Pressable onPress={() => setPopUpIndex(-1)} style={styles.overlay}></Pressable>}
       </>
     );
 });
@@ -198,24 +199,26 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items }:
 
     if (items) {
       return (
-        <>
         <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
-          {items.length > 0 ? 
-            <Animated.FlatList
-              data={items}
-              renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} 
-                popUpIndex={popUpIndex} setPopUpIndex={setPopUpIndex} />}
-              keyExtractor={item => item.item_id}
-              numColumns={3}
-              removeClippedSubviews={true}
-              showsVerticalScrollIndicator={false}
-              style={animatedStyle}
-            /> : (
+          {items.length > 0 ?
+              <Animated.FlatList
+                data={items}
+                renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} 
+                  popUpIndex={popUpIndex} setPopUpIndex={setPopUpIndex} />}
+                keyExtractor={item => item.item_id}
+                numColumns={3}
+                removeClippedSubviews={true}
+                showsVerticalScrollIndicator={false}
+                style={[animatedStyle, {flex: 1}]}
+              /> : (
             <Text>Rank something!</Text>
           )}
+          {popUpIndex >= 0 && <TouchableWithoutFeedback onPress={() => setPopUpIndex(-1)}>
+            <View style={{
+              flex: 1,
+            }} />
+          </TouchableWithoutFeedback>}
         </View>
-        {popUpIndex >= 0 && <Pressable onPress={() => setPopUpIndex(-1)} style={styles.overlay}></Pressable>}
-        </>
       )
     } else {
       return (
