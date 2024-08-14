@@ -258,24 +258,30 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   })
 
   const handleFollow = () => {
+    setLoading(true);
     if (isFollowing) {
         unfollowFunc(userID).then(() => {
-            setIsFollowing(false);
-            requestRefresh();
-            Toast.show({
-              type: 'info',
-              text1: "Unfollowed " + profileData.first_name,
-              text2:  "You unfollowed " + profileData.username,
-              position: "bottom",
-              visibilityTime: 3000,
-              bottomOffset: 100
-            });
+          const newFollowers = followers.filter(follower => { if (follower.id == userID) return false});
+          setFollowers(newFollowers);
+          setIsFollowing(false);
+          requestRefresh();
+          setLoading(false);
+          Toast.show({
+            type: 'info',
+            text1: "Unfollowed " + profileData.first_name,
+            text2:  "You unfollowed " + profileData.username,
+            position: "bottom",
+            visibilityTime: 3000,
+            bottomOffset: 100
+          });
         })
-
-    } else {
+      } else {
         followFunc(userID, profileData.userPushToken).then(() => {
+          const newFollowers = [...followers, { id: userID }];
+          setFollowers(newFollowers);
             setIsFollowing(true);
             requestRefresh();
+            setLoading(false);
             Toast.show({
               type: 'info',
               text1: "Followed " + profileData.first_name,
@@ -293,7 +299,20 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
 
   const activityTabContent = useCallback(() => 
     <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
-      {!loading ? (
+      {loading && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: .16 * Dimensions.screenHeight,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'transparent'
+        }}>
+          <ActivityIndicator size="large" />
+        </View>
+      )}
         <>
           <FlatList
             data={posts}
@@ -304,13 +323,8 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink='/user'/>
           <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink='/user'/>
         </>
-      ) : (
-        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-          <ActivityIndicator size="large" />
-        </View>
-      )}
     </GestureHandlerRootView>
-  , [refreshFlag, posts, refreshing, showLikes, showComments, post]);
+  , [refreshFlag, posts, refreshing, loading, showLikes, showComments, post]);
 
   const listsTabContent = useCallback(() => 
     <>
@@ -345,11 +359,20 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
 
   return (
     <View style={styles.container}>
-      {loading ? (
-        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+      {loading && (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'transparent'
+        }}>
           <ActivityIndicator size="large" />
         </View>
-      ) :  (
+      )}
         <>
           <View style={{flexDirection: 'row', width: '100%', justifyContent: 'flex-start', padding: 10, alignItems: 'flex-start'}}>
             <Image
@@ -386,7 +409,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
             </View>
           </View>
       <SearchTabs tabs={tabs} onTabChange={() => {}} index={0} />
-      </>)}
+      </>
     </View>
   );
 };
