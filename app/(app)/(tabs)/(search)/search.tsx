@@ -7,18 +7,55 @@ import SearchTabs from '@/components/Search/SearchTabs';
 import { useItemSearch } from '@/data/itemData';
 import { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import _ from 'lodash';
 import Colors from '@/constants/Colors';
 import { fetchUsers } from '@/data/searchUsers';
 import { UsersListScreen } from '@/components/Search/UserSearchCard';
 import { MoviesTabContent, ShowsTabContent } from '@/components/Search/SearchTabContent';
+import { collection, getDocs } from 'firebase/firestore';
+import { FIREBASE_DB } from '@/firebaseConfig';
+import { useAuth } from '@/contexts/authContext';
+import { fetchUserData } from '@/data/getComments';
 
 const USERS_PAGE_SIZE = 10;
 
 const UsersTabContent = ({ query }: { query: string }) => {
+  const db = FIREBASE_DB;
+  const {user} = useAuth();
     const [userList, setUserList] = useState<UserData[]>([]);
     const [lastVisible, setLastVisible] = useState<any>(null);
     const [loading, setLoading] = useState(false);
+    const [allUsers, setAllUsers] = useState<UserData[]>([]);
+    
+    const getUserData = useCallback(async () => {
+      if (user) {
+        const getUsers = async () => {
+          const usersDoc = collection(db, 'users');
+          const snapshot = await getDocs(usersDoc);
+          return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        };
+        const userIDs = await getUsers();
+        const usersData = await Promise.all(userIDs.map(user => fetchUserData(user.id)));
+        setAllUsers(usersData);
+        setUserList(usersData);
+      }
+    }, [user]); 
+  
+    useEffect(() => {
+      getUserData(); 
+    }, [getUserData]);
+
+    const filterUsers = useCallback(() => {
+      const filteredUsers = allUsers.filter(user => {
+        return user.first_name.toLowerCase().startsWith(query.toLowerCase()) ||
+          user.last_name.toLowerCase().startsWith(query.toLowerCase()) ||
+          user.username.toLowerCase().startsWith(query.toLowerCase());
+      });
+      setUserList(filteredUsers);
+    }, [query, allUsers]); 
+  
+    useEffect(() => {
+      filterUsers(); 
+    }, [filterUsers]);
 
     const loadMoreUsers = async () => {
         if (loading) return;
@@ -29,24 +66,24 @@ const UsersTabContent = ({ query }: { query: string }) => {
         setLoading(false);
     };
 
-    const debouncedFetchData = useCallback(
-        _.debounce(async (query) => {
-            setUserList([]);
-            setLastVisible(null);
-            const { users, lastDoc } = await fetchUsers(query, null);
-            setUserList(users);
-            setLastVisible(lastDoc);
-        }, 300),
-        []
-    );
+    // const debouncedFetchData = useCallback(
+    //     _.debounce(async (query) => {
+    //         setUserList([]);
+    //         setLastVisible(null);
+    //         const { users, lastDoc } = await fetchUsers(query, null);
+    //         setUserList(users);
+    //         setLastVisible(lastDoc);
+    //     }, 300),
+    //     []
+    // );
 
-    useEffect(() => {
-        if (query != "") {
-            debouncedFetchData(query);
-        } else {
-            setUserList([]);
-        }
-    }, [query, debouncedFetchData]);
+    // useEffect(() => {
+    //     if (query != "") {
+    //         debouncedFetchData(query);
+    //     } else {
+    //         setUserList([]);
+    //     }
+    // }, [query, debouncedFetchData]);
 
     return (
         <View style={{ flex: 1 }}>

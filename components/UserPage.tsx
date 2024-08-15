@@ -261,7 +261,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
     setLoading(true);
     if (isFollowing) {
         unfollowFunc(userID).then(() => {
-          const newFollowers = followers.filter(follower => { if (follower.id == userID) return false});
+          const newFollowers = followers.filter(follower => follower.id !== (user?.uid || ''));
           setFollowers(newFollowers);
           setIsFollowing(false);
           requestRefresh();
@@ -277,7 +277,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
         })
       } else {
         followFunc(userID, profileData.userPushToken).then(() => {
-          const newFollowers = [...followers, { id: userID }];
+          const newFollowers = [...followers, { id: user?.uid || ''}];
           setFollowers(newFollowers);
             setIsFollowing(true);
             requestRefresh();

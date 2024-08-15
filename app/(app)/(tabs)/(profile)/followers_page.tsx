@@ -26,8 +26,8 @@ const FollowersTabContent = ({ userID, query, redirectLink}: { userID: string, q
   const [allFollowers, setAllFollowers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(false);
   const FOLLOWERS_PAGE_SIZE = 10;
-  useEffect(() => {
-    const fetchFollowersData = async () => {
+
+    const fetchFollowersData = useCallback(async () => {
       if (user) {
         const fetchFollowerIDs = async () => {
           const followersRef = collection(db, 'users', userID, 'followers');
@@ -38,24 +38,30 @@ const FollowersTabContent = ({ userID, query, redirectLink}: { userID: string, q
         const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
         setAllFollowers(followersData);
         const filteredFollowers = followersData.filter(user => {
-          return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
-          user.last_name.toLowerCase().includes(query.toLowerCase()) || user.username.toLowerCase().includes(query.toLowerCase());
+          return user.first_name.toLowerCase().startsWith(query.toLowerCase()) ||
+          user.last_name.toLowerCase().startsWith(query.toLowerCase()) || user.username.toLowerCase().startsWith(query.toLowerCase());
         })
 
         setFollowers(filteredFollowers);
-      }
-    };
-    fetchFollowersData();
-  }, [userID]);
+      };
+  }, [userID, user]);
 
-  useEffect(() => {
+  const filterFollowers = useCallback(() => {
     const filteredFollowers = allFollowers.filter(user => {
-      return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
-          user.last_name.toLowerCase().includes(query.toLowerCase()) || user.username.toLowerCase().includes(query.toLowerCase());
+      return user.first_name.toLowerCase().startsWith(query.toLowerCase()) ||
+          user.last_name.toLowerCase().startsWith(query.toLowerCase()) || user.username.toLowerCase().startsWith(query.toLowerCase());
     })
     setFollowers(filteredFollowers);
   }
-  , [query]);
+  , [query, allFollowers]);
+
+  useEffect(() => {
+    fetchFollowersData();
+  }, [fetchFollowersData]);
+
+  useEffect(() => {
+    filterFollowers();
+  }, [filterFollowers]);
 
 
   const loadMoreFollowers = async () => {
@@ -100,8 +106,7 @@ const FollowingTabContent = ({ userID, query, redirectLink }: { userID: string, 
   const [allFollowing, setAllFollowing] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(false);
   const FOLLOWERS_PAGE_SIZE = 10;
-  useEffect(() => {
-    const fetchProfileData = async () => {
+    const fetchProfileData = useCallback(async () => {
       if (user) {
         const fetchFollowingIDs = async () => {
           const followingRef = collection(db, 'users', userID, 'following');
@@ -112,23 +117,29 @@ const FollowingTabContent = ({ userID, query, redirectLink }: { userID: string, 
         const followingData = await Promise.all(followingID.map(following => fetchUserData(following.id)));
         setAllFollowing(followingData);
         const filteredFollowing = followingData.filter(user => {
-          return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
-          user.last_name.toLowerCase().includes(query.toLowerCase()) || user.username.toLowerCase().includes(query.toLowerCase());
-        })
+          return user.first_name.toLowerCase().startsWith(query.toLowerCase()) ||
+          user.last_name.toLowerCase().startsWith(query.toLowerCase()) || user.username.toLowerCase().startsWith(query.toLowerCase());
+        });
         setFollowing(filteredFollowing);
       }
-    };
-    fetchProfileData();
-  }, [userID]);
+  }, [userID, user]);
 
-  useEffect(() => {
+  const filterFollowing = useCallback(() => {
     const filteredFollowing = allFollowing.filter(user => {
-      return user.first_name.toLowerCase().includes(query.toLowerCase()) ||
-          user.last_name.toLowerCase().includes(query.toLowerCase()) || user.username.toLowerCase().includes(query.toLowerCase());
+      return user.first_name.toLowerCase().startsWith(query.toLowerCase()) ||
+          user.last_name.toLowerCase().startsWith(query.toLowerCase()) || user.username.toLowerCase().startsWith(query.toLowerCase());
     })
     setFollowing(filteredFollowing);
   }
-  , [query]);
+  , [query, allFollowing]);
+
+   useEffect(() => {
+    fetchProfileData();
+  }, [fetchProfileData]);
+
+  useEffect(() => {
+    filterFollowing();
+  }, [filterFollowing]);
 
 
    const loadMoreFollowing = async () => {
