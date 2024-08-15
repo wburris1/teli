@@ -15,6 +15,7 @@ import { useLoading } from '@/contexts/loading';
 export default function TabOneScreen() {
   const { loading, setLoading } = useLoading();
   const [ loadingNoti, setLoadingNoti] = useState(false);
+  const [hasMoreNoti, setHasMoreNoti] = useState(true);
   const db = FIREBASE_DB;
   const { userData } = useAuth();
   const { refreshFlag } = useData();
@@ -73,11 +74,15 @@ export default function TabOneScreen() {
   }, []);
 
   const loadMoreNoti = async () => {
+    if (isLoadingMore || !hasMoreNoti) return;
       setIsLoadingMore(true);
       const newNoti = await fetchUserNoti(10);
       if (newNoti) {
         const combinedNotifications = [...noti, ...newNoti];
         setNoti(combinedNotifications);
+      }
+      if (!newNoti || newNoti.length < 10) {
+        setHasMoreNoti(false);
       }
       setIsLoadingMore(false);
   };
