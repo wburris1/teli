@@ -198,9 +198,6 @@ const ItemDetails = ({item}: Props) => {
         </>
     )
 };
-console.log(PixelRatio.get())
-console.log(Dimensions.screenHeight + "height")
-console.log(Dimensions.screenWidth + "width")
 
 const styles = StyleSheet.create({
     container: {
