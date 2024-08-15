@@ -376,7 +376,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
         <>
           <View style={{flexDirection: 'row', width: '100%', justifyContent: 'flex-start', padding: 10, alignItems: 'flex-start'}}>
             <Image
-              source={{ uri: profileData.profile_picture }}
+              source={{ uri: profileData.profile_picture === '' ? undefined: profileData.profile_picture }}
               style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text }]}
             />
             <View>

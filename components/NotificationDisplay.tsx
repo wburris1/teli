@@ -133,7 +133,7 @@ const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
           <Link href={{pathname: 'notification_user', params: { userID: noti.sender_id }}} asChild>
               <TouchableOpacity>
                   <Image
-                      source={{ uri: noti.profile_picture }}
+                      source={{ uri: noti.profile_picture === "" ? undefined : noti.profile_picture }}
                       style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
                   />
               </TouchableOpacity>
