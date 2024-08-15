@@ -12,6 +12,7 @@ import Values from '@/constants/Values';
 import { NewPostSearchLists } from '@/components/PostSearchList';
 import { MakePost } from '@/data/userPosts';
 import { useData } from '@/contexts/dataContext';
+import Toast from 'react-native-toast-message';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 
@@ -117,6 +118,13 @@ export default function NewPostScreen() {
               postFunc(caption, aboutItem.id, aboutItem.poster_path, aboutItem.name, hasSpoilers, aboutItem.listTypeID).then(() => {
                 requestRefresh();
                 router.back();
+                Toast.show({
+                  type: 'info',
+                  text1: "You made a new post!",
+                  position: "bottom",
+                  visibilityTime: 3000,
+                  bottomOffset: 100
+                });
               })
             }}>
             <View style={[styles.postButton, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>

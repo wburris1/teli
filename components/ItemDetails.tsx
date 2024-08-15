@@ -15,6 +15,7 @@ import { removeFromList } from '@/data/deleteItem';
 import { UserItem } from '@/constants/ImportTypes';
 import { ExpandableText } from './AnimatedViews.tsx/ExpandableText';
 import AddToListsScreen from './AddToListsModal';
+import Toast from 'react-native-toast-message';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -149,10 +150,28 @@ const ItemDetails = ({item}: Props) => {
                             <TouchableOpacity onPress={() => {
                                     if (!bookmarked) {
                                         setBookmarked(true);
-                                        bookmarkFunc(item, isMovie);
+                                        bookmarkFunc(item, isMovie).then(() => {
+                                          Toast.show({
+                                            type: 'info',
+                                            text1: "Added to bookmarks",
+                                            text2: (isMovie ? item.title : item.name) + " has been added to your bookmarks",
+                                            position: "bottom",
+                                            visibilityTime: 3000,
+                                            bottomOffset: 100
+                                          });
+                                        });
                                     } else {
                                         setBookmarked(false);
-                                        removeFunc(Values.bookmarkListID, listTypeID, item.id.toString());
+                                        removeFunc(Values.bookmarkListID, listTypeID, item.id.toString()).then(() => {
+                                          Toast.show({
+                                            type: 'info',
+                                            text1: "Removed from bookmarks",
+                                            text2: (isMovie ? item.title : item.name) + " has been removed from your bookmarks",
+                                            position: "bottom",
+                                            visibilityTime: 3000,
+                                            bottomOffset: 100
+                                          });
+                                        })
                                     }
                                 }}
                                 style={{ paddingLeft: 5 }}
