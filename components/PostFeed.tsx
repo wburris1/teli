@@ -74,7 +74,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
             <Link href={{pathname: redirectLink + '_user', params: { userID: item.user_id }}} asChild>
               <TouchableOpacity>
                   <Image
-                      source={{ uri: item.profile_picture }}
+                      source={{ uri: item.profile_picture === '' ? undefined: item.profile_picture }}
                       style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
                   />
               </TouchableOpacity>
