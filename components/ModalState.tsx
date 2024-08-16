@@ -20,16 +20,8 @@ const useModalState = () => {
     setShowLikes(show);
     setPost(feedPost);
   }
-  const keyExtractor = (item: FeedPost) => {
-    // Ensure unique and correctly formatted keys
-    if (item.score && (item.score >= 0 || item.score == -2)) {
-      return `${item.user_id}/${item.item_id}`;
-    } else {
-      return `${item.user_id}/${item.post_id}`;
-    }
-  };
-
-  return { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, keyExtractor };
+  
+  return { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes};
 };
 
 export default useModalState;

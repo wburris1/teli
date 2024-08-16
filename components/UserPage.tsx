@@ -45,7 +45,7 @@ const emptyUser = {
 }
 
 const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string}) => {
-  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, keyExtractor } = useModalState();
+  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes } = useModalState();
 
   const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
@@ -316,7 +316,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
         <>
           <FlatList
             data={posts}
-            keyExtractor={keyExtractor}
+            keyExtractor={(item) => item.post_id}
             renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink={redirectLink} />}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           />

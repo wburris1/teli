@@ -38,13 +38,6 @@ const PostFeedWithModals = ({
 PostListWithModalsProps) => {
   const colorScheme = useColorScheme();
 
-  const keyExtractor = (item: FeedPost) => {
-    if (item.score && (item.score >= 0 || item.score == -2)) {
-      return `${item.user_id}/${item.item_id}`;
-    } else {
-      return `${item.user_id}/${item.post_id}`;
-    }
-  };
 
   return (
     <GestureHandlerRootView style={{ width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background }}>
@@ -52,7 +45,7 @@ PostListWithModalsProps) => {
         <>
           <FlatList
             data={posts}
-            keyExtractor={keyExtractor}
+            keyExtractor={(item) => item.post_id}
             renderItem={({ item, index }) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink={redirectLink} />}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           />

@@ -63,7 +63,7 @@ const LogoutButton = () => {
 };
 
 const ProfilePage = () => {
-  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, keyExtractor } = useModalState();
+  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes } = useModalState();
   const {user, userData } = useAuth();
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
