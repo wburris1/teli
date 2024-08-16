@@ -13,11 +13,11 @@ export type Post = {
     likes: string[],
     score: number,
     created_at: Timestamp | FieldValue,
-    userPushToken: string | undefined
+    userPushToken: string | undefined,
+    user_id: string,
 }
 
 export interface FeedPost extends Post {
-    user_id: string,
     username: string,
     first_name: string,
     last_name: string,
@@ -36,6 +36,8 @@ type BaseUserItem = {
     created_at: Timestamp | FieldValue,
     list_type_id: string,
     lists: string[],
+    user_id: string,
+    post_id: string,
 }
 
 export interface UserMovie extends BaseUserItem {

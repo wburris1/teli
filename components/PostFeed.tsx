@@ -42,29 +42,29 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     const handleHeart = async () => {
       if (!user) return;
       
-      const postRef = item.score >= 0 ? doc(db, "users", item.user_id, item.list_type_id, Values.seenListID, "items", item.item_id) :
-        (item.score == -2 ?  doc(db, "users", item.user_id, item.list_type_id, Values.bookmarkListID, "items", item.item_id) :
-          doc(db, "users", item.user_id, "posts", item.post_id));
+      const postRef = item.score == -2 
+      ? doc(db, "users", item.user_id, item.list_type_id, Values.bookmarkListID, "items", item.item_id)
+      : doc(db, "globalPosts", item.post_id);
       
       setIsLiked(!isLiked);
-
-      if (isLiked) {
-        setNumLikes(numLikes - 1);
-        await updateDoc(postRef, {
-          likes: arrayRemove(user.uid)
-        });
-      } else {
-        if (userData) {
-          createNotification(item.user_id, NotificationType.LikedPostNotification, userData, item)
-          sendPushNotification(item.userPushToken, "Liked Post", `${userData.first_name} liked your post`)
+      try {
+        if (isLiked) {
+          setNumLikes(numLikes - 1);
+          await updateDoc(postRef, {
+            likes: arrayRemove(user.uid)
+          }); 
         } else {
-          console.log("couldn't make notificatoin because userData not found")
+          if (userData) {
+            createNotification(item.user_id, NotificationType.LikedPostNotification, userData, item)
+            sendPushNotification(item.userPushToken, "Liked Post", `${userData.first_name} liked your post`)
+          }
+          setNumLikes(numLikes + 1);
+          await updateDoc(postRef, {
+            likes: arrayUnion(user.uid)
+          }); 
         }
-
-        setNumLikes(numLikes + 1);
-        await updateDoc(postRef, {
-          likes: arrayUnion(user.uid)
-        });
+      } catch (error) {
+        console.error("Failed to update likes:", error);
       }
     }
 

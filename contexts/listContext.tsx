@@ -36,6 +36,8 @@ export const ListProvider: React.FC<Props> = ({ children }: Props) => {
     item_name: "",
     list_type_id: "",
     lists: [],
+    user_id: '',
+    post_id: ''
   };
   const [activeTab, setActiveTab] = useState(0);
   const [addModalVisible, setAddModalVisible] = useState(false);

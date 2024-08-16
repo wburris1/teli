@@ -3,7 +3,7 @@ import { UpdateListPosters, updateSomeListPosters } from "./posterUpdates";
 import { useUserAdjustScores } from "./itemScores";
 import Values from "@/constants/Values";
 import { FIREBASE_DB } from "@/firebaseConfig";
-import { doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { removeFromList } from "./deleteItem";
 import { useTab } from "@/contexts/listContext";
 import { Post, UserItem, UserMovie, UserShow } from "@/constants/ImportTypes";
@@ -20,7 +20,7 @@ export const AddToDatabase = () => {
     const { setLoading } = useLoading();
 
     async function addToDB(newScore: number, item: Item, listID: string, isMovie: boolean, isDupe: boolean, items: UserItem[], caption: string, hasSpoilers: boolean) {
-        setLoading(true);
+      setLoading(true);
         var newItem: UserItem;
         const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
 
@@ -39,7 +39,9 @@ export const AddToDatabase = () => {
             likes: [],
             created_at: serverTimestamp(),
             list_type_id: Values.movieListsID,
-            lists: [listID, ...selectedLists.map(list => list.list_id)]
+            lists: [listID, ...selectedLists.map(list => list.list_id)],
+            user_id: user ? user.uid : '',
+            post_id: ''
           };
         } else {
           newItem = {
@@ -55,24 +57,16 @@ export const AddToDatabase = () => {
             likes: [],
             created_at: serverTimestamp(),
             list_type_id: Values.tvListsID,
-            lists: [listID, ...selectedLists.map(list => list.list_id)]
+            lists: [listID, ...selectedLists.map(list => list.list_id)],
+            user_id: user ? user.uid : '',
+            post_id: ''
           };
         }
     
         if (user) {
           const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id.toString());
+          const globalPostColRef = collection(db, "globalPosts")
           if (isDupe) {
-            var otherItems: UserItem[] = [];
-            if (items) {
-              otherItems = items.filter(otherItem => otherItem.item_id !== item.id);
-            }
-            otherItems.push(newItem);
-
-            items.forEach(seenItem => {
-                if (seenItem.item_id == item.id) {
-                    seenItem.score = newScore;
-                }
-            });
             const updateData = isMovie
             ? {
                 created_at: serverTimestamp(),
@@ -94,6 +88,16 @@ export const AddToDatabase = () => {
               };
               try {
                 await updateDoc(itemRef, updateData);
+                const globalPostRef = await addDoc(globalPostColRef, newItem);
+                await updateDoc(globalPostRef, { post_id: globalPostRef.id });
+                await updateDoc(itemRef, { post_id: globalPostRef.id });
+                
+                items.forEach(seenItem => {
+                  if (seenItem.item_id == item.id) {
+                      seenItem.score = newScore;
+                      seenItem.post_id = globalPostRef.id;
+                  }
+                });
                 await adjustScoreFunc(items, newScore, listID, listTypeID);
                 updateListFunc(listTypeID);
               } catch (err: any) {
@@ -102,9 +106,13 @@ export const AddToDatabase = () => {
               setLoading(false);
               return newItem;
           } else {
-            const currItems = [...items, newItem];
             try {
               await setDoc(itemRef, newItem);
+              const globalPostRef = await addDoc(globalPostColRef, newItem);
+              await updateDoc(globalPostRef, { post_id: globalPostRef.id });
+              await updateDoc(itemRef, { post_id: globalPostRef.id });
+              const currItems = [...items, {...newItem, post_id: globalPostRef.id}];
+
               await adjustScoreFunc(currItems, newScore, listID, listTypeID);
               updateListFunc(listTypeID);
             } catch (err: any) {
@@ -144,7 +152,9 @@ export const addToBookmarked = () => {
         likes: [],
         created_at: serverTimestamp(),
         list_type_id: Values.movieListsID,
-        lists: [listID]
+        lists: [listID],
+        user_id: user ? user.uid : '',
+        post_id: '',
       };
     } else {
       newItem = {
@@ -160,7 +170,9 @@ export const addToBookmarked = () => {
         likes: [],
         created_at: serverTimestamp(),
         list_type_id: Values.tvListsID,
-        lists: [listID]
+        lists: [listID],
+        user_id: user ? user.uid : '',
+        post_id: '',
       };
     }
 

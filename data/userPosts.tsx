@@ -22,12 +22,18 @@ export const MakePost = () => {
                 likes: [],
                 score: -1,
                 created_at: serverTimestamp(),
-                userPushToken: userData.userPushToken
+                userPushToken: userData.userPushToken, 
+                user_id: userData.user_id,
             }
             try {
                 const userPostsRef = collection(db, 'users', userData.user_id, 'posts');
                 const postRef = await addDoc(userPostsRef, post);
-                updateDoc(postRef, { post_id: postRef.id });
+                const globalPostsCollectionRef = collection(db, 'globalPosts');
+                const globalPostRef = await addDoc(globalPostsCollectionRef, post);
+                // updateDoc(postRef, { post_id: postRef.id });
+                updateDoc(globalPostRef, { post_id: globalPostRef.id });
+                updateDoc(postRef, { post_id: globalPostRef.id });
+
                 console.log("Post successfully added!");
             } catch (error) {
                 console.error("Error adding post: ", error);

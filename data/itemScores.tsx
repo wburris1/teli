@@ -48,7 +48,9 @@ export const useUserAdjustScores = () => {
                 lastScore = filteredItems[i].score;
             }
             const itemRef = doc(db, 'users', user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", filteredItems[i].item_id);
+            const globalPostRef = doc(db, 'globalPosts', filteredItems[i].post_id)
             batch.update(itemRef, { score: newScore, userPushToken: userData.userPushToken });
+            batch.update(globalPostRef, { score: newScore, userPushToken: userData.userPushToken });
         }
 
         try {
@@ -153,7 +155,9 @@ export const AdjustReorderedScores = () => {
             }
 
             const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", items[i].item_id);
+            const globalPostRef = doc(db, 'globalPosts', items[i].post_id)
             batch.update(itemRef, { score: newScore, userPushToken: userData.userPushToken});
+            batch.update(globalPostRef, { score: newScore, userPushToken: userData.userPushToken});
         }
 
         try {

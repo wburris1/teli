@@ -55,16 +55,21 @@ const LikesModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, onC
       }
     }
   }, [dragging, visible])
+  
 
-  const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
-        (post.score == -2 ?  doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
-          doc(db, "users", post.user_id, "posts", post.post_id));
 
-          
   const getLikedUsers = useCallback(async () => {
+    if (!post.post_id) {
+      return
+    }
     try {
       setLoading(true);
+      const postRef = post.score >= 0 ? doc(db, "globalPosts", post.post_id) :
+        (post.score == -2 ?  doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
+          doc(db, "globalPosts", post.post_id));
+
       const updatedDoc = await getDoc(postRef);
+
       if (updatedDoc.exists()) {
         const updatedLikes = updatedDoc.data().likes as string[];
         const userDataPromises = updatedLikes.map(userId => fetchUserData(userId));

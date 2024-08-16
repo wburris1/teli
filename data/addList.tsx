@@ -99,7 +99,9 @@ export const CreateListDB = () => {
                                 likes: [],
                                 created_at: serverTimestamp(),
                                 list_type_id: listTypeID,
-                                lists: [listID]
+                                lists: [listID],
+                                user_id: user.uid,
+                                post_id: ''
                             };
                             'title' in item ? itemData = {
                                 ...itemData, title: item.title, release_date: item.release_date

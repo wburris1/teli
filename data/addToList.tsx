@@ -78,7 +78,9 @@ export const addAndRemoveItemFromLists = () => {
                         likes: [],
                         created_at: serverTimestamp(),
                         list_type_id: listTypeID,
-                        lists: [...addLists.map(list => list.list_id)]
+                        lists: [...addLists.map(list => list.list_id)],
+                        user_id: user.uid,
+                        post_id: ''
                     };
                     'title' in newItem ? itemData = {
                         ...itemData, title: newItem.title, release_date: newItem.release_date

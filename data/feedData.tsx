@@ -30,15 +30,19 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   };
 
   const getRecentPosts = async (followedUsers: string[]): Promise<FeedPost[]> => {
-    const fetchPostsFromCollection = async (userID: string, collectionName: string): Promise<FeedPost[]> => {
+    const fetchPostsFromCollection = async (userID: string): Promise<FeedPost[]> => {
       const userDocRef = doc(db, 'users', userID);
       const userDoc = await getDoc(userDocRef);
   
       if (userDoc.exists()) {
         const userData = userDoc.data() as UserData;
-        const userPostsCollectionRef = collection(db, 'users', userID, collectionName);
-        const userPostsQuery = collectionName == 'posts' ? query(userPostsCollectionRef, orderBy('created_at', 'desc'), limit(10)) :
-          query(userPostsCollectionRef, orderBy('created_at', 'desc'), limit(10), where('lists', 'array-contains', Values.seenListID));
+        const userPostsCollectionRef = collection(db, 'globalPosts');
+        const userPostsQuery = query(
+          userPostsCollectionRef,
+          orderBy('created_at', 'desc'),
+          where('user_id', '==', userID),
+          limit(10)
+        )
         const userPostsSnapshot = await getDocs(userPostsQuery);
   
         return userPostsSnapshot.docs.map((doc) => ({
@@ -54,17 +58,13 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
         return [];
       }
     };
-  
-    const promises = followedUsers.map(async (userID) => {
-      const [userPosts, tvPosts, moviePosts] = await Promise.all([
-        fetchPostsFromCollection(userID, 'posts'),
-        fetchPostsFromCollection(userID, 'shows'),
-        fetchPostsFromCollection(userID, 'movies')
-      ]);
+    const promises = followedUsers.map(userID =>
+      fetchPostsFromCollection(userID).catch(error => {
+        console.error(`Failed to fetch posts for userID: ${userID}`, error);
+        return []; // Return an empty array or handle the error as appropriate
+      })
+    );
 
-      return [...userPosts, ...tvPosts, ...moviePosts];
-    });
-  
     const results = await Promise.all(promises);
     const posts = results.flat();
     posts.sort((a, b) => (b.created_at as any).toDate() - (a.created_at as any).toDate());
@@ -85,7 +85,7 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
         }
 
         recentPosts.sort((a, b) => (b.created_at as any).toDate() - (a.created_at as any).toDate());
-
+        
         setPosts(recentPosts);
       } catch (error) {
         console.error('Error fetching home feed: ', error);
