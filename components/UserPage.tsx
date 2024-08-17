@@ -68,6 +68,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   const followFunc = followUser();
   const unfollowFunc = unfollowUser();
   const { requestRefresh } = useData();
+  const [completeReRender, setCompleteReRender] = useState(false);
 
   const [currentUserID, setCurrentUserID] = useState('');
   
@@ -80,7 +81,34 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   }
 
   useEffect(() => {
+    if (!refreshing) {
+      setCompleteReRender(false);
+    }
+  }, [refreshing]);
+
+  useEffect(() => {
     if (!loading) setLoading(true);
+    setRefreshing(true);
+    setCompleteReRender(true);
+
+        // Trigger full reload when userID changes
+        setProfileData(emptyUser);
+        setFollowers([]);
+        setFollowing([]);
+        setMovieLists([]);
+        setTVLists([]);
+        setLoading(true);
+    
+        const fetchData = async () => {
+          try {
+            fetchCallback();
+          } catch (error) {
+            console.error("Error fetching profile data: ", error);
+            setLoading(false);
+          }
+        };
+    
+        fetchData();
   }, [currentUserID])
 
   const reorderData = (data: List[], firstId: string, secondId: string) => {
@@ -359,28 +387,45 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
 
   return (
     <View style={styles.container}>
-      {loading && (
-        <View style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'transparent'
-        }}>
+      {completeReRender ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size="large" />
         </View>
-      )}
+      ) : (
         <>
-          <View style={{flexDirection: 'row', width: '100%', justifyContent: 'flex-start', padding: 10, alignItems: 'flex-start'}}>
+          {loading && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'transparent',
+              }}
+            >
+              <ActivityIndicator size="large" />
+            </View>
+          )}
+          <View
+            style={{
+              flexDirection: 'row',
+              width: '100%',
+              justifyContent: 'flex-start',
+              padding: 10,
+              alignItems: 'flex-start',
+            }}
+          >
             <Image
-              source={{ uri: profileData.profile_picture === '' ? undefined: profileData.profile_picture }}
+              source={{
+                uri: profileData.profile_picture === '' ? undefined : profileData.profile_picture,
+              }}
               style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text }]}
             />
             <View>
-                <Text style={styles.headerText}>{profileData.first_name + " " + profileData.last_name}</Text>
+            <Text style={styles.headerText}>{profileData.first_name + " " + profileData.last_name}</Text>
                 <View style={{flexDirection: 'row', alignItems: 'center', paddingTop: 3,}}>
                     { user && user.uid != userID && 
                     <TouchableOpacity onPress={handleFollow}
@@ -408,10 +453,11 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                 </View>
             </View>
           </View>
-      <SearchTabs tabs={tabs} onTabChange={() => {}} index={0} />
-      </>
+          <SearchTabs tabs={tabs} onTabChange={() => {}} index={0} />
+        </>
+      )}
     </View>
-  );
+  );  
 };
 
 const styles = StyleSheet.create({

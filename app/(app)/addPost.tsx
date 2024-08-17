@@ -120,7 +120,7 @@ export default function NewPostScreen() {
                 router.back();
                 Toast.show({
                   type: 'info',
-                  text1: "You made a new post!",
+                  text1: "You made a new post about " + aboutItem.name + "!",
                   position: "bottom",
                   visibilityTime: 3000,
                   bottomOffset: 100
