@@ -327,21 +327,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
 
   const activityTabContent = useCallback(() => 
     <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
-      {loading && (
-        <View style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: .16 * Dimensions.screenHeight,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'transparent'
-        }}>
-          <ActivityIndicator size="large" />
-        </View>
-      )}
-        <>
+      <>
           <FlatList
             data={posts}
             keyExtractor={(item) => item.post_id}
@@ -350,7 +336,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink='/user'/>
           <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink='/user'/>
-        </>
+      </>
     </GestureHandlerRootView>
   , [refreshFlag, posts, refreshing, loading, showLikes, showComments, post]);
 
@@ -404,6 +390,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                 alignItems: 'center',
                 justifyContent: 'center',
                 backgroundColor: 'transparent',
+                zIndex: 2,
               }}
             >
               <ActivityIndicator size="large" />
