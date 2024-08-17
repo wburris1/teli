@@ -3,7 +3,7 @@ import { UpdateListPosters, updateSomeListPosters } from "./posterUpdates";
 import { useUserAdjustScores } from "./itemScores";
 import Values from "@/constants/Values";
 import { FIREBASE_DB } from "@/firebaseConfig";
-import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { removeFromList } from "./deleteItem";
 import { useTab } from "@/contexts/listContext";
 import { Post, UserItem, UserMovie, UserShow } from "@/constants/ImportTypes";
@@ -67,6 +67,12 @@ export const AddToDatabase = () => {
           const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id.toString());
           const globalPostColRef = collection(db, "globalPosts")
           if (isDupe) {
+            const existingDoc = await getDoc(itemRef);
+            const existingLists = existingDoc.exists() ? existingDoc.data().lists || [] : [];
+
+            // Merge the new lists with the existing ones
+            const updatedLists = [...new Set([...existingLists, listID, ...selectedLists.map(list => list.list_id)])];
+
             const updateData = isMovie
             ? {
                 created_at: serverTimestamp(),
@@ -75,7 +81,7 @@ export const AddToDatabase = () => {
                 poster_path: newItem.poster_path,
                 score: newScore,
                 release_date: (newItem as UserMovie).release_date,
-                lists: [listID, ...selectedLists.map(list => list.list_id)]
+                lists: updatedLists
               }
             : {
                 created_at: serverTimestamp(),
@@ -84,7 +90,7 @@ export const AddToDatabase = () => {
                 poster_path: newItem.poster_path,
                 score: newScore,
                 first_air_date: (newItem as UserShow).first_air_date,
-                lists: [listID, ...selectedLists.map(list => list.list_id)]
+                lists: updatedLists
               };
               try {
                 await updateDoc(itemRef, updateData);
