@@ -19,6 +19,8 @@ type PostListWithModalsProps = {
   redirectLink: string;
   handleRefresh: () => void;
   refreshing: boolean;
+  loadMorePosts: () => void;
+  isLoadingMore: boolean;
 };
 
 const PostFeedWithModals = ({
@@ -34,9 +36,16 @@ const PostFeedWithModals = ({
   redirectLink,
   handleRefresh,
   refreshing,
+  loadMorePosts,
+  isLoadingMore
 }: 
 PostListWithModalsProps) => {
   const colorScheme = useColorScheme();
+
+  const renderFooter = () => {
+    if (!isLoadingMore) return null;
+    return <ActivityIndicator style={{ margin: 20 }} />;
+  };
 
 
   return (
@@ -47,6 +56,9 @@ PostListWithModalsProps) => {
             data={posts}
             keyExtractor={(item) => item.post_id}
             renderItem={({ item, index }) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink={redirectLink} />}
+            onEndReached={loadMorePosts}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={renderFooter}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink={redirectLink} />

@@ -8,10 +8,10 @@ import useModalState from '@/components/ModalState';
 import PostFeedWithModals from '@/components/PostFeedWithModals';
 
 export default function TabOneScreen() {
-  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes} = useModalState();
+  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, } = useModalState();
   const { refreshFlag } = useData();
   const [refreshing, setRefreshing] = useState(false);
-  const { posts, loading } = makeFeed('Home', refreshing, setRefreshing);
+  const { posts, loading, loadMorePosts, isLoadingMore } = makeFeed('Home', refreshing, setRefreshing);
   const colorScheme = useColorScheme();
   
   const handleRefresh = () => {
@@ -33,6 +33,8 @@ export default function TabOneScreen() {
         redirectLink='/home'
         handleRefresh={handleRefresh}
         refreshing={refreshing}
+        loadMorePosts={loadMorePosts}
+        isLoadingMore={isLoadingMore}
       />
       </View>
   );

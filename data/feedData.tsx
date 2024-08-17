@@ -3,10 +3,15 @@ import Values from "@/constants/Values";
 import { useAuth } from "@/contexts/authContext";
 import { useData } from "@/contexts/dataContext";
 import { FIREBASE_DB } from "@/firebaseConfig"
-import { collection, doc, getDoc, getDocs, limit, orderBy, query, where } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { DocumentSnapshot, collection, doc, getDoc, getDocs, limit, orderBy, query, startAfter, where } from "firebase/firestore";
+import { useEffect, useRef, useState } from "react";
+import { fetchUserData } from "./getComments";
+import { LayoutAnimation } from "react-native";
+
+// TO DO IMPlement caching and smooth animation when adding posts. 
 
 const db = FIREBASE_DB;
+const userCache = new Map<string, UserData>(); // Cache to locally store many ppl's userData
 
 // input userID should be 'Home' if used for home feed.
 export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (refreshing: boolean) => void) => {
@@ -14,89 +19,89 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const { refreshFlag } = useData();
+  const lastFetchedPost = useRef<DocumentSnapshot | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMorePost, setHasMorePost] = useState(true);
+  const limitPosts = 5
 
-  const getFollowedUsers = async () => {
+  const getFollowedUsers = async (): Promise<string[]> => {
     if (!user) return [];
-
-    const followedUsers: string[] = [];
     const followingCollectionRef = collection(db, 'users', user.uid, 'following');
     const followingSnapshot = await getDocs(followingCollectionRef);
-  
-    followingSnapshot.forEach((doc) => {
-      followedUsers.push(doc.id);
-    });
-  
-    return followedUsers;
+    return followingSnapshot.docs.map((doc) => doc.id);
   };
 
-  const getRecentPosts = async (followedUsers: string[]): Promise<FeedPost[]> => {
-    const fetchPostsFromCollection = async (userID: string): Promise<FeedPost[]> => {
-      const userDocRef = doc(db, 'users', userID);
-      const userDoc = await getDoc(userDocRef);
-  
-      if (userDoc.exists()) {
-        const userData = userDoc.data() as UserData;
-        const userPostsCollectionRef = collection(db, 'globalPosts');
-        const userPostsQuery = query(
-          userPostsCollectionRef,
-          orderBy('created_at', 'desc'),
-          where('user_id', '==', userID),
-          limit(10)
-        )
-        const userPostsSnapshot = await getDocs(userPostsQuery);
-  
-        return userPostsSnapshot.docs.map((doc) => ({
-          ...doc.data() as Post,
-          user_id: userData.user_id,
-          username: userData.username,
-          first_name: userData.first_name,
-          last_name: userData.last_name,
-          profile_picture: userData.profile_picture,
-          userPushToken: userData.userPushToken
-        }));
-      } else {
-        return [];
-      }
-    };
-    const promises = followedUsers.map(userID =>
-      fetchPostsFromCollection(userID).catch(error => {
-        console.error(`Failed to fetch posts for userID: ${userID}`, error);
-        return []; // Return an empty array or handle the error as appropriate
-      })
-    );
+  const loadMorePosts = async () => {
+    if (!isLoadingMore && hasMorePost) {
+      setIsLoadingMore(true);
+      await fetchFeed();
+    }
+  };
 
-    const results = await Promise.all(promises);
-    const posts = results.flat();
-    posts.sort((a, b) => (b.created_at as any).toDate() - (a.created_at as any).toDate());
-  
-    return posts;
+  const fetchPosts = async (followedUsers: string[]): Promise<FeedPost[]> => {
+      const userPostsCollectionRef = collection(db, 'globalPosts');
+      const shouldStartAfter = lastFetchedPost.current && !refreshing; // Combined condition
+      const userPostsQuery = query(
+        userPostsCollectionRef,
+        orderBy('created_at', 'desc'),
+        where('user_id', 'in', followedUsers),
+        limit(limitPosts),
+        ...(shouldStartAfter ? [startAfter(lastFetchedPost.current)] : [])
+      );
+
+      const userPostsSnapshot = await getDocs(userPostsQuery);
+
+      if (!userPostsSnapshot.empty) {
+        lastFetchedPost.current = userPostsSnapshot.docs[userPostsSnapshot.docs.length - 1];
+      }
+      if (userPostsSnapshot.docs.length < limitPosts) {
+        console.log("End Reached: no more posts")
+        setHasMorePost(false);
+      }
+
+      const allPosts = await Promise.all(userPostsSnapshot.docs.map(async (docSnapshot) => {
+        const userData = await getUserData(docSnapshot.data().user_id);
+        return {
+          ...docSnapshot.data() as Post,
+          ...userData, // Combined user and post data in a single object
+        };
+      })); 
+      return allPosts
+  };
+  const getUserData = async (userId: string): Promise<UserData> => {
+    if (userCache.has(userId)) {
+      return userCache.get(userId) as UserData; // Return cached data if available
+    }
+    const userData = await fetchUserData(userId)
+    userCache.set(userId, userData); // Cache the fetched data
+    return userData
   };
 
   const fetchFeed = async () => {
     if (user) {
       try {
-        let recentPosts;
+        const followedUsers = userID === 'Home' ? await getFollowedUsers() : [userID];
+        const newPosts = await fetchPosts(followedUsers);
 
-        if (userID === 'Home') {
-          const followedUsers = await getFollowedUsers();
-          recentPosts = await getRecentPosts(followedUsers);
+        if (refreshing) {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setPosts(newPosts);
         } else {
-          recentPosts = await getRecentPosts([userID]);
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setPosts((prevPosts) => [...prevPosts, ...newPosts]);
         }
-
-        recentPosts.sort((a, b) => (b.created_at as any).toDate() - (a.created_at as any).toDate());
-        
-        setPosts(recentPosts);
       } catch (error) {
         console.error('Error fetching home feed: ', error);
       } finally {
         setRefreshing(false);
         setLoading(false);
+        setIsLoadingMore(false);
       }
     }
   };
   useEffect(() => {
     if (refreshing) {
+      setHasMorePost(true);
       fetchFeed();
     }
   }, [user, refreshFlag, refreshing]);
@@ -105,5 +110,5 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
     fetchFeed();
   }, []);
   
-  return { posts, loading };
+  return { posts, loading, loadMorePosts, isLoadingMore };
 }
