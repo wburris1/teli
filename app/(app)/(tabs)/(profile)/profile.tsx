@@ -10,35 +10,14 @@ import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { Link, useLocalSearchParams, useNavigation } from 'expo-router';
-import { FeedPost, Post } from '@/constants/ImportTypes';
+import { Post } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
-import { ProfilePost } from '@/components/Post';
-import { PostFeed } from '@/components/PostFeed';
-import LikesModal from '@/components/LikesModal';
-import CommentsModal from '@/components/CommentsModal';
 import { makeFeed } from '@/data/feedData';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import useModalState from '@/components/ModalState';
 import PostFeedWithModals from '@/components/PostFeedWithModals';
-import { TOUCHABLE_STATE } from 'react-native-gesture-handler/lib/typescript/components/touchables/GenericTouchable';
 
 const db = FIREBASE_DB;
-
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
-
-const emptyUser = {
-  user_id: "",
-  email: "",
-  username: "",
-  first_name: "",
-  last_name: "",
-  followers: [],
-  following: [],
-  is_private: false,
-  profile_picture: "/",
-  created_at: "",
-  bio: "",
-}
 
 const LogoutButton = () => {
   const colorScheme = useColorScheme();
@@ -68,7 +47,7 @@ const ProfilePage = () => {
   const [followers, setFollowers] = useState<{ id: string }[]>([]);
   const [following, setFollowing] = useState<{ id: string }[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { posts } = makeFeed(user ? user.uid : '', refreshing, setRefreshing);
+  const { posts, loadMorePosts, isLoadingMore} = makeFeed(user ? user.uid : '', refreshing, setRefreshing);
   const [loading, setLoading] = useState(true);
   const { refreshFlag, refreshListFlag } = useData();
   const navigation = useNavigation();
@@ -248,6 +227,8 @@ const ProfilePage = () => {
         redirectLink='/profile'
         handleRefresh={handleRefresh}
         refreshing={refreshing}
+        loadMorePosts={loadMorePosts}
+        isLoadingMore={isLoadingMore}
       />
     </View>
   );
