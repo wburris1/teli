@@ -210,7 +210,7 @@ const ProfilePage = () => {
           <View style={{width: '100%', alignItems: 'center'}}>
             <Text style={styles.username}>@{userData.username}</Text>
             <Image
-              source={{ uri: userData.profile_picture }}
+              source={{ uri: userData.profile_picture || undefined }}
               style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text }]}
             />
           </View>
