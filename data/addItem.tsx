@@ -72,6 +72,9 @@ export const AddToDatabase = () => {
 
             // Merge the new lists with the existing ones
             const updatedLists = [...new Set([...existingLists, listID, ...selectedLists.map(list => list.list_id)])];
+            const removeListIDs = new Set(removeLists.map(list => list.list_id));
+            // Filter out the lists that are in the removeListIDs set
+            const finalLists = updatedLists.filter(list => !removeListIDs.has(list));
 
             const updateData = isMovie
             ? {
@@ -81,7 +84,7 @@ export const AddToDatabase = () => {
                 poster_path: newItem.poster_path,
                 score: newScore,
                 release_date: (newItem as UserMovie).release_date,
-                lists: updatedLists
+                lists: finalLists
               }
             : {
                 created_at: serverTimestamp(),
@@ -90,7 +93,7 @@ export const AddToDatabase = () => {
                 poster_path: newItem.poster_path,
                 score: newScore,
                 first_air_date: (newItem as UserShow).first_air_date,
-                lists: updatedLists
+                lists: finalLists
               };
               try {
                 await updateDoc(itemRef, updateData);
