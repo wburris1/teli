@@ -33,7 +33,7 @@ const ItemScreen = ({movieList, isAdding, addItems, outItems, setAddItems, setOu
         var title = "";
         const isMovie = 'title' in item;
         var date = isMovie ? item.release_date : item.first_air_date;
-        date = date.slice(0,4);
+        date = date ? date.slice(0,4) : "";
         let isIn = false;
 
         if (isMovie) {
