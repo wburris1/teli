@@ -33,13 +33,10 @@ export const CreateListDB = () => {
 
     const isValidListName = (list: List, listTypeID: string) => {
       const currLists = listTypeID === Values.movieListsID ? movieLists : tvLists;
-      console.log("!")
       if (isDuplicateListName(list.name, currLists)) {
-        console.log("!!")
         Alert.alert("List name already exists, please choose a different one");
         return false;
       }
-      console.log("!!!")
       if (!list.name) {
         Alert.alert("Please enter a name for the list");
         return false;
