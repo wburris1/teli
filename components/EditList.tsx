@@ -12,10 +12,12 @@ import { BlurView } from "expo-blur";
 import { editList } from "@/data/addList";
 import { ListModalScreen } from "./ListModal";
 import { editListItems, editUnwatchedItems } from "@/data/editListItems";
-import { UserItem } from "@/constants/ImportTypes";
+import { List, UserItem } from "@/constants/ImportTypes";
 import { useLoading } from "@/contexts/loading";
 import Toast from "react-native-toast-message";
 import { AddUnwatchedScreen } from "./AddUnwatched";
+import { useData } from "@/contexts/dataContext";
+import Values from "@/constants/Values";
 
 type ListProps = {
     listID: string,
@@ -41,6 +43,24 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
     const editItemsFunc = editListItems();
     const editItemsFuncUnseen = editUnwatchedItems();
     const { loading, setLoading } = useLoading();
+    const { tvLists, movieLists } = useData();
+
+    // Moved validation logic outside the render method
+    const isDuplicateListName = (listName: string, currLists: List[]): boolean => {
+      return currLists.some(item => item.name === listName);
+    };
+    const isValidListName = (name: string, listTypeID: string): boolean => {
+      const currLists = listTypeID === Values.movieListsID ? movieLists : tvLists;
+      if (isDuplicateListName(name, currLists)) {
+          Alert.alert("List name already exists, please choose a different one");
+          return false;
+      }
+      if (!name) {
+          Alert.alert("Please enter a name for the list");
+          return false;
+      }
+      return true;
+    };
 
     const onDelete = () => {
         Alert.alert(
@@ -71,21 +91,21 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
     };
 
     const handleAddRemove = (addItems: UserItem[], removedItems: UserItem[]) => {
-        setLoading(true);
-        editItemsFunc(addItems, removedItems, listID, listTypeID).then(() => {
-            setLoading(false);
-            onClose();
-            setAddModalVisible(false);
-        })
+      setLoading(true);
+      editItemsFunc(addItems, removedItems, listID, listTypeID).then(() => {
+          setLoading(false);
+          onClose();
+          setAddModalVisible(false);
+      })
     }
 
     const handleAddRemoveUnseen = (addItems: Item[], removedItems: Item[]) => {
-        setLoading(true);
-        editItemsFuncUnseen(addItems, removedItems, listID, listTypeID).then(() => {
-            setLoading(false);
-            onClose();
-            setAddModalVisible(false);
-        })
+      setLoading(true);
+      editItemsFuncUnseen(addItems, removedItems, listID, listTypeID).then(() => {
+          setLoading(false);
+          onClose();
+          setAddModalVisible(false);
+      })
     }
 
     return (
@@ -183,13 +203,15 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
                                 
                                 <TouchableOpacity onPress={() => {
                                         if (loading) return;
-                                        setLoading(true);
-                                        editListFunc(listID, listTypeID, newListName, newDescription).then(() => {
+                                        if (isValidListName(newListName, listTypeID)) {
+                                          setLoading(true);
+                                          editListFunc(listID, listTypeID, newListName, newDescription).then(() => {
                                             setLoading(false);
                                             onClose();
                                             onEdit(newListName, newDescription);
                                             setEditModalVisible(false);
-                                        });
+                                          });
+                                        }
                                     }}>
                                     <Ionicons
                                         name="checkmark-circle"
