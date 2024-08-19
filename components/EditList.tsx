@@ -20,231 +20,231 @@ import { useData } from "@/contexts/dataContext";
 import Values from "@/constants/Values";
 
 type ListProps = {
-    listID: string,
-    listTypeID: string,
-    name: string,
-    description: string,
-    items: UserItem[],
-    visible: boolean,
-    onClose: () => void;
-    onEdit: (newName: string, newDescription: string) => void;
-    isRanked: boolean,
+  listID: string,
+  listTypeID: string,
+  name: string,
+  description: string,
+  items: UserItem[],
+  visible: boolean,
+  onClose: () => void;
+  onEdit: (newName: string, newDescription: string) => void;
+  isRanked: boolean,
 }
 
 export const EditListScreen = ({ listID, listTypeID, name, description, items, visible, onClose, onEdit, isRanked }: ListProps) => {
-    const colorScheme = useColorScheme();
-    const router = useRouter();
-    const deleteFunc = deleteList(listID, listTypeID);
-    const [editModalVisible, setEditModalVisible] = useState(false);
-    const [newListName, setNewListName] = useState(name);
-    const [newDescription, setNewDescription] = useState(description);
-    const [addModalVisible, setAddModalVisible] = useState(false);
-    const editListFunc = editList();
-    const editItemsFunc = editListItems();
-    const editItemsFuncUnseen = editUnwatchedItems();
-    const { loading, setLoading } = useLoading();
-    const { tvLists, movieLists } = useData();
+  const colorScheme = useColorScheme();
+  const router = useRouter();
+  const deleteFunc = deleteList(listID, listTypeID);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [newListName, setNewListName] = useState(name);
+  const [newDescription, setNewDescription] = useState(description);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const editListFunc = editList();
+  const editItemsFunc = editListItems();
+  const editItemsFuncUnseen = editUnwatchedItems();
+  const { loading, setLoading } = useLoading();
+  const { tvLists, movieLists } = useData();
 
-    // Moved validation logic outside the render method
-    const isDuplicateListName = (listName: string, currLists: List[]): boolean => {
-      return currLists.some(item => item.name === listName);
-    };
-    const isValidListName = (name: string, listTypeID: string): boolean => {
-      const currLists = listTypeID === Values.movieListsID ? movieLists : tvLists;
-      if (isDuplicateListName(name, currLists)) {
-          Alert.alert("List name already exists, please choose a different one");
-          return false;
-      }
-      if (!name) {
-          Alert.alert("Please enter a name for the list");
-          return false;
-      }
-      return true;
-    };
-
-    const onDelete = () => {
-        Alert.alert(
-            "Confirm Delete",
-            "Are you sure you want to delete this list?",
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
-                {
-                    text: "Delete",
-                    onPress: () => {
-                        deleteFunc();
-                        router.back();
-                        Toast.show({
-                          type: 'info',
-                          text1: "Deleted List",
-                          text2: "You deleted list '" + name + "'",
-                          position: "bottom",
-                          visibilityTime: 3000,
-                          bottomOffset: 100
-                        });
-                    }
-                }
-            ]
-        );
-    };
-
-    const handleAddRemove = (addItems: UserItem[], removedItems: UserItem[]) => {
-      setLoading(true);
-      editItemsFunc(addItems, removedItems, listID, listTypeID).then(() => {
-          setLoading(false);
-          onClose();
-          setAddModalVisible(false);
-      })
+  // Moved validation logic outside the render method
+  const isDuplicateListName = (listName: string, currLists: List[]): boolean => {
+    return currLists.some(item => item.name === listName);
+  };
+  const isValidListName = (name: string, listTypeID: string): boolean => {
+    const currLists = listTypeID === Values.movieListsID ? movieLists : tvLists;
+    if (isDuplicateListName(name, currLists)) {
+      Alert.alert("List name already exists, please choose a different one");
+      return false;
     }
-
-    const handleAddRemoveUnseen = (addItems: Item[], removedItems: Item[]) => {
-      setLoading(true);
-      editItemsFuncUnseen(addItems, removedItems, listID, listTypeID).then(() => {
-          setLoading(false);
-          onClose();
-          setAddModalVisible(false);
-      })
+    if (!name) {
+      Alert.alert("Please enter a name for the list");
+      return false;
     }
+    return true;
+  };
 
-    return (
-        <Modal
-            animationType="slide"
-            transparent={true}
-            visible={visible}
-            onRequestClose={onClose}
-        >
-            <Pressable style={styles.overlay} onPress={onClose}>
-                <Pressable style={[styles.tabContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text, borderBottomWidth: 0 }]} onPress={(e) => e.stopPropagation()}>
-                    <View style={{width: '100%'}}>
-                        <TouchableOpacity onPress={onDelete}>
-                            <View style={[styles.tab, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
-                                <Ionicons name="trash" size={30} color='red' style={styles.icon}/>
-                                <Text style={[styles.tabTitle, {color: 'red'}]}>Delete List</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={{width: '100%'}}>
-                        <TouchableOpacity onPress={() => setEditModalVisible(true)}>
-                            <View style={[styles.tab, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
-                                <Ionicons name="pencil" size={30} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
-                                <Text style={styles.tabTitle}>Edit Details</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={{width: '100%'}}>
-                        <TouchableOpacity onPress={() => setAddModalVisible(true)}>
-                            <View style={[styles.tab, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
-                                <Ionicons name="add" size={35} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
-                                <Text style={styles.tabTitle}>Add To List</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={{width: '100%'}}>
-                        <TouchableOpacity onPress={onClose}>
-                            <View style={[styles.tab, {borderBottomWidth: 0,}]}>
-                                <Ionicons name="close" size={30} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
-                                <Text style={styles.tabTitle}>Close</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                </Pressable>
+  const onDelete = () => {
+    Alert.alert(
+      "Confirm Delete",
+      "Are you sure you want to delete this list?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          onPress: () => {
+            deleteFunc();
+            router.back();
+            Toast.show({
+              type: 'info',
+              text1: "Deleted List",
+              text2: "You deleted list '" + name + "'",
+              position: "bottom",
+              visibilityTime: 3000,
+              bottomOffset: 100
+            });
+          }
+        }
+      ]
+    );
+  };
+
+  const handleAddRemove = (addItems: UserItem[], removedItems: UserItem[]) => {
+    setLoading(true);
+    editItemsFunc(addItems, removedItems, listID, listTypeID).then(() => {
+        setLoading(false);
+        onClose();
+        setAddModalVisible(false);
+    })
+  }
+
+  const handleAddRemoveUnseen = (addItems: Item[], removedItems: Item[]) => {
+    setLoading(true);
+    editItemsFuncUnseen(addItems, removedItems, listID, listTypeID).then(() => {
+        setLoading(false);
+        onClose();
+        setAddModalVisible(false);
+    })
+  }
+
+  return (
+    <Modal
+        animationType="slide"
+        transparent={true}
+        visible={visible}
+        onRequestClose={onClose}
+    >
+        <Pressable style={styles.overlay} onPress={onClose}>
+            <Pressable style={[styles.tabContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text, borderBottomWidth: 0 }]} onPress={(e) => e.stopPropagation()}>
+                <View style={{width: '100%'}}>
+                    <TouchableOpacity onPress={onDelete}>
+                        <View style={[styles.tab, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
+                            <Ionicons name="trash" size={30} color='red' style={styles.icon}/>
+                            <Text style={[styles.tabTitle, {color: 'red'}]}>Delete List</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+                <View style={{width: '100%'}}>
+                    <TouchableOpacity onPress={() => setEditModalVisible(true)}>
+                        <View style={[styles.tab, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
+                            <Ionicons name="pencil" size={30} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
+                            <Text style={styles.tabTitle}>Edit Details</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+                <View style={{width: '100%'}}>
+                    <TouchableOpacity onPress={() => setAddModalVisible(true)}>
+                        <View style={[styles.tab, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
+                            <Ionicons name="add" size={35} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
+                            <Text style={styles.tabTitle}>Add To List</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+                <View style={{width: '100%'}}>
+                    <TouchableOpacity onPress={onClose}>
+                        <View style={[styles.tab, {borderBottomWidth: 0,}]}>
+                            <Ionicons name="close" size={30} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
+                            <Text style={styles.tabTitle}>Close</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
             </Pressable>
-            <Modal
-                    animationType="fade"
-                    transparent={true}
-                    visible={editModalVisible}
-                    onRequestClose={() => setEditModalVisible(false)}
-                >
-                    <BlurView intensity={100} style={styles.overlay}>
-                        {loading && (
-                            <View style={styles.spinnerOverlay}>
-                                <ActivityIndicator size="large" />
-                            </View>
-                        )}
-                        <KeyboardAvoidingView behavior="padding">
-                            <View style={[styles.modalView, { backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
-                                <View style={styles.headerContainer}>
-                                    <Text style={[styles.headerText, { color: Colors[colorScheme ?? 'light'].text}]}>Edit List</Text>
-                                    <TouchableOpacity onPress={() => {
-                                        if (loading) return;
-                                        setEditModalVisible(false);
-                                    }}>
-                                        <Ionicons
-                                            name="close"
-                                            size={35}
-                                            color={Colors[colorScheme ?? 'light'].text}
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-                                <TextInput
-                                    autoCapitalize="sentences"
-                                    placeholder="List name..."
-                                    value={newListName}
-                                    onChangeText={setNewListName}
-                                    style={[styles.inputNameField,
-                                        { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text,
-                                            color: Colors[colorScheme ?? 'light'].text,
-                                        }]}
-                                />
-                                <TextInput
-                                    multiline
-                                    autoCapitalize="sentences"
-                                    placeholder="List description (optional)..."
-                                    value={newDescription}
-                                    onChangeText={setNewDescription}
-                                    style={[styles.inputDescField,
-                                        { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text,
-                                            color: Colors[colorScheme ?? 'light'].text,
-                                        }]
-                                    }
-                                />
-                                
+        </Pressable>
+        <Modal
+                animationType="fade"
+                transparent={true}
+                visible={editModalVisible}
+                onRequestClose={() => setEditModalVisible(false)}
+            >
+                <BlurView intensity={100} style={styles.overlay}>
+                    {loading && (
+                        <View style={styles.spinnerOverlay}>
+                            <ActivityIndicator size="large" />
+                        </View>
+                    )}
+                    <KeyboardAvoidingView behavior="padding">
+                        <View style={[styles.modalView, { backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
+                            <View style={styles.headerContainer}>
+                                <Text style={[styles.headerText, { color: Colors[colorScheme ?? 'light'].text}]}>Edit List</Text>
                                 <TouchableOpacity onPress={() => {
-                                        if (loading) return;
-                                        if (isValidListName(newListName, listTypeID)) {
-                                          setLoading(true);
-                                          editListFunc(listID, listTypeID, newListName, newDescription).then(() => {
-                                            setLoading(false);
-                                            onClose();
-                                            onEdit(newListName, newDescription);
-                                            setEditModalVisible(false);
-                                          });
-                                        }
-                                    }}>
+                                    if (loading) return;
+                                    setEditModalVisible(false);
+                                }}>
                                     <Ionicons
-                                        name="checkmark-circle"
-                                        size={50}
+                                        name="close"
+                                        size={35}
                                         color={Colors[colorScheme ?? 'light'].text}
                                     />
                                 </TouchableOpacity>
                             </View>
-                        </KeyboardAvoidingView>
-                    </BlurView>
+                            <TextInput
+                                autoCapitalize="sentences"
+                                placeholder="List name..."
+                                value={newListName}
+                                onChangeText={setNewListName}
+                                style={[styles.inputNameField,
+                                    { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text,
+                                        color: Colors[colorScheme ?? 'light'].text,
+                                    }]}
+                            />
+                            <TextInput
+                                multiline
+                                autoCapitalize="sentences"
+                                placeholder="List description (optional)..."
+                                value={newDescription}
+                                onChangeText={setNewDescription}
+                                style={[styles.inputDescField,
+                                    { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text,
+                                        color: Colors[colorScheme ?? 'light'].text,
+                                    }]
+                                }
+                            />
+                            
+                            <TouchableOpacity onPress={() => {
+                                    if (loading) return;
+                                    if (isValidListName(newListName, listTypeID)) {
+                                      setLoading(true);
+                                      editListFunc(listID, listTypeID, newListName, newDescription).then(() => {
+                                        setLoading(false);
+                                        onClose();
+                                        onEdit(newListName, newDescription);
+                                        setEditModalVisible(false);
+                                      });
+                                    }
+                                }}>
+                                <Ionicons
+                                    name="checkmark-circle"
+                                    size={50}
+                                    color={Colors[colorScheme ?? 'light'].text}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    </KeyboardAvoidingView>
+                </BlurView>
+            </Modal>
+            {addModalVisible && (isRanked ?
+                <ListModalScreen
+                    listTypeID={listTypeID}
+                    visible={addModalVisible}
+                    containedItems={items}
+                    onClose={() => setAddModalVisible(false)}
+                    onSelectedItemsChange={handleAddRemove}
+                /> :
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={addModalVisible}
+                    onRequestClose={() => setAddModalVisible(false)}
+                >
+                    <AddUnwatchedScreen listID={listID} listTypeID={listTypeID}
+                        onClose={() => setAddModalVisible(false)} onSave={(addItems, removeItems) => {
+                            handleAddRemoveUnseen(addItems, removeItems);
+                        }} />
                 </Modal>
-                {addModalVisible && (isRanked ?
-                    <ListModalScreen
-                        listTypeID={listTypeID}
-                        visible={addModalVisible}
-                        containedItems={items}
-                        onClose={() => setAddModalVisible(false)}
-                        onSelectedItemsChange={handleAddRemove}
-                    /> :
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={addModalVisible}
-                        onRequestClose={() => setAddModalVisible(false)}
-                    >
-                        <AddUnwatchedScreen listID={listID} listTypeID={listTypeID}
-                            onClose={() => setAddModalVisible(false)} onSave={(addItems, removeItems) => {
-                                handleAddRemoveUnseen(addItems, removeItems);
-                            }} />
-                    </Modal>
-                )}
-        </Modal>
-    );
+            )}
+    </Modal>
+  );
 }
 
 const styles = StyleSheet.create({
