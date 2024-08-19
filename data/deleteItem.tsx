@@ -10,7 +10,7 @@ import Values from "@/constants/Values";
 const db = FIREBASE_DB;
 
 // Deletes watched item from all watched lists
-export const useUserItemDelete = (item_id: string, score: number, listID: string, listTypeID: string) => {
+export const useUserItemDelete = (post_id: string, item_id: string, score: number, listID: string, listTypeID: string) => {
     const { user } = useAuth();
     const adjustScoreFunc = useUserAdjustScores();
     const updateListFunc = UpdateListPosters();
@@ -21,8 +21,11 @@ export const useUserItemDelete = (item_id: string, score: number, listID: string
             try {
                 const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);
                 await deleteDoc(itemRef);
+                const globalPostRef = doc(db, "globalPosts", post_id)
+                await deleteDoc(globalPostRef);
 
                 console.log(`Item ${item_id} deleted from all lists`);
+                console.log(`Item ${post_id} deleted from all globalPosts`);
                 updateListFunc(listTypeID);
             } catch (error) {
                 console.error("Error removing document: ", error);

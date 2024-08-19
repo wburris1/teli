@@ -8,7 +8,6 @@ import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
 import Values from '@/constants/Values';
 import { useTab } from '@/contexts/listContext';
-import { removeFromList, useUserItemDelete } from '@/data/deleteItem';
 import { EditListScreen } from '@/components/EditList';
 import { AnimatedSearch } from '@/components/AnimatedSearch';
 import { UserItem } from '@/constants/ImportTypes';
