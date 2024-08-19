@@ -425,13 +425,13 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                             {isFollowing ? "Followed" : "Follow"}
                         </Text>
                     </TouchableOpacity>}
-                    <Link href={{pathname: redirectLink + "_follower", params: { userID: userID, whichTab: 0}}}>
+                    <Link href={{pathname: redirectLink + "_follower" as any, params: { userID: userID, whichTab: 0}}}>
                     <View style={styles.followContainer}>
                         <Text style={styles.follow}>Followers</Text>
                         <Text style={styles.follow}>{followers.length}</Text>
                     </View>
                     </Link>
-                    <Link href={{pathname: redirectLink + "_follower", params: { userID: userID, whichTab: 1}}}>
+                    <Link href={{pathname: redirectLink + "_follower" as any, params: { userID: userID, whichTab: 1}}}>
                     <View style={styles.followContainer}>
                         <Text style={styles.follow}>Following</Text>
                         <Text style={styles.follow}>{following.length}</Text>

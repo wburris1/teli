@@ -130,7 +130,7 @@ const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
       }]}>
       <View style={[styles.postContainer, {borderColor: Colors[colorScheme ?? 'light'].gray}]} key={id}>
         <View style={{flexDirection: 'row', flex: 1,}}>
-          <Link href={{pathname: 'notification_user', params: { userID: noti.sender_id }}} asChild>
+          <Link href={{pathname: 'notification_user' as any, params: { userID: noti.sender_id }}} asChild>
               <TouchableOpacity>
                   <Image
                       source={{ uri: noti.profile_picture === "" ? undefined : noti.profile_picture }}
@@ -141,7 +141,7 @@ const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
             <View style={{flex: 1, alignItems: 'flex-start', paddingLeft: 7,}}>
                 <View style={{flexDirection: 'row', alignItems: 'flex-start',}}>
                     <Text numberOfLines={2} style={{fontSize: 17, marginBottom: 3, flex: 1, paddingRight: 15,}}>
-                      <Link href={{pathname: 'notification_user', params: { userID: noti.sender_id }}} asChild>
+                      <Link href={{pathname: 'notification_user' as any, params: { userID: noti.sender_id }}} asChild>
                         <TouchableOpacity>
                           <Text style={{fontWeight: '500',fontSize: homeFeedFontSize}}>{noti.sender_username}</Text>
                         </TouchableOpacity>

@@ -264,13 +264,13 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
                         backgroundColor: Colors[colorScheme ?? 'light'].background, borderBottomColor: Colors[colorScheme ?? 'light'].text,
                         paddingLeft: parentCommentID !== "" ? 55 : 0,
                     }]}>
-                        <Link href={{pathname: redirectLink + '_user', params: { userID: comment.user_id }}} asChild>
+                        <Link href={{pathname: redirectLink + '_user' as any, params: { userID: comment.user_id }}} asChild>
                           <TouchableOpacity onPress={onClose}>
                             <Image source={{ uri: comment.profile_picture }} style={styles.profilePic} />
                           </TouchableOpacity>
                         </Link>
                         <View style={{ flex: 1 }}>
-                          <Link href={{pathname: redirectLink + '_user', params: { userID: comment.user_id }}} asChild>
+                          <Link href={{pathname: redirectLink + '_user' as any, params: { userID: comment.user_id }}} asChild>
                             <TouchableOpacity onPress={onClose}>
                               <Text style={styles.name}>{comment.first_name} <Text style={styles.username}>@{comment.username}</Text></Text>
                             </TouchableOpacity>
