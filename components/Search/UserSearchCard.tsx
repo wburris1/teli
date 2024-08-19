@@ -8,7 +8,7 @@ export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData
   const renderItem = ({item, index}: {item: UserData, index: number}) => {
         return (
             <View key={item.user_id}>
-                <Link href={{pathname: redirectPath, params: { userID: item.user_id }}} asChild>
+                <Link href={{pathname: redirectPath as any, params: { userID: item.user_id }}} asChild>
                     <TouchableOpacity onPress={onClose} style={styles.userContainer}>
                         <Image
                             source={{ uri: item.profile_picture === '' ? undefined: item.profile_picture }}
