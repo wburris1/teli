@@ -14,18 +14,38 @@ import { AddList } from '@/components/AddList';
 import { UserList } from '@/components/UserList';
 import { List } from '@/constants/ImportTypes';
 import { HorizontalListWithRows } from '@/components/ListList';
+import { Timestamp } from 'firebase/firestore';
 
 export default function TabOneScreen() {
   const colorScheme = useColorScheme();
   const { refreshFlag, refreshListFlag, movieLists, tvLists } = useData();
   const { setActiveTab } = useTab();
 
-  var moviesTabContent = useCallback(() =>  
-    <HorizontalListWithRows lists={movieLists} listTypeID={Values.movieListsID} userID='' isListTab={true} numRows={2} />
-  , [refreshFlag, refreshListFlag, movieLists]);
+  var moviesTabContent = useCallback(() => {
+    movieLists.sort((a, b) => {
+      const dateA = (a.last_modified as Timestamp | undefined)?.toDate();
+      const dateB = (b.last_modified as Timestamp | undefined)?.toDate();
+      // Handle cases where dateA or dateB might be undefined
+      if (!dateA) return 1; // If dateA is undefined, consider it "less than" dateB
+      if (!dateB) return -1; // If dateB is undefined, consider it "greater than" dateA
 
-  var showsTabContent = useCallback(() => 
-    <HorizontalListWithRows lists={tvLists} listTypeID={Values.tvListsID} userID='' isListTab={true} numRows={2} />
+      return dateB.getTime() - dateA.getTime(); // Sort in descending order (most recent first)
+    }); 
+   return <HorizontalListWithRows lists={movieLists} listTypeID={Values.movieListsID} userID='' isListTab={true} numRows={2} />
+  }, [refreshFlag, refreshListFlag, movieLists]); // array used to be [refreshFlag, refreshListFlag, movieLists]
+
+  var showsTabContent = useCallback(() => {
+    tvLists.sort((a, b) => {
+      const dateA = (a.last_modified as Timestamp | undefined)?.toDate();
+      const dateB = (b.last_modified as Timestamp | undefined)?.toDate();
+      // Handle cases where dateA or dateB might be undefined
+      if (!dateA) return 1; // If dateA is undefined, consider it "less than" dateB
+      if (!dateB) return -1; // If dateB is undefined, consider it "greater than" dateA
+
+      return dateB.getTime() - dateA.getTime(); // Sort in descending order (most recent first)
+    }); 
+    return <HorizontalListWithRows lists={tvLists} listTypeID={Values.tvListsID} userID='' isListTab={true} numRows={2} />
+  }
   , [refreshFlag, refreshListFlag, tvLists]);
 
   const searchTabs = [

@@ -3,7 +3,7 @@ import Values from "@/constants/Values";
 import { useAuth } from "@/contexts/authContext";
 import { useData } from "@/contexts/dataContext";
 import { FIREBASE_DB } from "@/firebaseConfig";
-import { collection, doc, getDocs, limit, orderBy, query, updateDoc, where, writeBatch } from "firebase/firestore";
+import { collection, doc, getDocs, limit, orderBy, query, serverTimestamp, updateDoc, where, writeBatch } from "firebase/firestore";
 
 const db = FIREBASE_DB;
 
@@ -40,7 +40,8 @@ export const updateSomeListPosters = () => {
                 await updateDoc(listRef, {
                     top_poster_path: posters.top_poster_path,
                     second_poster_path: posters.second_poster_path,
-                    bottom_poster_path: posters.bottom_poster_path
+                    bottom_poster_path: posters.bottom_poster_path, 
+                    last_modified: serverTimestamp(),
                 });
                 requestListRefresh();
             } catch (err: any) {

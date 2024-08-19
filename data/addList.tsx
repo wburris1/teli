@@ -59,7 +59,7 @@ export const CreateListDB = () => {
             try {
                 const listRef = await addDoc(listsRef, list);
                 listID = listRef.id;
-                await updateDoc(listRef, { list_id: listRef.id });
+                await updateDoc(listRef, { list_id: listRef.id, last_modified: serverTimestamp() });
                 listAdded = true;
             } catch (err: any) {
                 console.error("Error creating new list: ", err);
@@ -151,6 +151,7 @@ export const editList = () => {
                 await updateDoc(listRef, {
                     name: name,
                     description: description,
+                    last_modified: serverTimestamp()
                 });
             } catch (err: any) {
                 console.error("Error updating list details: ", err);
