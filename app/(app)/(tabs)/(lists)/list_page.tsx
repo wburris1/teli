@@ -52,7 +52,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
     const onDelete = (item_id: string) => {
       const alertHeaderText = !isAll ? "Confirm Remove" : "Confirm Delete";
       const alertText = !isAll ? "Are you sure you want to remove this item from the list?" : 
-        "Are you sure you want to delete this item?";
+        "Deleting this item will remove it from all your lists. Are you sure you want to delete this item?";
       const alertButtonText = !isAll ? "Remove" : "Delete";
       Alert.alert(
         alertHeaderText,
