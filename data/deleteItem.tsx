@@ -21,8 +21,18 @@ export const useUserItemDelete = (post_id: string, item_id: string, score: numbe
             try {
                 const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);
                 await deleteDoc(itemRef);
-                const globalPostRef = doc(db, "globalPosts", post_id)
-                await deleteDoc(globalPostRef);
+
+                const globalPostsRef = collection(db, "globalPosts");
+                const deleteItemsQuery = query(globalPostsRef, 
+                  where("user_id", "==", user.uid), 
+                  where("item_id", "==", item_id), 
+                  where("score", "!=", -1)); // ensures we don't delete posts 
+                
+                const querySnapshot = await getDocs(deleteItemsQuery);
+                const deletePromises = querySnapshot.docs.map((docSnapshot) => {
+                  return deleteDoc(doc(db, "globalPosts", docSnapshot.id));
+                });
+                await Promise.all(deletePromises);
 
                 console.log(`Item ${item_id} deleted from all lists`);
                 console.log(`Item ${post_id} deleted from all globalPosts`);
