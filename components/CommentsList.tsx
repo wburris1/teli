@@ -87,9 +87,9 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
     const fetchReplies = useCallback(async (fetchNum: number) => {
         if (parentCommentID !== "") return;
         setLoadingReplies(true);
-        const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
+        const postRef = post.score >= 0 ? doc(db, "globalPosts", post.post_id) :
             (post.score == -2 ? doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
-                doc(db, "users", post.user_id, "posts", post.post_id));
+                doc(db, "globalPosts", post.post_id));
 
         const commentRef = doc(postRef, "comments", comment.id);
         const repliesRef = collection(commentRef, "replies");
@@ -179,9 +179,9 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
     const handleHeart = useCallback(async () => {
         if (!user || !comment.id) return;
 
-        const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
+        const postRef = post.score >= 0 ? doc(db, "globalPosts", post.post_id) :
             (post.score == -2 ? doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
-                doc(db, "users", post.user_id, "posts", post.post_id));
+                doc(db, "globalPosts", post.post_id));
 
         let commentRef = doc(postRef, "comments", comment.id);
 
@@ -211,9 +211,9 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
     const handleDelete = useCallback(async () => {
         if (comment && user && comment.id) {
             try {
-                const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
+                const postRef = post.score >= 0 ? doc(db, "globalPosts", post.post_id) :
                 (post.score == -2 ?  doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
-                    doc(db, "users", post.user_id, "posts", post.post_id));
+                    doc(db, "globalPosts", post.post_id));
                 
                 let commentRef = doc(postRef, "comments", comment.id);
 

@@ -113,9 +113,9 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
       setReplyUsername('');
       setReplyParentID('');
 
-      const postRef = post.score >= 0 ? doc(db, "users", post.user_id, post.list_type_id, Values.seenListID, "items", post.item_id) :
+      const postRef = post.score >= 0 ? doc(db, "globalPosts", post.post_id) :
         (post.score == -2 ?  doc(db, "users", post.user_id, post.list_type_id, Values.bookmarkListID, "items", post.item_id) :
-          doc(db, "users", post.user_id, "posts", post.post_id));
+          doc(db, "globalPosts", post.post_id));
       
       let commentRef = collection(postRef, "comments");
       let replyData;

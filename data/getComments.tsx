@@ -58,11 +58,11 @@ export const getComments = (post: FeedPost) => {
     let commentRef;
 
     if (post.score >= 0) {
-      commentRef = collection(db, 'users', post.user_id, post.list_type_id, Values.seenListID, 'items', post.item_id, 'comments');
+      commentRef = collection(db, 'globalPosts', post.post_id, 'comments');
     } else if (post.score === -2) {
       commentRef = collection(db, 'users', post.user_id, post.list_type_id, Values.bookmarkListID, 'items', post.item_id, 'comments');
     } else {
-      commentRef = collection(db, 'users', post.user_id, 'posts', post.post_id, 'comments');
+      commentRef = collection(db, 'globalPosts', post.post_id, 'comments');
     }
 
     const unsubscribe = async () => {
