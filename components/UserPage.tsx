@@ -7,7 +7,7 @@ import { useData } from '@/contexts/dataContext';
 import { Text, View } from '@/components/Themed';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
-import { Link, useLocalSearchParams, useNavigation } from 'expo-router';
+import { Link, useLocalSearchParams } from 'expo-router';
 import { FeedPost, List, Post } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { ProfilePost } from '@/components/Post';
@@ -24,6 +24,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import useModalState from './ModalState';
 import Toast from 'react-native-toast-message';
 import { HorizontalListWithRows } from './ListList';
+import { useNavigation } from '@react-navigation/native';
+import {RootStackParamList} from '@/constants/ImportTypes';
+import { ScreenNavigationProp } from '@/constants/ImportTypes';
 
 const db = FIREBASE_DB;
 
@@ -46,7 +49,6 @@ const emptyUser = {
 
 const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string}) => {
   const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes } = useModalState();
-
   const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [profileData, setProfileData] = useState<UserData>(emptyUser);
@@ -63,7 +65,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   const { refreshFlag, refreshListFlag } = useData();
   const [numMoviesRanked, setNumMoviesRanked] = useState(0);
   const [numTVRanked, setNumTVRanked] = useState(0);
-  const navigation = useNavigation();
+  const navigation = useNavigation<ScreenNavigationProp>();
   const colorScheme = useColorScheme();
   const followFunc = followUser();
   const unfollowFunc = unfollowUser();
@@ -371,6 +373,13 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
     },
   ];
 
+  const handleNavigate = (whichTab: number) => {
+    navigation.push((redirectLink + "_follower") as keyof RootStackParamList, {
+      userID: userID,
+      whichTab: whichTab,
+    });
+  };
+
   return (
     <View style={styles.container}>
       {completeReRender ? (
@@ -425,18 +434,18 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                             {isFollowing ? "Followed" : "Follow"}
                         </Text>
                     </TouchableOpacity>}
-                    <Link href={{pathname: redirectLink + "_follower" as any, params: { userID: userID, whichTab: 0}}}>
+                    <TouchableOpacity onPress={() => handleNavigate(0)}>
                     <View style={styles.followContainer}>
                         <Text style={styles.follow}>Followers</Text>
                         <Text style={styles.follow}>{followers.length}</Text>
                     </View>
-                    </Link>
-                    <Link href={{pathname: redirectLink + "_follower" as any, params: { userID: userID, whichTab: 1}}}>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleNavigate(1)}>
                     <View style={styles.followContainer}>
                         <Text style={styles.follow}>Following</Text>
                         <Text style={styles.follow}>{following.length}</Text>
                     </View>
-                    </Link>
+                    </TouchableOpacity>
                 </View>
             </View>
           </View>

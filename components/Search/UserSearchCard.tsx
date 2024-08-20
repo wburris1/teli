@@ -2,14 +2,21 @@ import { Link } from "expo-router"
 import { Text, View } from "../Themed"
 import { FlatList, Image, StyleSheet, TouchableOpacity } from "react-native"
 import React from "react"
+import { useNavigation } from '@react-navigation/native';
+import {RootStackParamList} from '@/constants/ImportTypes';
+import { ScreenNavigationProp } from "@/constants/ImportTypes";
 
 export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData[], redirectPath: string, onClose: () => void}) => {
-  
+  const navigation = useNavigation<ScreenNavigationProp>();
+  const handleUserPress = (userID: string) => {
+    onClose;
+    navigation.push(redirectPath as keyof RootStackParamList, { userID });
+  };
   const renderItem = ({item, index}: {item: UserData, index: number}) => {
         return (
             <View key={item.user_id}>
-                <Link href={{pathname: redirectPath as any, params: { userID: item.user_id }}} asChild>
-                    <TouchableOpacity onPress={onClose} style={styles.userContainer}>
+                <TouchableOpacity onPress={() => handleUserPress(item.user_id)} style={styles.userContainer}>
+                   
                         <Image
                             source={{ uri: item.profile_picture === '' ? undefined: item.profile_picture }}
                             style={styles.image}
@@ -18,8 +25,8 @@ export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData
                             <Text style={styles.name}>{item.first_name + " " + item.last_name}</Text>
                             <Text style={styles.username}>{item.username}</Text>
                         </View>
-                    </TouchableOpacity>
-                </Link>
+                   
+                </TouchableOpacity>
             </View>
         )
     }

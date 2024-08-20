@@ -1,5 +1,6 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { Timestamp } from "firebase/firestore";
+import { StackNavigationProp } from '@react-navigation/stack';
 
 export type Post = {
     post_id: string,
@@ -98,3 +99,16 @@ export type List = {
     bottom_poster_path: string,
     last_modified: Timestamp | FieldValue,
 }
+
+export type RootStackParamList = {
+  home_follower: { userID: string; whichTab: number };
+  profile_follower: { userID: string; whichTab: number };
+  search_follower: { userID: string; whichTab: number };
+  notification_follower: { userID: string; whichTab: number };
+  profile_user: { userID: string };
+  home_user: { userID: string };
+  notification_user: { userID: string };
+  search_user: { userID: string };
+};
+
+export type ScreenNavigationProp = StackNavigationProp<RootStackParamList>;

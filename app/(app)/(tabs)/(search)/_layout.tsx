@@ -13,7 +13,7 @@ export default function SearchLayout() {
                     backgroundColor: Colors[colorScheme ?? 'light'].background,
                 }
              }} />
-             <Stack.Screen name="search_user" options={{ headerBackTitle: "Search", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+             <Stack.Screen name="search_user" options={{ headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
                 headerStyle: {
                     backgroundColor: Colors[colorScheme ?? 'light'].background,
                 }

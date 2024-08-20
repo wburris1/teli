@@ -7,7 +7,7 @@ export default function UserPageScreen() {
   return (
     <>
         {userID as string && 
-            <UserPage userID={userID as string} redirectLink={'/home'} />
+            <UserPage userID={userID as string} redirectLink={'home'} />
         }
     </>
   );

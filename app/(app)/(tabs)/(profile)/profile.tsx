@@ -9,13 +9,15 @@ import { useData } from '@/contexts/dataContext';
 import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
-import { Link, useLocalSearchParams, useNavigation } from 'expo-router';
-import { Post } from '@/constants/ImportTypes';
+import { Link, useLocalSearchParams} from 'expo-router';
+import { Post, RootStackParamList } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { makeFeed } from '@/data/feedData';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import useModalState from '@/components/ModalState';
 import PostFeedWithModals from '@/components/PostFeedWithModals';
+import { useNavigation } from '@react-navigation/native';
+import { ScreenNavigationProp } from '@/constants/ImportTypes';
 
 const db = FIREBASE_DB;
 
@@ -50,7 +52,7 @@ const ProfilePage = () => {
   const { posts, loadMorePosts, isLoadingMore} = makeFeed(user ? user.uid : '', refreshing, setRefreshing);
   const [loading, setLoading] = useState(true);
   const { refreshFlag, refreshListFlag } = useData();
-  const navigation = useNavigation();
+  const navigation = useNavigation<ScreenNavigationProp>();
   const colorScheme = useColorScheme();
 
   const handleRefresh = () => {
@@ -182,6 +184,13 @@ const ProfilePage = () => {
     })
   })  
 
+  const handleNavigate = (whichTab: number) => {
+    navigation.push('profile_follower' as keyof RootStackParamList, {
+      userID: user ? user.uid : "",
+      whichTab: whichTab
+    });
+  };
+
   return (
     <View style={styles.container}>
       {userData && (
@@ -194,22 +203,22 @@ const ProfilePage = () => {
             />
           </View>
           <View style={{flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', padding: 10,}}>
-          <Link href={{pathname: "/profile_follower", params: { userID: user ? user.uid : "", whichTab: 0}}}>
+          <TouchableOpacity onPress={() => handleNavigate(0)}>
           <View style={styles.followContainer}>
             <View style={{flexDirection: 'column', alignItems: 'center'}}>
               <Text style={styles.follow}>Followers</Text>
               <Text style={styles.follow}>{followers.length}</Text>
               </View>
               </View>
-              </Link>
-              <Link href={{pathname: "/profile_follower", params: { userID: user ? user.uid : "", whichTab: 1}}}>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleNavigate(1)}>
                 <View style={styles.followContainer}>
                   <View style={{flexDirection: 'column', alignItems: 'center'}}>
                 <Text style={styles.follow}>Following</Text>
                 <Text style={styles.follow}>{following.length}</Text>
                 </View>
               </View>
-              </Link>
+              </TouchableOpacity>
           </View>
         </>
       )}

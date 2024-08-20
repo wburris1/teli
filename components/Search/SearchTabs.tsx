@@ -17,17 +17,10 @@ type Props = {
     index: number
 };
 
-const SearchTabs = ({ tabs, onTabChange, index }: Props) => {
+const SearchTabs = ({ tabs, onTabChange, index}: Props) => {
     const colorScheme = useColorScheme();
-    const [tabIndex, setTabIndex] = useState(0);
-    const [startingTab, setStartingTab] = useState(0);
+    const [tabIndex, setTabIndex] = useState(index);
     const indicatorPosition = useRef(new Animated.Value(0)).current;
-
-
-    if (index != tabIndex && index != startingTab){
-      setTabIndex(index);
-      setStartingTab(index);
-    }
 
     useEffect(() => {
         Animated.timing(indicatorPosition, {
