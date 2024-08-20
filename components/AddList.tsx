@@ -120,6 +120,7 @@ export const AddList = () => {
                             style={[styles.inputNameField,
                                 { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text,
                                     color: Colors[colorScheme ?? 'light'].text,
+                                    textAlignVertical: 'top',
                                  }]}
                         />
                         <TextInput
@@ -131,6 +132,7 @@ export const AddList = () => {
                             style={[styles.inputDescField,
                                 { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text,
                                     color: Colors[colorScheme ?? 'light'].text,
+                                    textAlignVertical: 'top',
                                  }]
                             }
                         />
