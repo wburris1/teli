@@ -6,7 +6,7 @@ import SearchTabs from '@/components/Search/SearchTabs';
 import { useItemSearch } from '@/data/itemData';
 import { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import _ from 'lodash';
+import _, { set } from 'lodash';
 import Colors from '@/constants/Colors';
 import { UsersListScreen } from '@/components/Search/UserSearchCard';
 import { collection, getDocs } from 'firebase/firestore';
@@ -19,7 +19,7 @@ import { useTab } from '@/contexts/listContext';
 //Time is too long to load
 
 
-const FollowersTabContent = ({ userID, query, redirectLink}: { userID: string, query: string, redirectLink: string }) => {
+const FollowersTabContent = ({ userID, query, redirectLink, followersData}: { userID: string, query: string, redirectLink: string, followersData: UserData[] }) => {
   const db = FIREBASE_DB;
   const { user } = useAuth();
   const [followers, setFollowers] = useState<UserData[]>([]);
@@ -28,25 +28,27 @@ const FollowersTabContent = ({ userID, query, redirectLink}: { userID: string, q
   const FOLLOWERS_PAGE_SIZE = 10;
 
     const fetchFollowersData = useCallback(async () => {
-      if (user) {
-        const fetchFollowerIDs = async () => {
-          const followersRef = collection(db, 'users', userID, 'followers');
-          const snapshot = await getDocs(followersRef);
-          return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()}));
-        };
-        const followersID = await fetchFollowerIDs();
-        const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
-        setAllFollowers(followersData);
-        const filteredFollowers = followersData.filter(user => {
-          return user.first_name.toLowerCase().startsWith(query.toLowerCase()) ||
-          user.last_name.toLowerCase().startsWith(query.toLowerCase()) || user.username.toLowerCase().startsWith(query.toLowerCase());
-        })
+      setAllFollowers(followersData);
+      // if (user) {
+      //   const fetchFollowerIDs = async () => {
+      //     const followersRef = collection(db, 'users', userID, 'followers');
+      //     const snapshot = await getDocs(followersRef);
+      //     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()}));
+      //   };
+      //   const followersID = await fetchFollowerIDs();
+      //   const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
+      //   setAllFollowers(followersData);
+      //   const filteredFollowers = followersData.filter(user => {
+      //     return user.first_name.toLowerCase().startsWith(query.toLowerCase()) ||
+      //     user.last_name.toLowerCase().startsWith(query.toLowerCase()) || user.username.toLowerCase().startsWith(query.toLowerCase());
+      //   })
 
-        setFollowers(filteredFollowers);
-      };
+      //   setFollowers(filteredFollowers);
+      // };
   }, [userID, user]);
 
   const filterFollowers = useCallback(() => {
+    setAllFollowers(followersData);
     const filteredFollowers = allFollowers.filter(user => {
       return user.first_name.toLowerCase().startsWith(query.toLowerCase()) ||
           user.last_name.toLowerCase().startsWith(query.toLowerCase()) || user.username.toLowerCase().startsWith(query.toLowerCase());
@@ -179,6 +181,25 @@ export default function FollowerModalScreen({ userID, redirectLink, whichTab}: {
   const [search , setSearch] = useState("");
   const [currentId , setCurrentId] = useState("");
   const { setActiveTab } = useTab();
+  const { user } = useAuth();
+  const db = FIREBASE_DB;
+  const [followers, setFollowers] = useState<UserData[]>([]);
+ const getFollowers = useCallback(async () => {
+ if (user) {
+   const fetchFollowerIDs = async () => {
+     const followersRef = collection(db, 'users', userID, 'followers');
+     const snapshot = await getDocs(followersRef);
+     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()}));
+   };
+   const followersID = await fetchFollowerIDs();
+   const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
+   setFollowers(followersData);
+ }}, [userID, user]);
+
+
+ useEffect(() => {
+   getFollowers();
+ }, [getFollowers]);
   if (currentId != userID){
     setCurrentId(userID);
     
@@ -188,6 +209,7 @@ export default function FollowerModalScreen({ userID, redirectLink, whichTab}: {
   userID= {userID as string} 
   query={search}
   redirectLink= {redirectLink}
+  followersData= {followers}
   />, [search, currentId]);
 
   const followingTabContent = useCallback(() =>
