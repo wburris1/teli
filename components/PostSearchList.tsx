@@ -32,12 +32,12 @@ export const NewPostSearchLists = ({ query, listTypeID, listID, onSelect }: { qu
             const globalItems = await useItemSearch(query, listTypeID == Values.movieListsID);
             setList(globalItems || []);
         }, 300),
-        []
+        [listTypeID]
     );
 
     useEffect(() => {
         getItemFunc(listID, listTypeID).then(items => setUserList(items));
-    }, [user, listID])
+    }, [user, listTypeID, listID])
 
     useEffect(() => {
         if (listID === "") {
@@ -49,7 +49,7 @@ export const NewPostSearchLists = ({ query, listTypeID, listID, onSelect }: { qu
             });
             setFilteredList(filtered);
         }
-    }, [query, debouncedFetchData, userList]);
+    }, [query, listTypeID, debouncedFetchData, userList]);
 
     const renderItem = ({ item, index }: { item: Item, index: number }) => {
         var title = "";

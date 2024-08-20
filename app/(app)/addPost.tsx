@@ -77,6 +77,17 @@ export default function NewPostScreen() {
    }
    const [aboutItem, setAboutItem] = useState<AboutItem>(emptyItem);
 
+   useEffect(() => {
+    if (tvListID !== movieListID) {
+    setTVListID(movieListID);
+    }
+   }, [movieListID])
+   useEffect(() => {
+    if (movieListID !== tvListID) {
+    setMovieListID(tvListID);
+    }
+   }, [tvListID])
+
    const moviesTabContent = useCallback(() => 
     <View>
       <View>
