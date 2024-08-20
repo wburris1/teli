@@ -118,36 +118,44 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
         <Pressable style={styles.overlay} onPress={onClose}>
             <Pressable style={[styles.tabContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text, borderBottomWidth: 0 }]} onPress={(e) => e.stopPropagation()}>
                 <View style={{width: '100%'}}>
-                    <TouchableOpacity onPress={onDelete}>
+                      <Pressable 
+                      onPress={() => {
+                        onDelete();
+                      }}
+                      style={getPressableStyle}
+                    >
                         <View style={[styles.tab, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
                             <Ionicons name="trash" size={30} color='red' style={styles.icon}/>
                             <Text style={[styles.tabTitle, {color: 'red'}]}>Delete List</Text>
                         </View>
-                    </TouchableOpacity>
+                      </Pressable>
                 </View>
                 <View style={{width: '100%'}}>
-                    <TouchableOpacity onPress={() => setEditModalVisible(true)}>
+                    <Pressable onPress={() => setEditModalVisible(true)}
+                    style={getPressableStyle}>
                         <View style={[styles.tab, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
                             <Ionicons name="pencil" size={30} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
                             <Text style={styles.tabTitle}>Edit Details</Text>
                         </View>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
                 <View style={{width: '100%'}}>
-                    <TouchableOpacity onPress={() => setAddModalVisible(true)}>
+                    <Pressable onPress={() => setAddModalVisible(true)}
+                    style={getPressableStyle}>
                         <View style={[styles.tab, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
                             <Ionicons name="add" size={35} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
                             <Text style={styles.tabTitle}>Add To List</Text>
                         </View>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
                 <View style={{width: '100%'}}>
-                    <TouchableOpacity onPress={onClose}>
+                    <Pressable onPress={onClose}
+                    style={getPressableStyle}>
                         <View style={[styles.tab, {borderBottomWidth: 0,}]}>
                             <Ionicons name="close" size={30} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
                             <Text style={styles.tabTitle}>Close</Text>
                         </View>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
             </Pressable>
         </Pressable>
@@ -167,16 +175,18 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
                         <View style={[styles.modalView, { backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
                             <View style={styles.headerContainer}>
                                 <Text style={[styles.headerText, { color: Colors[colorScheme ?? 'light'].text}]}>Edit List</Text>
-                                <TouchableOpacity onPress={() => {
+                                <Pressable onPress={() => {
                                     if (loading) return;
                                     setEditModalVisible(false);
-                                }}>
+                                    
+                                }}
+                                style={getPressableStyle}>
                                     <Ionicons
                                         name="close"
                                         size={35}
                                         color={Colors[colorScheme ?? 'light'].text}
                                     />
-                                </TouchableOpacity>
+                                </Pressable>
                             </View>
                             <TextInput
                                 autoCapitalize="sentences"
@@ -201,7 +211,7 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
                                 }
                             />
                             
-                            <TouchableOpacity onPress={() => {
+                            <Pressable onPress={() => {
                                     if (loading) return;
                                     if (isValidListName(newListName, listTypeID)) {
                                       setLoading(true);
@@ -212,13 +222,14 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
                                         setEditModalVisible(false);
                                       });
                                     }
-                                }}>
+                                }}
+                                style={getPressableStyle}>
                                 <Ionicons
                                     name="checkmark-circle"
                                     size={50}
                                     color={Colors[colorScheme ?? 'light'].text}
                                 />
-                            </TouchableOpacity>
+                            </Pressable>
                         </View>
                     </KeyboardAvoidingView>
                 </BlurView>
@@ -246,6 +257,9 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
     </Modal>
   );
 }
+const getPressableStyle = ({ pressed } : {pressed : boolean}) => ({
+  opacity: pressed ? 0.5 : 1.0,
+});
 
 const styles = StyleSheet.create({
     overlay: {
@@ -259,11 +273,11 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignItems: 'center',
         width: '100%',
-        marginTop: (Dimensions.screenHeight / 1.5) - 20,
+        marginTop: (Dimensions.screenHeight * .6452),
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         borderWidth: 0.5,
-        marginBottom: 20,
+        marginBottom: 0,
     },
     tab: {
         flexDirection: 'row',
