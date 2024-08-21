@@ -7,6 +7,7 @@ import { Text } from './Themed';
 import Colors from '@/constants/Colors';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { FIREBASE_STORAGE } from '@/firebaseConfig';
+import { useAuth } from '@/contexts/authContext';
 
 export const uploadImage = async (userID: string, image: string) => {
   if (!image) return '';
@@ -28,7 +29,9 @@ export const uploadImage = async (userID: string, image: string) => {
 }
 
 const ImageUploader = ({changeImage}: { changeImage: (imgUri: string) => void}) => {
-  const [image, setImage] = useState('');
+  const {userData} = useAuth()
+  const [image, setImage] = useState(userData?.profile_picture ?? '');
+  
   const colorScheme = useColorScheme();
 
   const pickImage = async () => {
@@ -85,7 +88,7 @@ const ImageUploader = ({changeImage}: { changeImage: (imgUri: string) => void}) 
             <TouchableOpacity onPress={pickImage}>
                 <View style={[styles.picButton, { backgroundColor: Colors[colorScheme ?? 'light'].text }]}>
                     <Ionicons name={image ? "person-circle" : "add"} size={25} color={Colors[colorScheme ?? 'light'].background}/>
-                    <Text style={[styles.picText, { color: Colors[colorScheme ?? 'light'].background }]}>{image ? "Change Picture" : "Add Picture"}</Text>
+                    <Text style={[styles.picText, { color: Colors[colorScheme ?? 'light'].background }]}>{image ? "Edit Picture" : "Add Picture"}</Text>
                 </View>
             </TouchableOpacity>
         </View>
