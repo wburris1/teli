@@ -1,4 +1,4 @@
-import { ActivityIndicator, FlatList, LayoutAnimation, RefreshControl, StyleSheet, useColorScheme } from 'react-native';
+import { ActivityIndicator, FlatList, LayoutAnimation, Platform, RefreshControl, StyleSheet, UIManager, useColorScheme } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import MovieScreen from '@/components/Search/SearchCard';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -11,6 +11,11 @@ import { FIREBASE_DB } from '@/firebaseConfig';
 import { useAuth } from '@/contexts/authContext';
 import { useData } from '@/contexts/dataContext';
 import { useLoading } from '@/contexts/loading';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export default function TabOneScreen() {
   const { loading, setLoading } = useLoading();

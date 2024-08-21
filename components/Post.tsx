@@ -2,12 +2,17 @@ import { Post } from "@/constants/ImportTypes";
 import { format } from "date-fns";
 import { Timestamp } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
-import { Animated, Image, LayoutAnimation, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
+import { Animated, Image, LayoutAnimation, Platform, Pressable, StyleSheet, TouchableOpacity, UIManager, useColorScheme } from "react-native";
 import { Text, View } from "./Themed";
 import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import Dimensions from "@/constants/Dimensions";
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 

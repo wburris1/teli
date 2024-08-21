@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from "react"
-import { Animated, LayoutAnimation, Pressable, StyleSheet, TextStyle, useColorScheme } from "react-native";
+import { Animated, LayoutAnimation, Platform, Pressable, StyleSheet, TextStyle, UIManager, useColorScheme } from "react-native";
 import { Text } from "../Themed";
 import { LinearGradient } from "expo-linear-gradient";
 import Colors from "@/constants/Colors";
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 export const ExpandableText = ({ text, maxHeight, textStyle }: { text: string, maxHeight: number, textStyle: TextStyle }) => {
     const [isExpanded, setIsExpanded] = useState(false);

@@ -6,9 +6,14 @@ import { FIREBASE_DB } from "@/firebaseConfig"
 import { DocumentSnapshot, collection, doc, getDoc, getDocs, limit, orderBy, query, startAfter, where } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import { fetchUserData } from "./getComments";
-import { LayoutAnimation } from "react-native";
+import { LayoutAnimation, Platform, UIManager } from "react-native";
 
 // TO DO IMPlement caching and smooth animation when adding posts. 
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const db = FIREBASE_DB;
 const userCache = new Map<string, UserData>(); // Cache to locally store many ppl's userData
