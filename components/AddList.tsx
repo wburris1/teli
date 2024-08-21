@@ -19,7 +19,7 @@ import { AddUnwatchedScreen } from "./AddUnwatched";
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
 
-export const AddList = () => {
+export const AddList = ({ watched }: { watched?: boolean }) => {
     const [listName, setListName] = useState("");
     const [listDescription, setListDescription] = useState("");
     const { activeTab, addModalVisible, setAddModalVisible } = useTab();
@@ -27,10 +27,14 @@ export const AddList = () => {
     const [entriesModalVisible, setEntriesModalVisible] = useState(false);
     const [selectedItems, setSelectedItems] = useState<UserItem[]>([]);
     const [selectedUnseen, setSelectedUnseen] = useState<Item[]>([]);
-    const [isRanked, setRanked] = useState(true);
+    const [isRanked, setRanked] = useState(watched ?? true);
     const createListFunc = CreateListDB();
     const colorScheme = useColorScheme();
     const [loading, setLoading] = useState(false);
+    
+    useEffect(() => {
+      setRanked(watched ?? true);
+    }, [addModalVisible]);
 
     useEffect(() => {
         setListTypeID(activeTab == 0 ? Values.movieListsID : Values.tvListsID);

@@ -173,7 +173,7 @@ export default function AddToListsScreen({item_id, item_name, newItem, listTypeI
             numColumns={1}
             />
           </View>
-          <AddList />
+          <AddList watched= {isWatched}/>
         </GestureHandlerRootView>
     );
 }
