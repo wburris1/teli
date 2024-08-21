@@ -12,6 +12,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useCallback, useState } from 'react';
 import { useData } from '@/contexts/dataContext';
 import { useLoading } from '@/contexts/loading';
+import { fetchUserData } from '@/data/getComments';
 
 
 type notiProps = {
@@ -21,6 +22,7 @@ type notiProps = {
 
 const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
   const { loading, setLoading } = useLoading();
+  const [profilePic, setProfilePicture] = useState(noti.profile_picture);
   const imgUrl = 'https://image.tmdb.org/t/p/w500';
   const homeFeedFontSize = 18
   const colorScheme = useColorScheme();
@@ -45,7 +47,7 @@ const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
       default:
         return " we defaulted";
     }
-  };  
+  };
   const transX = useSharedValue(0);
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -118,6 +120,16 @@ const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
       console.error("Error deleting notification: ", error);
     }
   }, [])
+
+  // if user changes their profile pic we need to fetch new one 
+  const handleImageLoadError = async () => {
+    const userData = await fetchUserData(noti.sender_id);
+    const newProfilePicture = userData.profile_picture;
+    if (newProfilePicture) {
+      setProfilePicture(newProfilePicture);
+      noti.profile_picture = newProfilePicture;
+    }
+  };
   
   return (
     <View>
@@ -133,8 +145,9 @@ const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
           <Link href={{pathname: 'notification_user' as any, params: { userID: noti.sender_id }}} asChild>
               <TouchableOpacity>
                   <Image
-                      source={{ uri: noti.profile_picture === "" ? undefined : noti.profile_picture }}
+                      source={{ uri: profilePic === "" ? undefined : profilePic }}
                       style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
+                      onError={handleImageLoadError} 
                   />
               </TouchableOpacity>
           </Link>
