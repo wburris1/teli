@@ -9,7 +9,7 @@ import { ScreenNavigationProp } from "@/constants/ImportTypes";
 export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData[], redirectPath: string, onClose: () => void}) => {
   const navigation = useNavigation<ScreenNavigationProp>();
   const handleUserPress = (userID: string) => {
-    onClose;
+    onClose();
     navigation.push(redirectPath as keyof RootStackParamList, { userID });
   };
   const renderItem = ({item, index}: {item: UserData, index: number}) => {

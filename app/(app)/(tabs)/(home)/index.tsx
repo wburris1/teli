@@ -30,7 +30,7 @@ export default function TabOneScreen() {
         handleLikes={handleLikes}
         setShowComments={setShowComments}
         setShowLikes={setShowLikes}
-        redirectLink='/home'
+        redirectLink='home'
         handleRefresh={handleRefresh}
         refreshing={refreshing}
         loadMorePosts={loadMorePosts}

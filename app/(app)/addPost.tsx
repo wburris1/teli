@@ -159,6 +159,7 @@ export default function NewPostScreen() {
             style={[styles.inputField,
                 { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text,
                     color: Colors[colorScheme ?? 'light'].text,
+                    textAlignVertical: 'top',
                 }]}
         />
         <View style={styles.switchContainer}>

@@ -233,7 +233,7 @@ const ProfilePage = () => {
         handleLikes={handleLikes}
         setShowComments={setShowComments}
         setShowLikes={setShowLikes}
-        redirectLink='/profile'
+        redirectLink='profile'
         handleRefresh={handleRefresh}
         refreshing={refreshing}
         loadMorePosts={loadMorePosts}
