@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import {RootStackParamList} from '@/constants/ImportTypes';
 import { ScreenNavigationProp } from "@/constants/ImportTypes";
 
-export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData[], redirectPath: string, onClose: () => void}) => {
+export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData[], redirectPath: string, onClose?: () => void}) => {
   const navigation = useNavigation<ScreenNavigationProp>();
   const handleUserPress = (userID: string) => {
     onClose();
@@ -18,8 +18,8 @@ export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData
                 <TouchableOpacity onPress={() => handleUserPress(item.user_id)} style={styles.userContainer}>
                    
                         <Image
-                            source={{ uri: item.profile_picture === '' ? undefined: item.profile_picture }}
-                            style={styles.image}
+                          source={{ uri: item.profile_picture || undefined, cache: 'force-cache' }}
+                          style={styles.image}
                         />
                         <View>
                             <Text style={styles.name}>{item.first_name + " " + item.last_name}</Text>
