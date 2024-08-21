@@ -62,22 +62,20 @@ export const AddList = () => {
             setLoading(false);
             if (complete == true) {
                 handleClose();
+                  Toast.show({
+                    type: 'info',
+                    text1: "Created New List",
+                    text2: "You created list '" + listName + "'",
+                    position: "bottom",
+                    visibilityTime: 3000,
+                    bottomOffset: 100
+                  });
             }
         })
       }
     }
 
     const handleClose = () => {
-      if (listName) {
-        Toast.show({
-          type: 'info',
-          text1: "Created New List",
-          text2: "You created list '" + listName + "'",
-          position: "bottom",
-          visibilityTime: 3000,
-          bottomOffset: 100
-        });
-      }
         setAddModalVisible(false);
         setSelectedItems([]);
         setSelectedUnseen([]);
