@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { Image, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import ItemScreen from '@/components/Search/SearchCard';
 import SearchInput from '@/components/Search/SearchInput';
@@ -85,12 +85,9 @@ const FollowersTabContent = ({ userID, query, redirectLink, followersData}: { us
     setLoading(false);
   };
 
-  
-
-
   return (
     <View style={{ flex: 1 }}>
-        <UsersListScreen users={followers} redirectPath={redirectLink + '_user'} />
+        <UsersListScreen users={query ? followers : followersData} redirectPath={redirectLink + '_user'} />
         {loading && <Text>Loading...</Text>}
         {followers.length == FOLLOWERS_PAGE_SIZE &&
         <TouchableOpacity onPress={loadMoreFollowers} disabled={loading}>
@@ -101,15 +98,16 @@ const FollowersTabContent = ({ userID, query, redirectLink, followersData}: { us
 }
 
 
-const FollowingTabContent = ({ userID, query, redirectLink }: { userID: string, query: string, redirectLink: string }) => {
+const FollowingTabContent = ({ userID, query, redirectLink, followingData}: { userID: string, query: string, redirectLink: string, followingData: UserData[] }) => {
   const db = FIREBASE_DB;
   const { user } = useAuth();
   const [following, setFollowing] = useState<UserData[]>([]);
   const [allFollowing, setAllFollowing] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(false);
   const FOLLOWERS_PAGE_SIZE = 10;
-    const fetchProfileData = useCallback(async () => {
-      if (user) {
+    const fetchFollowingData = useCallback(async () => {
+      setAllFollowing(followingData);
+      /* if (user) {
         const fetchFollowingIDs = async () => {
           const followingRef = collection(db, 'users', userID, 'following');
           const snapshot = await getDocs(followingRef);
@@ -123,10 +121,11 @@ const FollowingTabContent = ({ userID, query, redirectLink }: { userID: string, 
           user.last_name.toLowerCase().startsWith(query.toLowerCase()) || user.username.toLowerCase().startsWith(query.toLowerCase());
         });
         setFollowing(filteredFollowing);
-      }
+      } */
   }, [userID, user]);
 
   const filterFollowing = useCallback(() => {
+    setAllFollowing(followingData);
     const filteredFollowing = allFollowing.filter(user => {
       return user.first_name.toLowerCase().startsWith(query.toLowerCase()) ||
           user.last_name.toLowerCase().startsWith(query.toLowerCase()) || user.username.toLowerCase().startsWith(query.toLowerCase());
@@ -136,8 +135,8 @@ const FollowingTabContent = ({ userID, query, redirectLink }: { userID: string, 
   , [query, allFollowing]);
 
    useEffect(() => {
-    fetchProfileData();
-  }, [fetchProfileData]);
+    fetchFollowingData();
+  }, [fetchFollowingData]);
 
   useEffect(() => {
     filterFollowing();
@@ -164,7 +163,7 @@ const FollowingTabContent = ({ userID, query, redirectLink }: { userID: string, 
   };
   return (
     <View style={{ flex: 1 }}>
-        <UsersListScreen users={following} redirectPath={redirectLink + '_user'} />
+        <UsersListScreen users={query ? following : followingData} redirectPath={redirectLink + '_user'} />
         {loading && <Text>Loading...</Text>}
         {following.length == FOLLOWERS_PAGE_SIZE &&
         <TouchableOpacity onPress={loadMoreFollowing} disabled={loading}>
@@ -184,21 +183,33 @@ export default function FollowerModalScreen({ userID, redirectLink, whichTab}: {
   const { user } = useAuth();
   const db = FIREBASE_DB;
   const [followers, setFollowers] = useState<UserData[]>([]);
- const getFollowers = useCallback(async () => {
- if (user) {
-   const fetchFollowerIDs = async () => {
-     const followersRef = collection(db, 'users', userID, 'followers');
-     const snapshot = await getDocs(followersRef);
-     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()}));
-   };
-   const followersID = await fetchFollowerIDs();
-   const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
-   setFollowers(followersData);
- }}, [userID, user]);
+  const [following, setFollowing] = useState<UserData[]>([]);
+
+  const getFollowers = useCallback(async () => {
+  if (user) {
+    const fetchFollowerIDs = async () => {
+      const followersRef = collection(db, 'users', userID, 'followers');
+      const snapshot = await getDocs(followersRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()}));
+    };
+    const followersID = await fetchFollowerIDs();
+    const followersData = await Promise.all(followersID.map(follower => fetchUserData(follower.id)));
+    setFollowers(followersData);
+
+
+    const fetchFollowingIDs = async () => {
+      const followingRef = collection(db, 'users', userID, 'following');
+      const snapshot = await getDocs(followingRef);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()}));
+    };
+    const followingID = await fetchFollowingIDs();
+    const followingData = await Promise.all(followingID.map(follower => fetchUserData(follower.id)));
+    setFollowing(followingData);
+  }}, [userID, user]);
 
 
  useEffect(() => {
-   getFollowers();
+  getFollowers();
  }, [getFollowers]);
   if (currentId != userID){
     setCurrentId(userID);
@@ -210,14 +221,15 @@ export default function FollowerModalScreen({ userID, redirectLink, whichTab}: {
   query={search}
   redirectLink= {redirectLink}
   followersData= {followers}
-  />, [search, currentId]);
+  />, [search, currentId, followers]);
 
   const followingTabContent = useCallback(() =>
   <FollowingTabContent
   userID={userID as string}
   query={search}
   redirectLink= {redirectLink}
-  />, [search, currentId]);
+  followingData={following}
+  />, [search, currentId, following]);
 
 
   const followingTabs = [

@@ -78,11 +78,11 @@ export default function EditProfileScreen () {
             <KeyboardAvoidingView behavior='padding'>
                 <ImageUploader changeImage={setProfilePic} />
                 <TextInput autoCapitalize="none" placeholder="First name..." value={firstName} onChangeText={setFirstName}
-                style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray}]} />
+                style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray, color: Colors[colorScheme ?? 'light'].text,}]} />
                 <TextInput autoCapitalize="none" placeholder="Last name..." value={lastName} onChangeText={setLastName}
-                style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray}]} />
+                style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray, color: Colors[colorScheme ?? 'light'].text,}]} />
                 <TextInput autoCapitalize="none" placeholder="Username..." value={username} onChangeText={setUsername}
-                style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray}]} />
+                style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray, color: Colors[colorScheme ?? 'light'].text,}]} />
                 <TouchableOpacity onPress={() => setBioVisible(true)}>
                 <View style={[styles.bioButton, {borderColor: Colors[colorScheme ?? 'light'].gray}]}>
                     <Ionicons name={bio ? "pencil" : "add"} size={25} color={Colors[colorScheme ?? 'light'].text} />

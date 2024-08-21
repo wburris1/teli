@@ -18,8 +18,8 @@ export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData
                 <TouchableOpacity onPress={() => handleUserPress(item.user_id)} style={styles.userContainer}>
                    
                         <Image
-                            source={{ uri: item.profile_picture === '' ? undefined: item.profile_picture }}
-                            style={styles.image}
+                          source={{ uri: item.profile_picture || undefined, cache: 'force-cache' }}
+                          style={styles.image}
                         />
                         <View>
                             <Text style={styles.name}>{item.first_name + " " + item.last_name}</Text>
