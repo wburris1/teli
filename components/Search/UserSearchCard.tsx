@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import {RootStackParamList} from '@/constants/ImportTypes';
 import { ScreenNavigationProp } from "@/constants/ImportTypes";
 
-export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData[], redirectPath: string, onClose: () => void}) => {
+export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData[], redirectPath: string, onClose?: () => void}) => {
   const navigation = useNavigation<ScreenNavigationProp>();
   const handleUserPress = (userID: string) => {
     onClose;
