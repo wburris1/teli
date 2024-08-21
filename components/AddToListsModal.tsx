@@ -45,7 +45,11 @@ export default function AddToListsScreen({item_id, item_name, newItem, listTypeI
     const { loading, setLoading } = useLoading();
 
     useEffect(() => {
-      setSelectedLists(inLists);
+      const combinedLists = [...selectedLists, ...inLists];
+      const uniqueLists = combinedLists.filter((list, index, self) =>
+        index === self.findIndex((t) => t.list_id === list.list_id)
+      );
+      setSelectedLists(uniqueLists);
       setRemoveLists([]);
     }, [inLists])
 

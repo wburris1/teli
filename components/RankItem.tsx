@@ -324,6 +324,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
               setLowerScore(0);
               setSelectedPref("none");
               onClose();
+              setSelectedLists([]);
             }} style={styles.cancelButton}>
             <Ionicons
               name="close-circle"
