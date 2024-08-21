@@ -1,4 +1,4 @@
-import { ActivityIndicator, Image, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { ActivityIndicator, Image, LayoutAnimation, Platform, StyleSheet, TouchableOpacity, UIManager, useColorScheme } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import ItemScreen from '@/components/Search/SearchCard';
 import SearchInput from '@/components/Search/SearchInput';
@@ -15,6 +15,11 @@ import { useAuth } from '@/contexts/authContext';
 import { fetchUserData } from '@/data/getComments';
 import { useLocalSearchParams } from 'expo-router';
 import { useTab } from '@/contexts/listContext';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const useFetchFollowerFollowing = (userID: string) => {
   const db = FIREBASE_DB;
@@ -141,6 +146,7 @@ export default function FollowerModalScreen({ userID, redirectLink, whichTab}: {
       try {
         const { followers, following } = await fetchData();
         setLoading(false);
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setFollowers(followers);
         setFollowing(following);
       } catch (error) {
