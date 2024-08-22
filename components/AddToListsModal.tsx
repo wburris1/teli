@@ -39,6 +39,7 @@ type RowProps = {
 export default function AddToListsScreen({item_id, item_name, newItem, listTypeID, isRanking, onClose, onSelectedListsChange, isWatched}: ScreenProps) {
     const { inLists, outLists } = useGetItemLists(item_id, listTypeID, isWatched);
     const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item, setAddModalVisible } = useTab();
+    const [initialSelectedLists, setInitialSelectedLists] = useState<List[]>(selectedLists);
     const colorScheme = useColorScheme();
     const addToListsFunc = addAndRemoveItemFromLists();
     const { requestRefresh } = useData();
@@ -87,7 +88,13 @@ export default function AddToListsScreen({item_id, item_name, newItem, listTypeI
       )
     };
 
-    function resetAddLists() {
+    function handleCancel() {
+      setSelectedLists(initialSelectedLists);
+      setRemoveLists([]);
+    }
+
+    function handleYes() {
+      setInitialSelectedLists(selectedLists);
       setSelectedLists([]);
       setRemoveLists([]);
     }
@@ -99,7 +106,7 @@ export default function AddToListsScreen({item_id, item_name, newItem, listTypeI
                 <Pressable onPress={() => {
                   if (loading) return;
                   onClose();
-                  resetAddLists();
+                  handleCancel();
                 }}>
                 {({ pressed }) => (
                   <Ionicons
@@ -121,7 +128,7 @@ export default function AddToListsScreen({item_id, item_name, newItem, listTypeI
                     activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
                         requestRefresh();
                         setLoading(false);
-                        resetAddLists();
+                        handleYes();
                         onClose();
                     })
                   } else {

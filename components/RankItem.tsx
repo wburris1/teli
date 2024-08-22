@@ -63,9 +63,10 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   const [swiping, setSwiping] = useState(false);
   const [direction, setDirection] = useState(0);
   const [nextActive, setNextActive] = useState(false);
+  const {setSelectedLists} = useTab();
  
   //Variable for keeping track of the selected lists
-  const [selectedLists, setSelectedLists] = useState<List[]>(isMovie ? movieLists.filter(list => {
+  const [localSelectedLists, setLocalSelectedLists] = useState<List[]>(isMovie ? movieLists.filter(list => {
     if (movies) {
       const userItem = movies.find(movie => movie.item_id === item.id);
       if (userItem) {
@@ -92,7 +93,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   }
 
   const handleSelectedListsChange = (items: List[]) => {
-    setSelectedLists(items);
+    setLocalSelectedLists(items);
   };
 
   const getNext = (minScore: number, maxScore: number) => {
@@ -400,9 +401,9 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
                     }}>
                       <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
                         <Text>Add to lists...</Text>
-                        {selectedLists.length > 0 &&
+                        {localSelectedLists.length > 0 &&
                                 <Text style={{ color: Colors[colorScheme ?? 'light'].text }}>
-                                  {"Added to " + selectedLists.length}{selectedLists.length > 1 ? " lists" : " list"}</Text>
+                                  {"Added to " + localSelectedLists.length}{localSelectedLists.length > 1 ? " lists" : " list"}</Text>
                             }
                       </View>
                     </TouchableOpacity>
