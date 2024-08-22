@@ -7,6 +7,7 @@ import { DocumentSnapshot, collection, doc, getDoc, getDocs, limit, orderBy, que
 import { useEffect, useRef, useState } from "react";
 import { fetchUserData } from "./getComments";
 import { LayoutAnimation, Platform, UIManager } from "react-native";
+import { FetchFollowedUsers } from "@/components/Helpers/FetchFollowers";
 
 // TO DO IMPlement caching and smooth animation when adding posts. 
 
@@ -28,13 +29,6 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMorePost, setHasMorePost] = useState(true);
   const limitPosts = 5
-
-  const getFollowedUsers = async (): Promise<string[]> => {
-    if (!user) return [];
-    const followingCollectionRef = collection(db, 'users', user.uid, 'following');
-    const followingSnapshot = await getDocs(followingCollectionRef);
-    return followingSnapshot.docs.map((doc) => doc.id);
-  };
 
   const loadMorePosts = async () => {
     if (!isLoadingMore && hasMorePost) {
@@ -85,7 +79,7 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   const fetchFeed = async () => {
     if (user) {
       try {
-        const followedUsers = userID === 'Home' ? await getFollowedUsers() : [userID];
+        const followedUsers = userID === 'Home' ? await FetchFollowedUsers(user.uid) : [userID];
         const newPosts = await fetchPosts(followedUsers);
 
         if (refreshing) {

@@ -63,109 +63,6 @@ const ProfilePage = () => {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      if (user) {
-        try {
-          const fetchUserPosts = async () => {
-            const userDocRef = doc(db, 'users', user.uid);
-            const postsCollectionRef = collection(userDocRef, 'posts');
-            const postsQuery = query(postsCollectionRef);
-            const postsSnapshot = await getDocs(postsQuery);
-            return postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Post }));
-          };
-
-          const fetchMoviesSeen = async () => {
-            const userDocRef = doc(db, 'users', user.uid);
-            const seenMoviesRef = collection(userDocRef, Values.movieListsID, Values.seenListID, 'items');
-            const moviesSeenQuery = query(seenMoviesRef);
-            const moviesSeenSnapshot = await getDocs(moviesSeenQuery);
-            return moviesSeenSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Post }));
-          };
-
-          const fetchMoviesBookmarked = async () => {
-            const userDocRef = doc(db, 'users', user.uid);
-            const bookmarkedMoviesRef = collection(userDocRef, Values.movieListsID, Values.bookmarkListID, 'items');
-            const moviesBookmarkedQuery = query(bookmarkedMoviesRef);
-            const moviesBookmarkedSnapshot = await getDocs(moviesBookmarkedQuery);
-            return moviesBookmarkedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Post }));
-          };
-
-          const fetchTVSeen = async () => {
-            const userDocRef = doc(db, 'users', user.uid);
-            const seenTVRef = collection(userDocRef, Values.tvListsID, Values.seenListID, 'items');
-            const tvSeenQuery = query(seenTVRef);
-            const tvSeenSnapshot = await getDocs(tvSeenQuery);
-            return tvSeenSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Post }));
-          };
-
-          const fetchTVBookmarked = async () => {
-            const userDocRef = doc(db, 'users', user.uid);
-            const bookmarkedTVRef = collection(userDocRef, Values.tvListsID, Values.bookmarkListID, 'items');
-            const tvBookmarkedQuery = query(bookmarkedTVRef);
-            const tvBookmarkedSnapshot = await getDocs(tvBookmarkedQuery);
-            return tvBookmarkedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Post }));
-          };
-
-          const fetchFollowers = async () => {
-            const followersRef = collection(db, 'users', user.uid, 'followers');
-            const snapshot = await getDocs(followersRef);
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()}));
-          }
-
-          const fetchFollowing = async () => {
-            const followingRef = collection(db, 'users', user.uid, 'following');
-            const snapshot = await getDocs(followingRef);
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          }
-
-          // Run all operations concurrently
-          const [
-            postsData,
-            moviesSeenData,
-            moviesBookmarkedData,
-            tvSeenData,
-            tvBookmarkedData,
-            followersData,
-            followingData,
-          ] = await Promise.all([
-            fetchUserPosts(),
-            fetchMoviesSeen(),
-            fetchMoviesBookmarked(),
-            fetchTVSeen(),
-            fetchTVBookmarked(),
-            fetchFollowers(),
-            fetchFollowing(),
-          ]);
-
-          setFollowers(followersData);
-          setFollowing(followingData);
-          const combinedPosts = [
-            ...postsData,
-            ...moviesSeenData,
-            ...moviesBookmarkedData,
-            ...tvSeenData,
-            ...tvBookmarkedData
-          ];
-
-          combinedPosts.sort((a, b) => {
-            const dateA = a.created_at ? (a.created_at as any).toDate() : new Date();
-            const dateB = b.created_at ? (b.created_at as any).toDate() : new Date();
-            return dateB - dateA;
-          });
-
-          // setPosts(combinedPosts);
-        } catch (error) {
-          console.error("Error fetching profile data: ", error);
-        } finally {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchProfileData();
-  }, [user, refreshFlag, refreshListFlag]);
-
   useLayoutEffect(() => {
     navigation.setOptions({
       title: userData ? userData.first_name + " " + userData.last_name : '',
@@ -183,6 +80,12 @@ const ProfilePage = () => {
       },
     })
   })  
+  // Set loading to false once posts are loaded
+  useEffect(() => {
+    if (posts.length > 0) {
+      setLoading(false);
+    }
+  }, [posts]);
 
   const handleNavigate = (whichTab: number) => {
     navigation.push('profile_follower' as keyof RootStackParamList, {
@@ -222,23 +125,29 @@ const ProfilePage = () => {
           </View>
         </>
       )}
-      
-      <PostFeedWithModals
-        posts={posts}
-        loading={loading}
-        post={post}
-        showComments={showComments}
-        showLikes={showLikes}
-        handleComments={handleComments}
-        handleLikes={handleLikes}
-        setShowComments={setShowComments}
-        setShowLikes={setShowLikes}
-        redirectLink='profile'
-        handleRefresh={handleRefresh}
-        refreshing={refreshing}
-        loadMorePosts={loadMorePosts}
-        isLoadingMore={isLoadingMore}
-      />
+      {loading ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : (
+        <>
+          <PostFeedWithModals
+          posts={posts}
+          loading={loading}
+          post={post}
+          showComments={showComments}
+          showLikes={showLikes}
+          handleComments={handleComments}
+          handleLikes={handleLikes}
+          setShowComments={setShowComments}
+          setShowLikes={setShowLikes}
+          redirectLink='profile'
+          handleRefresh={handleRefresh}
+          refreshing={refreshing}
+          loadMorePosts={loadMorePosts}
+          isLoadingMore={isLoadingMore}/>
+        </>
+      )}
     </View>
   );
 };
