@@ -23,6 +23,9 @@ import { HorizontalListWithRows } from './ListList';
 import { useNavigation } from '@react-navigation/native';
 import {RootStackParamList} from '@/constants/ImportTypes';
 import { ScreenNavigationProp } from '@/constants/ImportTypes';
+import { fetchUserData } from '@/data/getComments';
+import { FetchFollowers, FetchFollowing, FetchMovieLists, FetchTVLists } from './Helpers/FetchFunctions';
+import PostFeedWithModals from './PostFeedWithModals';
 
 const db = FIREBASE_DB;
 
@@ -48,19 +51,17 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [profileData, setProfileData] = useState<UserData>(emptyUser);
-  const [followers, setFollowers] = useState<{ id: string }[]>([]);
-  const [following, setFollowing] = useState<{ id: string }[]>([]);
+  const [followers, setFollowers] = useState<string[]>([]);
+  const [following, setFollowing] = useState<string[]>([])
   const [refreshing, setRefreshing] = useState(false);
 
-  const { posts } = makeFeed(userID, refreshing, setRefreshing);
+  const { posts, loadMorePosts, isLoadingMore } = makeFeed(userID, refreshing, setRefreshing);
 
   const [movieLists, setMovieLists] = useState<List[]>([]);
   const [tvLists, setTVLists] = useState<List[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMovies, setIsMovies] = useState(true);
   const { refreshFlag, refreshListFlag } = useData();
-  const [numMoviesRanked, setNumMoviesRanked] = useState(0);
-  const [numTVRanked, setNumTVRanked] = useState(0);
   const navigation = useNavigation<ScreenNavigationProp>();
   const colorScheme = useColorScheme();
   const followFunc = followUser();
@@ -135,103 +136,19 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
     const fetchProfileData = async () => {
       if (userID) {
         try {
-          const fetchUserProfile = async () => {
-            const userDocRef = doc(db, 'users', userID);
-            const userDoc = await getDoc(userDocRef);
-            return userDoc.data() as UserData;
-          };
-
-          const fetchUserPosts = async () => {
-            const userDocRef = doc(db, 'users', userID);
-            const postsCollectionRef = collection(userDocRef, 'posts');
-            const postsQuery = query(postsCollectionRef);
-            const postsSnapshot = await getDocs(postsQuery);
-            return postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Post }));
-          };
-
-          const fetchMoviesSeen = async () => {
-            const userDocRef = doc(db, 'users', userID);
-            const seenMoviesRef = collection(userDocRef, Values.movieListsID, Values.seenListID, 'items');
-            const moviesSeenQuery = query(seenMoviesRef);
-            const moviesSeenSnapshot = await getDocs(moviesSeenQuery);
-            return moviesSeenSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Post }));
-          };
-
-          const fetchMoviesBookmarked = async () => {
-            const userDocRef = doc(db, 'users', userID);
-            const bookmarkedMoviesRef = collection(userDocRef, Values.movieListsID, Values.bookmarkListID, 'items');
-            const moviesBookmarkedQuery = query(bookmarkedMoviesRef);
-            const moviesBookmarkedSnapshot = await getDocs(moviesBookmarkedQuery);
-            return moviesBookmarkedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Post }));
-          };
-
-          const fetchTVSeen = async () => {
-            const userDocRef = doc(db, 'users', userID);
-            const seenTVRef = collection(userDocRef, Values.tvListsID, Values.seenListID, 'items');
-            const tvSeenQuery = query(seenTVRef);
-            const tvSeenSnapshot = await getDocs(tvSeenQuery);
-            return tvSeenSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Post }));
-          };
-
-          const fetchTVBookmarked = async () => {
-            const userDocRef = doc(db, 'users', userID);
-            const bookmarkedTVRef = collection(userDocRef, Values.tvListsID, Values.bookmarkListID, 'items');
-            const tvBookmarkedQuery = query(bookmarkedTVRef);
-            const tvBookmarkedSnapshot = await getDocs(tvBookmarkedQuery);
-            return tvBookmarkedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Post }));
-          };
-
-          const fetchMovieLists = async () => {
-            const userDocRef = doc(db, 'users', userID);
-            const movieListsRef = collection(userDocRef, Values.movieListsID);
-            const movieListsQuery = query(movieListsRef);
-            const snapshot = await getDocs(movieListsQuery);
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));
-          }
-
-          const fetchTVLists = async () => {
-            const userDocRef = doc(db, 'users', userID);
-            const tvListsRef = collection(userDocRef, Values.tvListsID);
-            const tvListsQuery = query(tvListsRef);
-            const snapshot = await getDocs(tvListsQuery);
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));
-          }
-
-          const fetchFollowers = async () => {
-            const followersRef = collection(db, 'users', userID, 'followers');
-            const snapshot = await getDocs(followersRef);
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          }
-
-          const fetchFollowing = async () => {
-            const followingRef = collection(db, 'users', userID, 'following');
-            const snapshot = await getDocs(followingRef);
-            return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          }
-
           // Run all operations concurrently
           const [
             userData,
-            postsData,
-            moviesSeenData,
-            moviesBookmarkedData,
-            tvSeenData,
-            tvBookmarkedData,
             movieListsData,
             tvListsData,
             followersData,
             followingData,
           ] = await Promise.all([
-            fetchUserProfile(),
-            fetchUserPosts(),
-            fetchMoviesSeen(),
-            fetchMoviesBookmarked(),
-            fetchTVSeen(),
-            fetchTVBookmarked(),
-            fetchMovieLists(),
-            fetchTVLists(),
-            fetchFollowers(),
-            fetchFollowing(),
+            fetchUserData(userID),
+            FetchMovieLists(userID),
+            FetchTVLists(userID),
+            FetchFollowers(userID),
+            FetchFollowing(userID),
           ]);
 
           const reorderedTVLists = reorderData(tvListsData, Values.seenListID, Values.bookmarkListID);
@@ -241,23 +158,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
           setFollowing(followingData);
           setMovieLists(reorderedMovieLists);
           setTVLists(reorderedTVLists);
-          setNumMoviesRanked(movieListsData.length);
-          setNumTVRanked(tvListsData.length);
-          const combinedPosts = [
-            ...postsData,
-            ...moviesSeenData,
-            ...moviesBookmarkedData,
-            ...tvSeenData,
-            ...tvBookmarkedData
-          ];
 
-          combinedPosts.sort((a, b) => {
-            const dateA = (a.created_at as any).toDate();
-            const dateB = (b.created_at as any).toDate();
-            return dateB - dateA;
-          });
-
-          // setPosts(combinedPosts);
           setLoading(false);
         } catch (error) {
           console.error("Error fetching profile data: ", error);
@@ -287,7 +188,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
     setLoading(true);
     if (isFollowing) {
         unfollowFunc(userID).then(() => {
-          const newFollowers = followers.filter(follower => follower.id !== (user?.uid || ''));
+          const newFollowers = followers.filter(id => id !== (user?.uid || ''));
           setFollowers(newFollowers);
           setIsFollowing(false);
           requestRefresh();
@@ -303,7 +204,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
         })
       } else {
         followFunc(userID, profileData.userPushToken).then(() => {
-          const newFollowers = [...followers, { id: user?.uid || ''}];
+          const newFollowers = [...followers, user?.uid || ''];
           setFollowers(newFollowers);
             setIsFollowing(true);
             requestRefresh();
@@ -324,19 +225,22 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   };
 
   const activityTabContent = useCallback(() => 
-    <GestureHandlerRootView style={{width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
-      <>
-          <FlatList
-            data={posts}
-            keyExtractor={(item) => item.post_id}
-            renderItem={({item, index}) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink={redirectLink} />}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-          />
-          <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink='/user'/>
-          <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink='/user'/>
-      </>
-    </GestureHandlerRootView>
-  , [refreshFlag, posts, refreshing, loading, showLikes, showComments, post]);
+    <PostFeedWithModals
+          posts={posts}
+          loading={loading}
+          post={post}
+          showComments={showComments}
+          showLikes={showLikes}
+          handleComments={handleComments}
+          handleLikes={handleLikes}
+          setShowComments={setShowComments}
+          setShowLikes={setShowLikes}
+          redirectLink='profile'
+          handleRefresh={handleRefresh}
+          refreshing={refreshing}
+          loadMorePosts={loadMorePosts}
+          isLoadingMore={isLoadingMore}/>
+  , [refreshFlag, posts, refreshing, loading, showLikes, showComments, post, isLoadingMore]);
 
   const listsTabContent = useCallback(() => 
     <>
