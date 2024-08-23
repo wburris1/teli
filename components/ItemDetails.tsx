@@ -12,10 +12,11 @@ import { useData } from '@/contexts/dataContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { addToBookmarked } from '@/data/addItem';
 import { removeFromList } from '@/data/deleteItem';
-import { UserItem } from '@/constants/ImportTypes';
+import { CastMember, UserItem } from '@/constants/ImportTypes';
 import { ExpandableText } from './AnimatedViews.tsx/ExpandableText';
 import AddToListsScreen from './AddToListsModal';
 import Toast from 'react-native-toast-message';
+import { CastList } from './CastList';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -23,9 +24,10 @@ const screenHeight = Dimensions.screenHeight;
 
 type Props = {
     item: Item
+    cast: CastMember[]
 };
 
-const ItemDetails = ({item}: Props) => {
+const ItemDetails = ({item, cast}: Props) => {
     const isMovie = 'title' in item ? true : false;
     const listID = Values.seenListID;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
@@ -203,12 +205,21 @@ const ItemDetails = ({item}: Props) => {
                         </View>
                     ))}
                 </View>
+                <View style={styles.castContainer}>
+                  <Text style={styles.castText}>Cast</Text>
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={{flexDirection: 'row'}}>
+                  {cast.map((row, rowIndex) => (
+                    <CastList key={rowIndex} cast={row} />
+                  ))}
+                  </View>
+                </ScrollView>
                 <Modal
-                    animationType="fade"
-                    transparent={true}
-                    visible={rankVisible}
-                    onRequestClose={() => setRankVisible(false)}
-                >
+                  animationType="fade"
+                  transparent={true}
+                  visible={rankVisible}
+                  onRequestClose={() => setRankVisible(false)}>
                     <Rank item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} />
                 </Modal>
             </View>
@@ -216,7 +227,7 @@ const ItemDetails = ({item}: Props) => {
         {listsModal()}
         </>
     )
-};
+}; 
 
 const styles = StyleSheet.create({
     container: {
@@ -311,7 +322,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: screenWidth,
         alignItems: 'center',
-        padding: 5,
+        paddingLeft: 5
     },
     genreButton: {
         borderRadius: 50,
@@ -328,6 +339,17 @@ const styles = StyleSheet.create({
       paddingVertical: 5,
       marginLeft: 5,
   },
+  castContainer: {
+    flexDirection: 'row',
+    width: screenWidth,
+    alignItems: 'center',
+  },
+  castText: {
+      textAlign: 'left',
+      fontSize: screenWidth > 400 ? 24 : 20,
+      fontWeight: 'bold', 
+      paddingLeft: 10, // Ensure padding on the left to align with the rest of the content
+  }
 });
 
 export default ItemDetails;

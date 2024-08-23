@@ -99,6 +99,12 @@ export type List = {
     bottom_poster_path: string,
     last_modified: Timestamp | FieldValue,
 }
+export type CastMember = {
+  name: string,
+  popularity: number,
+  profile_path: string, 
+  character: string,
+} 
 
 export type RootStackParamList = {
   home_follower: { userID: string; whichTab: number };

@@ -1,4 +1,4 @@
-import { useLoading } from '@/contexts/loading';
+import { CastMember } from '@/constants/ImportTypes';
 import React, { useEffect, useState } from 'react'
 
 const tmdbKey = "0d2333678b1855f85120aecc3077e72d";
@@ -24,10 +24,33 @@ export const useItemSearch = async (query: string, isMovie: boolean): Promise<It
 
 export const useItemDetails = (id: string, isMovie: boolean) => {
     const [item, setItem] = useState<Item>();
+    const [cast, setCast] = useState<CastMember[]>([]);
 
     const baseUrl = isMovie ? movieDetailsUrl : tvDetailsUrl;
     const fetchUrl = baseUrl + id + "?api_key=" + tmdbKey;
 
+    const castURL = `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}/${isMovie ? 'credits' : 'aggregate_credits'}?api_key=${tmdbKey}`;
+
+    const getCast = () => {
+      fetch(isMovie? castURL : castURL)
+        .then(res => res.json())
+        .then(json => {
+          const actorsArray = json.cast
+          //.sort((a: CastMember, b: CastMember) => b.popularity - a.popularity) // Sort by popularity (descending)
+          .slice(0, 20) // Get the first 20 actors
+          .map((actor: any) => ({
+              name: actor.name,
+              popularity: actor.popularity,
+              profile_path: actor.profile_path,
+              character: isMovie ? actor.character // For movies, use the character directly
+              : actor.roles && actor.roles.length > 0 ? actor.roles[0].character
+              : '' // Fallback in case roles are empty or undefined
+            
+          } as CastMember));
+          setCast(actorsArray)
+        })
+        .catch(error => console.error('Error:', error));
+    }
     const getItem = () => {
         fetch(fetchUrl)
         .then(res=>res.json())
@@ -35,11 +58,10 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
             setItem(json);
         })
     }
-
     useEffect(() => {
         getItem();
+        getCast();
     }, [id]);
 
-
-    return item as Item;
+    return {item: item as Item, cast};
 };
