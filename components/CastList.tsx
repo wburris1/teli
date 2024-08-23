@@ -6,7 +6,6 @@ import Colors from "@/constants/Colors"
 
 
 const screenWidth = Dimensions.screenWidth
-console.log(screenWidth)
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const itemWidth = (Dimensions.screenWidth / 3) - 20;
 
