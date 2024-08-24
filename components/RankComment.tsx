@@ -51,6 +51,8 @@ export const CommentModalScreen = ({ onClose, onSave }: ScreenProps) => {
                 style={[styles.inputField,
                     { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text,
                         color: Colors[colorScheme ?? 'light'].text,
+                        textAlignVertical: 'top',
+                        
                     }]}
             />
         </View>

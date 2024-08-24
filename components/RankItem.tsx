@@ -127,6 +127,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
         onClose();
         requestRefresh();
         console.log("Item added!");
+        setSelectedLists([]);
         Toast.show({
           type: 'info',
           text1: toastText1,
@@ -152,6 +153,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
         requestRefresh();
         setSwipingAway(false);
         console.log("Item added! No score adjust necessary");
+        setSelectedLists([]);
         Toast.show({
           type: 'info',
           text1: toastText1,
@@ -187,6 +189,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
             requestRefresh();
             setSwipingAway(false);
             console.log("Item added!");
+            setSelectedLists([]);
             Toast.show({
               type: 'info',
               text1: toastText1,

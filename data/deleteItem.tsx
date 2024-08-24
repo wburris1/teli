@@ -10,13 +10,13 @@ import Values from "@/constants/Values";
 const db = FIREBASE_DB;
 
 // Deletes watched item from all watched lists
-export const useUserItemDelete = (post_id: string, item_id: string, score: number, listID: string, listTypeID: string) => {
+export const useUserItemDelete = () => {
     const { user } = useAuth();
     const adjustScoreFunc = useUserAdjustScores();
     const updateListFunc = UpdateListPosters();
     const { requestListRefresh } = useData();
 
-    async function deleteItem() {
+    async function deleteItem(post_id: string, item_id: string, score: number, listID: string, listTypeID: string) {
         if (user) {
             try {
                 const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);
@@ -43,8 +43,8 @@ export const useUserItemDelete = (post_id: string, item_id: string, score: numbe
         }
     };
 
-    function reactToDelete(items: UserItem[]) {
-        deleteItem().then(() => {
+    function reactToDelete(items: UserItem[], post_id: string, item_id: string, score: number, listID: string, listTypeID: string) {
+        deleteItem(post_id, item_id, score, listID, listTypeID).then(() => {
             requestListRefresh();
             adjustScoreFunc(items, score, listID, listTypeID);
         })
@@ -57,7 +57,6 @@ export const useUserItemDelete = (post_id: string, item_id: string, score: numbe
 export const removeFromList = () => {
     const { user } = useAuth();
     const updatePosterFunc = updateSomeListPosters();
-
     async function removeItem(listID: string, listTypeID: string, item_id: string) {
         if (user) {
             const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);  

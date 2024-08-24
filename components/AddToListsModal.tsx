@@ -12,7 +12,7 @@ import { addAndRemoveItemFromLists, useGetItemLists } from '@/data/addToList';
 import { Text, View } from './Themed';
 import { AddList } from './AddList';
 import { useLoading } from '@/contexts/loading';
-import { List } from '@/constants/ImportTypes';
+import { List, UserItem } from '@/constants/ImportTypes';
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
@@ -26,6 +26,7 @@ type ScreenProps = {
     onClose: () => void;
     onSelectedListsChange: (items: List[], removedItems: List[]) => void;
     isWatched: boolean,
+    items ?: UserItem[]
 }
 
 type RowProps = {
@@ -36,7 +37,7 @@ type RowProps = {
   isSelected: boolean;
 };
 
-export default function AddToListsScreen({item_id, item_name, newItem, listTypeID, isRanking, onClose, onSelectedListsChange, isWatched}: ScreenProps) {
+export default function AddToListsScreen({item_id, item_name, newItem, listTypeID, isRanking, onClose, onSelectedListsChange, isWatched, items}: ScreenProps) {
     const { inLists, outLists } = useGetItemLists(item_id, listTypeID, isWatched);
     const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item, setAddModalVisible } = useTab();
     const [initialSelectedLists, setInitialSelectedLists] = useState<List[]>(selectedLists);
@@ -121,18 +122,35 @@ export default function AddToListsScreen({item_id, item_name, newItem, listTypeI
                 <Pressable onPress={() => {
                   if (!loading) {
                     onSelectedListsChange(selectedLists, removeLists);
-                  }
-                  if (!isRanking && !loading) {
-                    setLoading(true);
-                    addToListsFunc(item_id, item_name, newItem, selectedLists, removeLists,
-                    activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
-                        requestRefresh();
-                        setLoading(false);
-                        handleYes();
-                        onClose();
-                    })
-                  } else {
+                    if (!isRanking && !loading) {
+                      setLoading(true);
+                  
+                      if (!items) {
+                        // Single item processing
+                        addToListsFunc(item_id, item_name, newItem, selectedLists, removeLists,
+                          activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
+                            requestRefresh();
+                            setLoading(false);
+                            handleYes();
+                            onClose();
+                          });
+                      } else {
+                        // Multiple items processing
+                        const promises = items.map((item) => {
+                          return addToListsFunc(item.item_id, item.item_name, newItem, selectedLists, [],
+                            activeTab == 0 ? Values.movieListsID : Values.tvListsID);
+                        });
+                  
+                        Promise.all(promises).then(() => {
+                          requestRefresh();
+                          setLoading(false);
+                          handleYes();
+                          onClose();
+                        });
+                      }
+                    } else {
                       onClose();
+                    }
                   }
                 }}>
                 {({ pressed }) => (

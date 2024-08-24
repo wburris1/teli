@@ -91,17 +91,36 @@ export const addAndRemoveItemFromLists = () => {
                     const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);
                     await setDoc(itemRef, itemData);
                 } else {
-                    const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);
-                    let newLists = addLists.length > 0 && addLists[0].is_ranked ? 
-                        [Values.seenListID, ...addLists.map(addList => addList.list_id)] :
-                        [...addLists.map(addList => addList.list_id)];
-                    if (addLists.length == 0 && removeLists.length == 0) return;
-                    if (removeLists.length > 0 && addLists.length == 0) {
-                        newLists = removeLists[0].is_ranked ? [Values.seenListID] : [];
-                    }
-                    await updateDoc(itemRef, {
-                        lists: newLists
-                    })
+                  const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);
+                  if (addLists.length > 0 || removeLists.length > 0) {
+                      const existingDoc = await getDoc(itemRef);
+                      const existingLists = existingDoc.exists() ? existingDoc.data().lists || [] : [];
+                      const removeListIDs = new Set(removeLists.map(list => list.list_id));
+                      let newLists = existingLists.filter((list: string) => !removeListIDs.has(list));
+
+                      if (addLists.length > 0) {
+                          const addListIDs = addLists.map(addList => addList.list_id);
+                          if (addLists[0].is_ranked) {
+                              newLists = [Values.seenListID, ...addListIDs, ...newLists];
+                          } else {
+                              newLists = [...addListIDs, ...newLists];
+                          }
+                      } else if (removeLists.length > 0 && addLists.length === 0) {
+                          newLists = removeLists[0].is_ranked ? [Values.seenListID] : [];
+                      }
+                      if (existingLists.sort().join(',') !== newLists.sort().join(',')) {
+                          try {
+                              await updateDoc(itemRef, { lists: newLists });
+                              console.log('Document successfully updated.');
+                          } catch (error) {
+                              console.error('Error updating document: ', error);
+                          }
+                      } else {
+                          console.log('No changes detected, skipping update.');
+                      }
+                  } else {
+                      console.log('No lists to add or remove, operation skipped.');
+                  }
                 }
                 setSelectedLists([]);
                 setRemoveLists([]);
