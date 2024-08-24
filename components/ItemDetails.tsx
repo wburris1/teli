@@ -17,6 +17,8 @@ import { ExpandableText } from './AnimatedViews.tsx/ExpandableText';
 import AddToListsScreen from './AddToListsModal';
 import Toast from 'react-native-toast-message';
 import { CastList } from './CastList';
+import { DisplayItemInfo } from './DisplayItemInfo';
+import { Reccomendation } from './Reccomendation';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -25,9 +27,11 @@ const screenHeight = Dimensions.screenHeight;
 type Props = {
     item: Item
     cast: CastMember[]
+    reccomendations: Item[]
+    redirectLink: string
 };
 
-const ItemDetails = ({item, cast}: Props) => {
+const ItemDetails = ({item, cast, reccomendations, redirectLink}: Props) => {
     const isMovie = 'title' in item ? true : false;
     const listID = Values.seenListID;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
@@ -204,7 +208,10 @@ const ItemDetails = ({item, cast}: Props) => {
                             <Text>{genre.name}</Text>
                         </View>
                     ))}
-                </View>
+                </View> 
+                {false && 
+                <DisplayItemInfo item={item}></DisplayItemInfo>
+                }
                 <View style={styles.castContainer}>
                   <Text style={styles.castText}>Cast</Text>
                 </View>
@@ -212,6 +219,17 @@ const ItemDetails = ({item, cast}: Props) => {
                   <View style={{flexDirection: 'row'}}>
                   {cast.map((row, rowIndex) => (
                     <CastList key={rowIndex} cast={row} />
+                  ))}
+                  </View>
+                </ScrollView>
+                <View style={styles.castContainer}>
+                  <Text style={styles.castText}>More Like This</Text>
+                </View>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={{flexDirection: 'row'}}>
+                  {reccomendations.map((item, rowIndex) => (
+                    <Reccomendation key={rowIndex} item={item} redirectLink={redirectLink} />
                   ))}
                   </View>
                 </ScrollView>

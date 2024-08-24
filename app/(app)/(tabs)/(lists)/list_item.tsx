@@ -5,12 +5,12 @@ import { useItemDetails } from "@/data/itemData";
 
 export default function ItemPage() {
   const { id, groupKey } = useLocalSearchParams();
-  const {item, cast} = useItemDetails(id as string, groupKey == "movie");
+  const {item, cast, reccomendations} = useItemDetails(id as string, groupKey == "movie");
 
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
       {item &&
-      <ItemDetails item={item} cast={cast} />}
+      <ItemDetails item={item} cast={cast} reccomendations={reccomendations} redirectLink="list"/>}
     </View>
   );
 }

@@ -25,11 +25,12 @@ export const useItemSearch = async (query: string, isMovie: boolean): Promise<It
 export const useItemDetails = (id: string, isMovie: boolean) => {
     const [item, setItem] = useState<Item>();
     const [cast, setCast] = useState<CastMember[]>([]);
+    const [reccomendations, setReccomendations] = useState<Item[]>([]);
 
     const baseUrl = isMovie ? movieDetailsUrl : tvDetailsUrl;
     const fetchUrl = baseUrl + id + "?api_key=" + tmdbKey;
-
     const castURL = `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}/${isMovie ? 'credits' : 'aggregate_credits'}?api_key=${tmdbKey}`;
+    const recURL = `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}/recommendations?api_key=${tmdbKey}`
 
     const getCast = () => {
       fetch(isMovie? castURL : castURL)
@@ -45,23 +46,31 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
               character: isMovie ? actor.character // For movies, use the character directly
               : actor.roles && actor.roles.length > 0 ? actor.roles[0].character
               : '' // Fallback in case roles are empty or undefined
-            
           } as CastMember));
           setCast(actorsArray)
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => console.error('Error Fetching Cast:', error));
     }
     const getItem = () => {
         fetch(fetchUrl)
         .then(res=>res.json())
         .then(json=>{
-            setItem(json);
+          setItem(json);
         })
+    } 
+    const getRecommendations = () => {
+        fetch(recURL)
+        .then(res=>res.json())
+        .then(json=>{
+          setReccomendations(json.results);
+        })
+        .catch(error => console.error(`Error fetching Recommendations: ${error}`))
     }
     useEffect(() => {
         getItem();
         getCast();
+        getRecommendations();
     }, [id]);
 
-    return {item: item as Item, cast};
+    return {item: item as Item, cast, reccomendations: reccomendations as Item[]};
 };
