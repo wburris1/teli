@@ -6,6 +6,9 @@ import Colors from "@/constants/Colors"
 import { Link } from "expo-router"
 import { useEffect } from "react"
 import { useItemDetails } from "@/data/itemData"
+import { RootStackParamList } from "@/constants/ImportTypes"
+import { ScreenNavigationProp } from "@/constants/ImportTypes"
+import { useNavigation } from "@react-navigation/native"
 
 
 const screenWidth = Dimensions.screenWidth
@@ -14,14 +17,16 @@ const itemWidth = (Dimensions.screenWidth / 3) - 20;
 
 export const Reccomendation =  ({ item, redirectLink }: { item: Item, redirectLink: string }) => {
   const colorScheme = useColorScheme();
+  const navigation = useNavigation<ScreenNavigationProp>();
+  const handleNavigation = () => {
+    navigation.push(redirectLink + "_item", { id: item.id, groupKey: 'title' in item ? "movie" : "tv" })
+  };
 
   return (
     <View style={styles.itemContainer} >
-      <Link href={{pathname: redirectLink + "_item" as any, params: { id: item.id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleNavigation}>
           <Image source={{ uri: imgUrl + item.poster_path }} style={[styles.Itemimage, {borderColor: Colors[colorScheme ?? 'light'].text}]} />
         </TouchableOpacity>
-      </Link>
     </View>
   )
 }
