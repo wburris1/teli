@@ -245,11 +245,11 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
                     <View style={{flexDirection: 'row', flex: 1, alignItems: 'center'}}>
                       <TextInput
                           ref={textInputRef}
-                          style={styles.input}
                           placeholder="Write a comment..."
                           placeholderTextColor="#999"
                           value={comment}
                           onChangeText={setComment}
+                          style={[styles.input,{color: Colors[colorScheme ?? 'light'].text,}]}
                       />
                       {comment != "" && (
                         <TouchableOpacity onPress={handleComment} style={{
