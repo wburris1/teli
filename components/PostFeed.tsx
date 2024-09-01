@@ -1,7 +1,7 @@
 import { AppNotification, FeedPost, NotificationType } from "@/constants/ImportTypes";
 import { Timestamp, addDoc, arrayRemove, arrayUnion, collection, doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useState } from "react";
-import { Image, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
+import { Alert, Image, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Text, View } from "./Themed";
 import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
@@ -39,6 +39,8 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     const [numLikes, setNumLikes] = useState(item.likes.length);
     const id = item.user_id + "/" + (item.score >= 0 ? item.item_id : item.post_id);
     const feedFontSize = screenwidth > 400 ? 18 : 14.5
+    const [hideSpoilers, setHideSpoilers] = useState(user && item.has_spoilers && item.user_id != user.uid);
+
     const handleHeart = async () => {
       if (!user) return;
       
@@ -115,7 +117,33 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
         </View>
         <View style={{flexDirection: 'row', paddingTop: 5,}}>
           <View style={{flex: 1}}>
-            <ExpandableText text={item.caption} maxHeight={maxCaptionHeight} textStyle={styles.text} />
+            {!hideSpoilers ? (
+              <ExpandableText text={item.caption} maxHeight={maxCaptionHeight} textStyle={styles.text} />
+            ) : (
+              <View style={{height: maxCaptionHeight, alignItems: 'center', justifyContent: 'center'}}>
+                <TouchableOpacity style={{alignItems: 'center', justifyContent: 'center'}} onPress={() => {
+                  Alert.alert(
+                    "Show Spoilers?",
+                    "",
+                    [
+                        {
+                            text: "Cancel",
+                            style: "cancel"
+                        },
+                        {
+                            text: "Reveal",
+                            onPress: () => {
+                                setHideSpoilers(false);
+                            }
+                        }
+                    ]
+                  );
+                }}>
+                  <Ionicons name="alert-circle" size={45} color={Colors[colorScheme ?? 'light'].text} />
+                  <Text style={{fontSize: 16, fontWeight: '400'}}>Spoiler Alert</Text>
+                </TouchableOpacity>
+              </View>
+            )}
             <View style={styles.postFooter}>
                 <View style={{flexDirection: 'row'}}>
                     <TouchableOpacity style={{alignItems: 'center', paddingTop: 5,}} onPress={handleHeart}>

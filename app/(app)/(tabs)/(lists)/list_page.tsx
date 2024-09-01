@@ -255,12 +255,6 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
               /> : (
             <Text>Rank something!</Text>
           )}
-          {popUpIndex >= 0 && <TouchableWithoutFeedback onPress={() => setPopUpIndex(-1)}>
-            <View style={{
-              flex: 1,
-              backgroundColor: 'transparent'
-            }} />
-          </TouchableWithoutFeedback>}
         </View>
       )
     } else {
@@ -431,7 +425,7 @@ const handleClose = () => {
           <Pressable onPress={handleSelectionMode} style={{ paddingLeft: 10 }}>
             {({ pressed }) => (
               <Ionicons
-                name="information-circle"
+                name="menu"
                 size={25}
                 color={Colors[colorScheme ?? 'light'].text}
                 style={{ opacity: pressed ? 0.5 : 1 }}
@@ -444,7 +438,7 @@ const handleClose = () => {
                 {({ pressed }) => (
                   <Ionicons
                     name="repeat"
-                    size={35}
+                    size={25}
                     color={Colors[colorScheme ?? 'light'].text}
                     style={{ opacity: pressed ? 0.5 : 1 }}
                   />

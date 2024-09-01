@@ -38,6 +38,7 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   };
 
   const fetchPosts = async (followedUsers: string[]): Promise<FeedPost[]> => {
+      if (followedUsers.length == 0) return [];
       const userPostsCollectionRef = collection(db, 'globalPosts');
       const shouldStartAfter = lastFetchedPost.current && !refreshing; // Combined condition
       const userPostsQuery = query(
