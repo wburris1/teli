@@ -18,43 +18,49 @@ export const DisplayItemInfo =  ({ item }: { item: Item }) => {
   const colorScheme = useColorScheme();
 // if budget is below certain count
 // people icon, time icon 
+  const runTime = 'title' in item ? item.runtime : item.episode_run_time; 
+  const convertNum = (revenue: number) => {
+    if (revenue > 1000000000) {
+      return `$${(revenue/1000000000).toFixed(1)}B`
+    } else {
+      return `$${(revenue/1000000).toFixed(1)}M`
+    }
+  }
+  const convertRunTime = (runTime: number) => {
+    return runTime < 60 ? 
+    `Runtime: ${runTime}m` : 
+    `Runtime: ${Math.floor(runTime / 60)}h ${runTime % 60}m`
+  }
 
   return (
     <View style={styles.castContainer}>
       {item.number_of_seasons !== undefined && (
       <Text style={styles.castText}>{`Total Seasons: ${item.number_of_seasons}`}</Text>
     )}
-    <MaterialIcons name="attach-money" size={24} color="black" />
-    <FontAwesome5 name="dollar-sign" size={24} color="black" />
-    <Ionicons
-                      name="people"
-                      size={25}
-                      color={Colors[colorScheme ?? 'light'].text}
-                  />
+    
     {item.number_of_episodes !== undefined && (
       <Text style={styles.castText}>{`Total Episodes: ${item.number_of_episodes}`}</Text>
     )}
     
-    {item.vote_average !== undefined && (
+    {item.vote_average > 0 && (
       <Text style={styles.castText}>{`Average Score: ${item.vote_average.toFixed(2)}`}</Text>
     )}
     {item.vote_count > 500 && (
       <Text style={styles.castText}>{`Ranked by ${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+ people`}</Text>
     )}
-    {item.runtime !== undefined && (
-      <Text style={styles.castText}>{`Runtime: ${Math.floor(item.runtime / 60)}h ${item.runtime % 60}m`}</Text>
+    {runTime > 0 && (
+      <Text style={styles.castText}>{convertRunTime(runTime)}</Text>
     )}
-    
-    {item.revenue && (
-      <Text style={styles.castText}>{`Revenue: $${(item.revenue/1000000000).toFixed(1)}B`}</Text>
+     {item.budget > 0 && (
+      <Text style={styles.castText}>{`Budget: ${convertNum(item.budget)}`}</Text>
+    )}
+    {item.revenue > 0 && (
+      <Text style={styles.castText}>{`Revenue: ${convertNum(item.revenue)}`}</Text>
     )}
     </View>
   ) // ${(item.revenue/1000000).toLocaleString()}
 }
-/*
-{item.budget && (
-  <Text style={styles.castText}>{`Budget: $${(item.budget).toLocaleString()}M`}</Text>
-)} */
+
 
 const styles = StyleSheet.create({
   castText: {
