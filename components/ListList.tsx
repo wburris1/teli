@@ -35,7 +35,7 @@ const chunkLists = (lists: List[], size: number) => {
     return result;
 };
   
-export const HorizontalListWithRows = ({lists, listTypeID, userID, isListTab, numRows }: {lists: List[], listTypeID: string, userID: string, isListTab: boolean, numRows: number}) => {
+export const HorizontalListWithRows = ({lists, listTypeID, userID, isListTab, numRows, redirectLink = '' }: {lists: List[], listTypeID: string, userID: string, isListTab: boolean, numRows: number, redirectLink: string}) => {
     const colorScheme = useColorScheme();
     // Watched lists
     const watchedLists = lists != null ? reorderData(filterWatched(lists, true), Values.seenListID, Values.bookmarkListID) : [];
@@ -58,7 +58,7 @@ export const HorizontalListWithRows = ({lists, listTypeID, userID, isListTab, nu
             {chunkedData.map((row, rowIndex) => (
                 <View key={rowIndex} style={[styles.row, styles.rowSpacing]}>
                 {row.map(list => (
-                    <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={isListTab} userID={userID} index={0} />
+                    <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={isListTab} userID={userID} index={0} redirectLink={redirectLink} />
                 ))}
                 </View>
             ))}
@@ -72,7 +72,7 @@ export const HorizontalListWithRows = ({lists, listTypeID, userID, isListTab, nu
             {chunkedUnwatched.map((row, rowIndex) => (
                 <View key={rowIndex} style={[styles.row, styles.rowSpacing]}>
                 {row.map(list => (
-                    <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={isListTab} userID={userID} index={-1} />
+                  <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={isListTab} userID={userID} index={-1} redirectLink={redirectLink} />
                 ))}
                 </View>
             ))}

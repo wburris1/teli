@@ -11,7 +11,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTab } from '@/contexts/listContext';
 import Values from '@/constants/Values';
 import { AddList } from '@/components/AddList';
-import { UserList } from '@/components/UserList';
 import { List } from '@/constants/ImportTypes';
 import { HorizontalListWithRows } from '@/components/ListList';
 import { Timestamp } from 'firebase/firestore';
@@ -31,7 +30,7 @@ export default function TabOneScreen() {
 
       return dateB.getTime() - dateA.getTime(); // Sort in descending order (most recent first)
     }); 
-   return <HorizontalListWithRows lists={movieLists} listTypeID={Values.movieListsID} userID='' isListTab={true} numRows={2} />
+   return <HorizontalListWithRows lists={movieLists} listTypeID={Values.movieListsID} userID='' isListTab={true} numRows={2} redirectLink='' />
   }, [refreshFlag, refreshListFlag, movieLists]); // array used to be [refreshFlag, refreshListFlag, movieLists]
 
   var showsTabContent = useCallback(() => {
@@ -44,7 +43,7 @@ export default function TabOneScreen() {
 
       return dateB.getTime() - dateA.getTime(); // Sort in descending order (most recent first)
     }); 
-    return <HorizontalListWithRows lists={tvLists} listTypeID={Values.tvListsID} userID='' isListTab={true} numRows={2} />
+    return <HorizontalListWithRows lists={tvLists} listTypeID={Values.tvListsID} userID='' isListTab={true} numRows={2} redirectLink='' />
   }
   , [refreshFlag, refreshListFlag, tvLists]);
 

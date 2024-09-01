@@ -209,9 +209,9 @@ const ItemDetails = ({item, cast, reccomendations, redirectLink}: Props) => {
                         </View>
                     ))}
                 </View> 
-                {false && 
-                <DisplayItemInfo item={item}></DisplayItemInfo>
-                }
+                
+                  <DisplayItemInfo item={item}></DisplayItemInfo>
+                
                 <View style={styles.castContainer}>
                   <Text style={styles.castText}>Cast</Text>
                 </View>
