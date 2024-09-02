@@ -119,23 +119,23 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
       
       let commentRef = collection(postRef, "comments");
       let replyData;
-
-      if (replyCommentID != "") {
-        replyData = {parent_id: replyParentID ? replyParentID : replyCommentID, ...displayComment};
+      if (replyCommentID) {
+        const parentID = replyParentID || replyCommentID;
+        replyData = { parent_id: parentID, ...displayComment };
         setReply(replyData);
-
-        if (replyParentID != "") {
-          commentRef = collection(commentRef, replyParentID, "replies"); // Replying to a reply just replies to parent comment
-          // TODO: Add tagged user when replying
-        } else {
-          commentRef = collection(commentRef, replyCommentID, "replies");
-        }
+        commentRef = collection(commentRef, parentID, "replies"); // Replying to a reply just replies to parent comment
+        const parentCommentRef = doc(postRef, "comments", replyParentID != "" ? replyParentID : replyCommentID);
+        await updateDoc(parentCommentRef, { num_replies: increment(1) })
+        // TODO: Add tagged user when replying
       } else {
-        setDisplayComments([displayComment, ...displayComments]);
-        animateComment();
+          setDisplayComments([displayComment, ...displayComments]);
+          animateComment();
       }
       
       const resp = await addDoc(commentRef, userComment);
+      await updateDoc(postRef, { num_comments: increment(1) });
+      handleIncrementComment(); // updates UI to reflect new comment
+      
       if (!replyCommentID) {
         let updatedComment = {id: resp.id, ...userComment};
         updatedComment.created_at = localTimestamp;
@@ -148,13 +148,6 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
         updateNumReplies(parentID, 1);
       }
 
-      await updateDoc(postRef, { num_comments: increment(1) });
-      handleIncrementComment(); // updates UI to reflect new comment
-      if (replyCommentID) {
-        const parentCommentRef = doc(postRef, "comments", replyParentID != "" ? replyParentID : replyCommentID);
-        await updateDoc(parentCommentRef, { num_replies: increment(1) })
-      }
-      
       requestRefresh();
       if (replyCommentID != "") {
         requestReply(resp.id);
