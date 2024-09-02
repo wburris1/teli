@@ -30,8 +30,8 @@ export async function FetchMovieLists (userID: string): Promise<List[]> {
 
 export async function FetchTVLists (userID: string): Promise<List[]> {
   const userDocRef = doc(db, 'users', userID);
-  const movieListsRef = collection(userDocRef, Values.movieListsID);
-  const movieListsQuery = query(movieListsRef);
-  const snapshot = await getDocs(movieListsQuery);
+  const tvListsRef = collection(userDocRef, Values.tvListsID);
+  const tvListsQuery = query(tvListsRef);
+  const snapshot = await getDocs(tvListsQuery);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));
 };

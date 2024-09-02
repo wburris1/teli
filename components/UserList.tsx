@@ -28,7 +28,7 @@ const OverlappingImages = ({ images }: { images: string[] }) => {
     );
 };
 
-export const UserList = ({ list, listTypeID, isListTab, userID, index }: { list: List, listTypeID: string, isListTab: boolean, userID: string, index: number }) => {
+export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectLink = '' }: { list: List, listTypeID: string, isListTab: boolean, userID: string, index: number, redirectLink: string }) => {
   const posters = [
     list.top_poster_path != "" ? imgUrl + list.top_poster_path : "/",
     list.second_poster_path != "" ? imgUrl + list.second_poster_path : "/",
@@ -39,7 +39,7 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index }: { list:
 
   return (
     <Link
-      href={{pathname: isListTab ? '/list_page' : '/search_list_page', params: { 
+      href={{pathname: isListTab ? '/list_page' : `${redirectLink}_list_page` as any, params: { 
         listTypeID: listTypeID, listID: list.list_id, description: list.description,
         name: list.name, userID: userID, isRanked: list.is_ranked ? 'true' : 'false',
       }}}
