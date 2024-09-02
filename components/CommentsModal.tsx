@@ -148,14 +148,12 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
         updateNumReplies(parentID, 1);
       }
 
-      if (replyCommentID === "") {
-        await updateDoc(postRef, { num_comments: increment(1) });
-        //setDisplayComments([displayComment, ...displayComments]);
-        //setPostLoading(false);
-      } else {
+      await updateDoc(postRef, { num_comments: increment(1) });
+      if (replyCommentID) {
         const parentCommentRef = doc(postRef, "comments", replyParentID != "" ? replyParentID : replyCommentID);
         await updateDoc(parentCommentRef, { num_replies: increment(1) })
       }
+      
       requestRefresh();
       if (replyCommentID != "") {
         requestReply(resp.id);
