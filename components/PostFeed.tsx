@@ -1,6 +1,6 @@
 import { AppNotification, FeedPost, NotificationType } from "@/constants/ImportTypes";
 import { Timestamp, addDoc, arrayRemove, arrayUnion, collection, doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Image, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Text, View } from "./Themed";
 import Colors from "@/constants/Colors";
@@ -16,6 +16,7 @@ import { createNotification } from "./Helpers/CreatePlusAddNotification";
 import { sendPushNotification } from "./Helpers/sendNotification";
 import { useData } from "@/contexts/dataContext";
 import Dimensions from "@/constants/Dimensions";
+import useModalState from "./ModalState";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
@@ -26,9 +27,10 @@ type PostFeedProps = {
   handleComments: (show: boolean, post: FeedPost) => void;
   handleLikes: (show: boolean, post: FeedPost) => void;
   redirectLink?: string; // Optional parameter with default value
+  incrementComment: boolean
 };
 
-export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home'}: PostFeedProps) => {
+export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home', incrementComment}: PostFeedProps) => {
     const colorScheme = useColorScheme();
     const screenwidth = Dimensions.screenWidth;
     const {userPushToken} = useData();
@@ -40,6 +42,18 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     const id = item.user_id + "/" + (item.score >= 0 ? item.item_id : item.post_id);
     const feedFontSize = screenwidth > 400 ? 18 : 14.5
     const [hideSpoilers, setHideSpoilers] = useState(user && item.has_spoilers && item.user_id != user.uid);
+    //const {incrementComment, setIncrementComment} = useModalState();
+    const isInitialRender = useRef(true);
+
+
+    const [numComments, setNumComments] = useState(item.num_comments);
+
+    useEffect(() => {
+      if (isInitialRender.current) {
+        // If this is the initial render, skip the effect
+        isInitialRender.current = false;
+      } else { setNumComments((prevNumComments) => prevNumComments + 1) }
+    }, [incrementComment]) 
 
     const handleHeart = async () => {
       if (!user) return;
@@ -160,7 +174,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                       <Ionicons name="chatbubble-outline" size={30} color={Colors[colorScheme ?? 'light'].text} style={{paddingRight: 3}}/>
                     </TouchableOpacity>
                     <TouchableOpacity style={{alignItems: 'center', paddingTop: 5, paddingRight: 5, flexDirection: 'row'}} onPress={() => handleComments(true, item)}>
-                      <Text style={{fontSize: 14, fontWeight: '300'}}><Text style={{fontWeight: '500'}}>{item.num_comments}</Text> Comments</Text>
+                      <Text style={{fontSize: 14, fontWeight: '300'}}><Text style={{fontWeight: '500'}}>{numComments}</Text> Comments</Text>
                     </TouchableOpacity>
                 </View>
             </View>

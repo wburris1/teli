@@ -8,7 +8,7 @@ import useModalState from '@/components/ModalState';
 import PostFeedWithModals from '@/components/PostFeedWithModals';
 
 export default function TabOneScreen() {
-  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, } = useModalState();
+  const { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment} = useModalState();
   const { refreshFlag } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const { posts, loading, loadMorePosts, isLoadingMore } = makeFeed('Home', refreshing, setRefreshing);
@@ -35,6 +35,8 @@ export default function TabOneScreen() {
         refreshing={refreshing}
         loadMorePosts={loadMorePosts}
         isLoadingMore={isLoadingMore}
+        handleIncrementComment={handleIncrementComment}
+        incrementComment={incrementComment}
       />
       </View>
   );

@@ -24,7 +24,7 @@ if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, onClose: () => void, visible: boolean, redirectLink: string}) => {
+const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementComment}: {post: FeedPost, onClose: () => void, visible: boolean, redirectLink: string, handleIncrementComment: () => void}) => {
   const { user, userData } = useAuth();
   const translateY = useSharedValue(0);
   const [dragging, setDragging] = useState(false);
@@ -149,6 +149,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, 
       }
 
       await updateDoc(postRef, { num_comments: increment(1) });
+      handleIncrementComment(); // updates UI to reflect new comment
       if (replyCommentID) {
         const parentCommentRef = doc(postRef, "comments", replyParentID != "" ? replyParentID : replyCommentID);
         await updateDoc(parentCommentRef, { num_replies: increment(1) })

@@ -21,6 +21,8 @@ type PostListWithModalsProps = {
   refreshing: boolean;
   loadMorePosts: () => void;
   isLoadingMore: boolean;
+  handleIncrementComment: () => void;
+  incrementComment: boolean;
 };
 
 const PostFeedWithModals = ({
@@ -37,7 +39,9 @@ const PostFeedWithModals = ({
   handleRefresh,
   refreshing,
   loadMorePosts,
-  isLoadingMore
+  isLoadingMore,
+  handleIncrementComment,
+  incrementComment,
 }: 
 PostListWithModalsProps) => {
   const colorScheme = useColorScheme();
@@ -55,14 +59,14 @@ PostListWithModalsProps) => {
           <FlatList
             data={posts}
             keyExtractor={(item) => item.post_id}
-            renderItem={({ item, index }) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink={redirectLink} />}
+            renderItem={({ item, index }) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink={redirectLink} incrementComment={incrementComment} />}
             onEndReached={loadMorePosts}
-            onEndReachedThreshold={0.5}
+            onEndReachedThreshold={0.75}
             ListFooterComponent={renderFooter}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink={redirectLink} />
-          <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink={redirectLink} />
+          <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink={redirectLink} handleIncrementComment={handleIncrementComment}/>
         </>
       ) : (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>

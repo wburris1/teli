@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FeedPost } from '@/constants/ImportTypes';
 import { serverTimestamp } from 'firebase/firestore';
 
@@ -10,6 +10,7 @@ const useModalState = () => {
     num_comments: 0, likes: [], item_id: "", item_name: "", has_spoilers: false,
     created_at: serverTimestamp(), username: "", caption: "", poster_path: "", userPushToken: ""
   });
+  const [incrementComment, setIncrementComment] = useState(false)
 
   const handleComments = (show: boolean, commentPost: FeedPost) => {
     setShowComments(show);
@@ -20,8 +21,12 @@ const useModalState = () => {
     setShowLikes(show);
     setPost(feedPost);
   }
+
+  const handleIncrementComment = () => {
+    setIncrementComment((prev) => !prev);
+  };
   
-  return { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes};
+  return { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment, setIncrementComment, incrementComment};
 };
 
 export default useModalState;
