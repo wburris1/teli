@@ -45,7 +45,7 @@ const LogoutButton = () => {
 };
 
 const ProfilePage = () => {
-  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes } = useModalState();
+  const { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment } = useModalState();
   const {user, userData } = useAuth();
   const [followers, setFollowers] = useState<string[]>([]);
   const [following, setFollowing] = useState<string[]>([]);
@@ -159,7 +159,10 @@ const ProfilePage = () => {
           handleRefresh={handleRefresh}
           refreshing={refreshing}
           loadMorePosts={loadMorePosts}
-          isLoadingMore={isLoadingMore}/>
+          isLoadingMore={isLoadingMore}
+          incrementComment={incrementComment}
+          handleIncrementComment={handleIncrementComment}
+          />
         </>
       )}
     </View>

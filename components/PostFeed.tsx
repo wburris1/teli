@@ -16,7 +16,6 @@ import { createNotification } from "./Helpers/CreatePlusAddNotification";
 import { sendPushNotification } from "./Helpers/sendNotification";
 import { useData } from "@/contexts/dataContext";
 import Dimensions from "@/constants/Dimensions";
-import useModalState from "./ModalState";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
@@ -42,7 +41,6 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     const id = item.user_id + "/" + (item.score >= 0 ? item.item_id : item.post_id);
     const feedFontSize = screenwidth > 400 ? 18 : 14.5
     const [hideSpoilers, setHideSpoilers] = useState(user && item.has_spoilers && item.user_id != user.uid);
-    //const {incrementComment, setIncrementComment} = useModalState();
     const isInitialRender = useRef(true);
 
 

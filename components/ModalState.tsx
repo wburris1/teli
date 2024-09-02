@@ -26,7 +26,7 @@ const useModalState = () => {
     setIncrementComment((prev) => !prev);
   };
   
-  return { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment, setIncrementComment, incrementComment};
+  return { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment};
 };
 
 export default useModalState;

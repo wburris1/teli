@@ -47,7 +47,7 @@ const emptyUser = {
 }
 
 const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string}) => {
-  const { showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes } = useModalState();
+  const { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment } = useModalState();
   const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [profileData, setProfileData] = useState<UserData>(emptyUser);
@@ -239,7 +239,10 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
           handleRefresh={handleRefresh}
           refreshing={refreshing}
           loadMorePosts={loadMorePosts}
-          isLoadingMore={isLoadingMore}/>
+          isLoadingMore={isLoadingMore}
+          incrementComment={incrementComment}
+          handleIncrementComment={handleIncrementComment}
+          />
   , [refreshFlag, posts, refreshing, loading, showLikes, showComments, post, isLoadingMore]);
 
   const listsTabContent = useCallback(() => 
