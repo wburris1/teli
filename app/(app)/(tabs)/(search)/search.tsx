@@ -1,7 +1,6 @@
 import { StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
-import ItemScreen from '@/components/Search/SearchCard';
 import SearchInput from '@/components/Search/SearchInput';
 import SearchTabs from '@/components/Search/SearchTabs';
 import { useItemSearch } from '@/data/itemData';
