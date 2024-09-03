@@ -16,6 +16,7 @@ import { createNotification } from "./Helpers/CreatePlusAddNotification";
 import { sendPushNotification } from "./Helpers/sendNotification";
 import { useData } from "@/contexts/dataContext";
 import Dimensions from "@/constants/Dimensions";
+import { LinearGradient } from "expo-linear-gradient";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const db = FIREBASE_DB;
@@ -35,14 +36,14 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     const {userPushToken} = useData();
     const { user, userData } = useAuth();
     const formattedDate = formatDate(item.created_at as Timestamp);
-    const maxCaptionHeight = 65;
+    const maxCaptionHeight = 30;
     const [isLiked, setIsLiked] = useState(item.likes.includes(user?.uid || ""));
     const [numLikes, setNumLikes] = useState(item.likes.length);
     const id = item.user_id + "/" + (item.score >= 0 ? item.item_id : item.post_id);
     const feedFontSize = screenwidth > 400 ? 18 : 14.5
     const [hideSpoilers, setHideSpoilers] = useState(user && item.has_spoilers && item.user_id != user.uid);
     const isInitialRender = useRef(true);
-
+    const [expanded, setExpanded] = useState(false);
 
     const [numComments, setNumComments] = useState(item.num_comments);
 
@@ -83,7 +84,9 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     }
 
     return (
-      <View style={[styles.postContainer, {borderColor: Colors[colorScheme ?? 'light'].gray}]} key={id}>
+      <View style={[styles.postContainer, {flexDirection: 'row', width: '100%', 
+        justifyContent: 'space-between', borderColor: Colors[colorScheme ?? 'light'].gray, }]}>
+      <View style={[{borderColor: Colors[colorScheme ?? 'light'].gray, flex: 1}]} key={id}>
         <View style={{flexDirection: 'row', flex: 1,}}>
             <Link href={{pathname: redirectLink + '_user' as any, params: { userID: item.user_id }}} asChild>
               <TouchableOpacity>
@@ -111,7 +114,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                       </Link>
                     </Text>
                 </View>
-                <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', paddingRight: item.score >= 0 ? 95 : 80}}>
+                <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', paddingRight: 15}}>
                   <Link href={{pathname: redirectLink + '_user' as any, params: { userID: item.user_id }}} asChild>
                     <TouchableOpacity style={{paddingRight: 5}}>
                         <Text numberOfLines={1} style={{fontSize: 14, fontWeight: '300',}}>@{item.username}</Text>
@@ -121,19 +124,14 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                 </View>
                 
             </View>
-            {item.score >= 0 && (
-                <View style={[styles.scoreContainer, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
-                    <Text style={styles.scoreText}>{item.score.toFixed(1)}</Text>
-                </View>
-            )}
         </View>
         <View style={{flexDirection: 'row', paddingTop: 5,}}>
-          <View style={{flex: 1}}>
+          <View style={{flex: 1,}}>
             {!hideSpoilers ? (
-              <ExpandableText text={item.caption} maxHeight={maxCaptionHeight} textStyle={styles.text} />
+              <ExpandableText text={item.caption} maxHeight={maxCaptionHeight} textStyle={styles.text}  startExpanded={expanded} />
             ) : (
               <View style={{height: maxCaptionHeight, alignItems: 'center', justifyContent: 'center'}}>
-                <TouchableOpacity style={{alignItems: 'center', justifyContent: 'center'}} onPress={() => {
+                <TouchableOpacity style={{alignItems: 'center', justifyContent: 'center', flexDirection: 'row'}} onPress={() => {
                   Alert.alert(
                     "Show Spoilers?",
                     "",
@@ -145,14 +143,15 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                         {
                             text: "Reveal",
                             onPress: () => {
+                                setExpanded(true);
                                 setHideSpoilers(false);
                             }
                         }
                     ]
                   );
                 }}>
-                  <Ionicons name="alert-circle" size={45} color={Colors[colorScheme ?? 'light'].text} />
-                  <Text style={{fontSize: 16, fontWeight: '400'}}>Spoiler Alert</Text>
+                  <Text style={{fontSize: 16, fontWeight: '600', paddingRight: 3}}>Spoiler Alert</Text>
+                  <Ionicons name="alert-circle" size={30} color={Colors[colorScheme ?? 'light'].text} />
                 </TouchableOpacity>
               </View>
             )}
@@ -177,15 +176,37 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                 </View>
             </View>
           </View>
-          <Link href={{pathname: redirectLink + "_item" as any, params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
-              <TouchableOpacity>
-              <Image
-                source={{ uri: imgUrl + item.poster_path }}
-                style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
-              />
-              </TouchableOpacity>
-          </Link>
+          
         </View>
+      </View>
+        <Link style={{height: 130}} href={{pathname: redirectLink + "_item" as any, params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
+          <TouchableOpacity>
+            <Image
+              source={{ uri: imgUrl + item.poster_path }}
+              style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
+            />
+            {item.score && item.score >= 0 &&
+              <>
+                <LinearGradient
+                  colors={['transparent', 'black']}
+                  style={{position: 'absolute',
+                  bottom: 1,
+                  left: 1,
+                  right: 1,
+                  height: 60,
+                  borderBottomLeftRadius: 10,
+                  borderBottomRightRadius: 10,}}
+                />
+                <Text style={[styles.scoreText, {color: 'white', position: 'absolute',
+                  bottom: 5,
+                  right: 6,
+                  backgroundColor: 'transparent'}]}>
+                    {item.score.toFixed(1)}
+                </Text>
+              </>
+              }
+          </TouchableOpacity>
+        </Link>
       </View>
     )
   }
@@ -233,10 +254,12 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
       borderBottomWidth: 1,
     },
     itemImage: {
-      width: 70,
+      //flex: 1,
+      height: 130,
+      maxHeight: 180,
       aspectRatio: 2/3,
       borderRadius: 10,
-      borderWidth: 0.5,
+      borderWidth: 1,
     },
     scoreContainer: {
       width: 40,
@@ -249,7 +272,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
       alignSelf: 'center',
     },
     scoreText: {
-      fontSize: 18,
-      fontWeight: '500',
+      fontSize: 24,
+      fontWeight: 'bold',
     },
   });

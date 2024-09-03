@@ -200,7 +200,7 @@ const ItemDetails = ({item, cast, reccomendations, redirectLink}: Props) => {
                 </View>
                 <View style={styles.overviewContainer}>
                     {item.tagline != "" && <Text style={{fontSize: 17, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
-                    <ExpandableText text={item.overview} maxHeight={65} textStyle={styles.overview} />
+                    <ExpandableText text={item.overview} maxHeight={65} textStyle={styles.overview} startExpanded={false} />
                 </View>
                 <View style={styles.genreContainer}>
                     {item.genres.map(genre => (

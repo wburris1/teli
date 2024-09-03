@@ -9,11 +9,18 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-export const ExpandableText = ({ text, maxHeight, textStyle }: { text: string, maxHeight: number, textStyle: TextStyle }) => {
+export const ExpandableText = ({ text, maxHeight, textStyle, startExpanded }:
+  { text: string, maxHeight: number, textStyle: TextStyle, startExpanded: boolean }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [textHeight, setCaptionHeight] = useState<number | null>(null);
     const animatedHeight = useRef(new Animated.Value(0)).current;
     const colorScheme = useColorScheme();
+
+    useEffect(() =>  {
+      if (startExpanded && textHeight && !isExpanded && textHeight > maxHeight) {
+        toggleExpanded();
+      }
+    }, [textHeight])
 
     useEffect(() => {
         if (textHeight !== null) {
