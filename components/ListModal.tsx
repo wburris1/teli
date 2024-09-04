@@ -8,6 +8,7 @@ import Values from '@/constants/Values';
 import { UserItem } from '@/constants/ImportTypes';
 import { useLoading } from '@/contexts/loading';
 import { useData } from '@/contexts/dataContext';
+import SearchInput from './Search/SearchInput';
 
 type RowProps = {
     item: UserItem;
@@ -30,16 +31,29 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
   const [listItems, setListItems] = useState<UserItem[]>([]);
   const [selectedItems, setSelectedItems] = useState<UserItem[]>(containedItems);
   const [removedItems, setRemovedItems] = useState<UserItem[]>([]);
+  const [search, setSearch] = useState('');
   const colorScheme = useColorScheme();
   const { loading } = useLoading();
-
+  const [displayList, setDisplayList] = useState<UserItem[]>([]);
+  
   useEffect(() => {
     if (listTypeID == Values.movieListsID && movies) {
-        setListItems(movies.filter(movie => movie.lists.includes(Values.seenListID)))
+        const allItems = movies.filter(movie => movie.lists.includes(Values.seenListID))
+        setListItems(allItems)
+        setDisplayList(allItems)
     } else if (listTypeID == Values.tvListsID && shows) {
-        setListItems(shows.filter(show => show.lists.includes(Values.seenListID)))
+        const allItems = shows.filter(show => show.lists.includes(Values.seenListID))
+        setListItems(allItems)
+        setDisplayList(allItems)
     }
   }, [movies, shows])
+  useEffect(() => {
+    if (search) {
+      // filter list if movie titles contains string search 
+      setDisplayList(listItems.filter(item => item.item_name.toLowerCase().includes(search.toLowerCase())))
+    }
+  }, [search])
+
 
   const handleSelect = (item: UserItem) => {
     if (removedItems.some(removedItem => removedItem.item_id == item.item_id)) {
@@ -109,8 +123,9 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
                 <ActivityIndicator size="large" />
               </View>
             )}
+            <SearchInput search={search} setSearch={setSearch} isFocused={false}  />
             <FlatList
-            data={listItems}
+            data={displayList}
             renderItem={({ item, index }) =>
                 <RenderItem
                 item={item}
@@ -168,10 +183,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         flexDirection: 'row',
-        borderBottomWidth: 1,
+        borderBottomWidth: 0.5,
         borderLeftWidth: 0,
         borderRightWidth: 0,
-        borderTopWidth: 0,
+        borderTopWidth: 0.5,
         overflow: 'hidden',
         paddingRight: 5,
         width: '100%',
