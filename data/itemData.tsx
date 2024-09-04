@@ -19,7 +19,7 @@ export const useItemSearch = async (query: string, isMovie: boolean): Promise<It
     if (!query) {
         fetchUrl = (isMovie ? movieDiscoverUrl : tvDiscoverUrl) + tmdbKey;
         const promises = [];
-        for (let page = 1; page <= 1; page++) { // 6 pages would return 120 results
+        for (let page = 1; page <= 6; page++) { // 6 pages would return 120 results
             const pageUrl = fetchUrl + "&page=" + page;
             promises.push(fetch(pageUrl).then(res => res.json()));
         }

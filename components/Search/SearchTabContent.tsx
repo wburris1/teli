@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ItemScreen from "./SearchCard";
 import { useItemSearch } from "@/data/itemData";
 import _, { set } from 'lodash';
@@ -9,14 +9,23 @@ export const MoviesTabContent = ({ query, isAdding, addItems, outItems, setAddIt
     setAddItems: (items: Item[]) => void, setOutItems: (items: Item[]) => void, listID: string }) => {
     const [movieList, setMovieList] = useState<Item[]>([]);
     const [displayGrid, setDisplayGrid] = useState(true);
+    const cachedResults = useRef<Item[] | null>(null);
 
     const debouncedFetchData = useCallback(
         _.debounce(async (query) => {
+          if (!query && cachedResults.current) {
+            setMovieList(cachedResults.current);
+            setDisplayGrid(true);
+          } else {
             const items = await useItemSearch(query, true);
             setMovieList(items);
             setDisplayGrid(query ? false : true);
-        }, 300),
-        []
+            // Cache results when query is empty
+            if (!query) {
+              cachedResults.current = items;
+            }
+          }
+        }, 300),[]
     );
 
     useEffect(() => {
@@ -34,14 +43,23 @@ export const ShowsTabContent = ({ query, isAdding, addItems, outItems, setAddIte
     setAddItems: (items: Item[]) => void, setOutItems: (items: Item[]) => void, listID: string }) => {
     const [tvList, setTvList] = useState<Item[]>([]);
     const [displayGrid, setDisplayGrid] = useState(true);
+    const cachedResults = useRef<Item[] | null>(null);
     
     const debouncedFetchData = useCallback(
         _.debounce(async (query) => {
+          if (!query && cachedResults.current) {
+            setTvList(cachedResults.current);
+            setDisplayGrid(true);
+          } else {
             const items = await useItemSearch(query, false);
             setTvList(items);
             setDisplayGrid(query ? false : true);
-        }, 300),
-        []
+            // Cache results when query is empty
+            if (!query) {
+              cachedResults.current = items;
+            }
+          }
+        }, 300),[]
     );
 
     useEffect(() => {
