@@ -97,21 +97,14 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   };
 
   const getNext = (minScore: number, maxScore: number) => {
-    if (items) {
-      const newItems = items.filter(filterItem => filterItem.score > minScore && 
-        filterItem.score < maxScore && filterItem.item_id != item.id);
-      const count = newItems.length;
-  
-      if (count > 0) {
-        const randIndex = Math.floor(Math.random() * count);
-        return newItems[randIndex];
-      } else {
-        return null;
-      }
-    } else {
-      return null;
-    }
-  }
+    if (!items) return null;
+    const newItems = items.filter(filterItem => filterItem.score > minScore && 
+      filterItem.score < maxScore && filterItem.item_id != item.id);
+    if (newItems.length === 0) return null;
+    const midIndex = Math.floor(newItems.length / 2);
+    
+    return newItems[midIndex];
+  } 
 
   const handleFeedback = (minScore: number, maxScore: number, initialScore: number) => {
     setLowerScore(minScore);
