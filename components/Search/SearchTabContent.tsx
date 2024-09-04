@@ -32,7 +32,7 @@ export const MoviesTabContent = ({ query, isAdding, addItems, outItems, setAddIt
         debouncedFetchData(query);
     }, [query, debouncedFetchData]);
     return (
-      displayGrid ? <RenderGrid listID={listID} items={movieList} /> 
+      displayGrid && !isAdding ? <RenderGrid listID={listID} items={movieList} /> 
       : (<ItemScreen movieList={movieList} isAdding={isAdding} addItems={addItems} outItems={outItems}
          setAddItems={setAddItems} setOutItems={setOutItems} listID={listID} /> )
   )
@@ -67,7 +67,7 @@ export const ShowsTabContent = ({ query, isAdding, addItems, outItems, setAddIte
     }, [query, debouncedFetchData]);
 
     return (
-      displayGrid ? <RenderGrid listID={listID} items={tvList} />
+      displayGrid && !isAdding ? <RenderGrid listID={listID} items={tvList} />
       : (<ItemScreen movieList={tvList} isAdding={isAdding} addItems={addItems} outItems={outItems}
         setAddItems={setAddItems} setOutItems={setOutItems} listID={listID} /> )
     )
