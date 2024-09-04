@@ -10,10 +10,10 @@ const db = FIREBASE_DB;
 export const followUser = () => {
   const { userData } = useAuth();
 
-  async function follow(userID: string, userPushToken: string) {
+  async function follow(userID: string) {
     if (userData && userID) {
       createNotification(userID, NotificationType.FollowNotification, userData);
-      sendPushNotification(userPushToken, "New Follower!", `${userData.first_name} now follows you`);
+      sendPushNotification(userID, "New Follower!", `${userData.first_name} now follows you`);
       const userFollowingRef = doc(collection(db, "users", userData.user_id, "following"), userID);
       const followUserFollowersRef = doc(collection(db, "users", userID, "followers"), userData.user_id);
       try {

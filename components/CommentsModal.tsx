@@ -154,7 +154,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
       }
       if (userData) {
         createNotification(post.user_id, NotificationType.CommentNotification, userData, post, userComment.comment)
-        sendPushNotification(post.userPushToken, `${post.first_name} commented on your post`, userComment.comment)
+        sendPushNotification(post.user_id, `${userData.first_name} commented on your post`, userComment.comment)
       }
       setReply(null);
     }

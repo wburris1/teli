@@ -71,7 +71,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
         } else {
           if (userData) {
             createNotification(item.user_id, NotificationType.LikedPostNotification, userData, item)
-            sendPushNotification(item.userPushToken, "Liked Post", `${userData.first_name} liked your post`)
+            sendPushNotification(item.user_id, "Liked Post", `${userData.first_name} liked your post`)
           }
           setNumLikes(numLikes + 1);
           await updateDoc(postRef, {

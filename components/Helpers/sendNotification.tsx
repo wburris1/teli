@@ -1,15 +1,18 @@
 // notifications.ts
 
+import { fetchUserData } from "@/data/getComments";
 import { ExpoPushToken } from "expo-notifications";
 
 // Function to send a push notification using Expo
 export async function sendPushNotification(
-  userPushToken: string | undefined,
+  userID: string | undefined,
   title: string,
   body: string,
 ) : Promise<void> {
-  if(userPushToken) {
+  if(userID) {
     try {
+      const receiverData = await fetchUserData(userID);
+      const userPushToken = receiverData.userPushToken 
       // Define the message to be sent
       const message = {
         to: userPushToken,

@@ -203,7 +203,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
           });
         })
       } else {
-        followFunc(userID, profileData.userPushToken).then(() => {
+        followFunc(userID).then(() => {
           const newFollowers = [...followers, user?.uid || ''];
           setFollowers(newFollowers);
             setIsFollowing(true);

@@ -203,7 +203,7 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
             });
             if (userData) {
               createNotification(comment.user_id, NotificationType.LikedCommentNotification, userData, post, comment.comment)
-              sendPushNotification(comment.userPushToken, "Liked Comment", `${userData.first_name} liked your comment`)
+              sendPushNotification(comment.user_id, "Liked Comment", `${userData.first_name} liked your comment`)
             }
         }
     }, [isLiked, numLikes, user, post, comment.id, parentCommentID]);
