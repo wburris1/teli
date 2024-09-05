@@ -77,21 +77,10 @@ export default function NewPostScreen() {
    }
    const [aboutItem, setAboutItem] = useState<AboutItem>(emptyItem);
 
-   useEffect(() => {
-    if (tvListID !== movieListID) {
-    setTVListID(movieListID);
-    }
-   }, [movieListID])
-   useEffect(() => {
-    if (movieListID !== tvListID) {
-    setMovieListID(tvListID);
-    }
-   }, [tvListID])
-
    const moviesTabContent = useCallback(() => 
     <View>
       <View>
-        <SearchCategories listTypeID={Values.movieListsID} isPost={true} onChange={selectedID => setMovieListID(selectedID)} />
+        <SearchCategories listTypeID={Values.movieListsID} isPost={true} onChange={selectedID => setMovieListID(selectedID)} listID={movieListID} />
       </View>
       <NewPostSearchLists query={search} listTypeID={Values.movieListsID} listID={movieListID} onSelect={item => setAboutItem(item)} />
     </View>
@@ -100,7 +89,7 @@ export default function NewPostScreen() {
    const showsTabContent = useCallback(() => 
     <View>
       <View>
-        <SearchCategories listTypeID={Values.tvListsID} isPost={true} onChange={selectedID => setTVListID(selectedID)} />
+        <SearchCategories listTypeID={Values.tvListsID} isPost={true} onChange={selectedID => setTVListID(selectedID)} listID={tvListID} />
       </View>
       <NewPostSearchLists query={search} listTypeID={Values.tvListsID} listID={tvListID} onSelect={item => setAboutItem(item)} />
     </View>

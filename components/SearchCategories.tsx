@@ -2,7 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, useColorScheme } from "react-native
 import { ScrollView } from "react-native-gesture-handler"
 import { View } from "./Themed"
 import Values from "@/constants/Values"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Colors from "@/constants/Colors"
 import { Ionicons } from "@expo/vector-icons"
 import { List } from "@/constants/ImportTypes"
@@ -12,14 +12,21 @@ type ScreenProps = {
     listTypeID: string,
     isPost: boolean,
     onChange: (category: string) => void,
+    listID: string,
 }
 
-export const SearchCategories = ({listTypeID, isPost, onChange}: ScreenProps) => {
+export const SearchCategories = ({listTypeID, isPost, onChange, listID}: ScreenProps) => {
     // If post, get user lists and display in horizontal scrollView
-    const [selectedID, setSelectedID] = useState('');
+    const [selectedID, setSelectedID] = useState(listID);
     const colorScheme = useColorScheme();
     const { movieLists, tvLists } = useData();
     var reorderedLists: List[] = [];
+
+    useEffect(() => {
+    if (selectedID !== listID) {
+      setSelectedID(listID);
+    }
+  }, [listID]);
 
     const reorderData = (data: List[], firstId: string, secondId: string) => {
         const firstItem = data.find(item => item.list_id === firstId);
