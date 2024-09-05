@@ -14,6 +14,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { FIREBASE_DB } from '@/firebaseConfig';
 import { useAuth } from '@/contexts/authContext';
 import { fetchUserData } from '@/data/getComments';
+import { useLocalSearchParams } from 'expo-router';
 
 const USERS_PAGE_SIZE = 10;
 
@@ -97,8 +98,11 @@ const UsersTabContent = ({ query }: { query: string }) => {
 }
 
 export default function SearchScreen() {
+    const { initialIndex } = useLocalSearchParams();
     const colorScheme = useColorScheme();
     const [search, setSearch] = useState('');
+
+    const whichTab = initialIndex ? parseInt(initialIndex as string) : 0;
 
     const moviesTabContent = useCallback(() => 
         <MoviesTabContent
@@ -126,13 +130,13 @@ export default function SearchScreen() {
             title: 'Users',
             content: usersTabContent
         },
-    ];
+    ]; 
 
     return (
         <View style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1 }}>
             <SafeAreaView style={styles.container}>
                 <SearchInput search={search} setSearch={setSearch} isFocused={false} />
-                <SearchTabs tabs={searchTabs} onTabChange={() => {}} index={0} />
+                <SearchTabs tabs={searchTabs} onTabChange={() => {}} index={whichTab}/>
             </SafeAreaView>
         </View>
     );

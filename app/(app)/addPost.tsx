@@ -16,31 +16,6 @@ import Toast from 'react-native-toast-message';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 
-const MovieTabContent = ({ query, onSelect }: { query: string, onSelect: (item: AboutItem) => void}) => {
-  const [listID, setListID] = useState('');
-
-  return (
-    <View>
-      <View>
-        <SearchCategories listTypeID={Values.movieListsID} isPost={true} onChange={selectedID => setListID(selectedID)} />
-      </View>
-      <NewPostSearchLists query={query} listTypeID={Values.movieListsID} listID={listID} onSelect={onSelect} />
-    </View>
-  )
-}
-
-const TVTabContent = ({ query, onSelect }: { query: string, onSelect: (item: AboutItem) => void}) => {
-  const [listID, setListID] = useState('');
-
-  return (
-    <View>
-      <View>
-        <SearchCategories listTypeID={Values.tvListsID} isPost={true} onChange={selectedID => setListID(selectedID)} />
-      </View>
-      <NewPostSearchLists query={query} listTypeID={Values.tvListsID} listID={listID} onSelect={onSelect} />
-    </View>
-  )
-}
 
 type AboutItem = {
   id: string,
