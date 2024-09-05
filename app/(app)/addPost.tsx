@@ -150,7 +150,20 @@ export default function NewPostScreen() {
   return (
     <GestureHandlerRootView>
       <View style={[styles.container, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
-        <TextInput
+        {!aboutItem.id ? <>
+          <View style={styles.switchContainer}>
+            <Text style={styles.aboutText}>What's this about?</Text>
+            <TouchableOpacity onPress={() => {
+              setSearchVisible(prev => !prev);
+            }}>
+              <Ionicons name={searchVisible ? "close" : "search"} size={35} color={Colors[colorScheme ?? 'light'].text} />
+            </TouchableOpacity>
+          </View>
+          <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
+          <SearchTabs tabs={searchTabs} onTabChange={() => {}} index={0} />
+        </> :
+        <View>
+          <TextInput
             multiline
             autoCapitalize="sentences"
             placeholder="Speak your mind..."
@@ -172,19 +185,6 @@ export default function NewPostScreen() {
             value={hasSpoilers}
           />
         </View>
-        {!aboutItem.id ? <>
-          <View style={styles.switchContainer}>
-            <Text style={styles.aboutText}>What's this about?</Text>
-            <TouchableOpacity onPress={() => {
-              setSearchVisible(prev => !prev);
-            }}>
-              <Ionicons name={searchVisible ? "close" : "search"} size={35} color={Colors[colorScheme ?? 'light'].text} />
-            </TouchableOpacity>
-          </View>
-          <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
-          <SearchTabs tabs={searchTabs} onTabChange={() => {}} index={0} />
-        </> :
-        <View>
           <View style={styles.switchContainer}>
             <Text style={styles.aboutText}>About</Text>
             <TouchableOpacity onPress={() => setAboutItem(emptyItem)}>

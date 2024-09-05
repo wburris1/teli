@@ -32,8 +32,12 @@ export const useItemSearch = async (query: string, isMovie: boolean): Promise<It
       const json = await response.json();
       allResults = json.results;
     }
+    // Use a Map to filter out duplicates based on unique id
+    const uniqueResults = Array.from(
+      new Map(allResults.map(item => [item.id, item])).values()
+  );
     
-    return allResults;
+    return uniqueResults;
     // return json.results;
 };
 
