@@ -22,53 +22,59 @@ export default function TabOneScreen() {
 
   return (
     <View style={styles.container}>
-      {posts && posts.length > 0 ? <PostFeedWithModals
-        posts={posts}
-        loading={loading}
-        post={post}
-        showComments={showComments}
-        showLikes={showLikes}
-        handleComments={handleComments}
-        handleLikes={handleLikes}
-        setShowComments={setShowComments}
-        setShowLikes={setShowLikes}
-        redirectLink='home'
-        handleRefresh={handleRefresh}
-        refreshing={refreshing}
-        loadMorePosts={loadMorePosts}
-        isLoadingMore={isLoadingMore}
-        handleIncrementComment={handleIncrementComment}
-        incrementComment={incrementComment}
-      /> : (
+      {/* Show loading indicator while posts are being fetched */}
+      {loading ? (
+        <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
+      ) : posts && posts.length > 0 ? (
+        <PostFeedWithModals
+          posts={posts}
+          loading={loading}
+          post={post}
+          showComments={showComments}
+          showLikes={showLikes}
+          handleComments={handleComments}
+          handleLikes={handleLikes}
+          setShowComments={setShowComments}
+          setShowLikes={setShowLikes}
+          redirectLink='home'
+          handleRefresh={handleRefresh}
+          refreshing={refreshing}
+          loadMorePosts={loadMorePosts}
+          isLoadingMore={isLoadingMore}
+          handleIncrementComment={handleIncrementComment}
+          incrementComment={incrementComment}
+        />
+      ) : (
         <GestureHandlerRootView>
-          <ScrollView 
-          contentContainerStyle={styles.emptyContainer} 
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />} 
-          showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={styles.emptyContainer}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.emptyContainer}>
-              <Ionicons 
-                name="people-outline" 
-                size={80} 
-                color={Colors[colorScheme ?? 'light'].text} 
+              <Ionicons
+                name="people-outline"
+                size={80}
+                color={Colors[colorScheme ?? 'light'].text}
               />
               <Text style={styles.welcomeText}>Welcome to Take2</Text>
               <Text style={styles.messageText}>Add friends to see their posts here</Text>
-              <TouchableOpacity style={styles.addButton} onPress={() => {
-                router.push({
-                  pathname: '/search',
-                  params: { initialIndex: 2 },
-                });
-              }}>
-                <Text style={styles.addButtonText} >
-                  Add Friends
-                </Text>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => {
+                  router.push({
+                    pathname: '/search',
+                    params: { initialIndex: 2 },
+                  });
+                }}
+              >
+                <Text style={styles.addButtonText}>Add Friends</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
         </GestureHandlerRootView>
-      )
-    }
-      </View>
+      )}
+    </View>
   );
 }
 
