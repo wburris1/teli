@@ -13,7 +13,7 @@ import { ExpandableText } from "./AnimatedViews.tsx/ExpandableText";
 import { Link } from "expo-router";
 import React from "react";
 import { createNotification } from "./Helpers/CreatePlusAddNotification";
-import { sendPushNotification } from "./Helpers/sendNotification";
+import { checkShouldSendNotification, sendPushNotification } from "./Helpers/sendNotification";
 import { useData } from "@/contexts/dataContext";
 import Dimensions from "@/constants/Dimensions";
 import { LinearGradient } from "expo-linear-gradient";
@@ -70,8 +70,11 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
           }); 
         } else {
           if (userData) {
-            createNotification(item.user_id, NotificationType.LikedPostNotification, userData, item)
-            sendPushNotification(item.user_id, "Liked Post", `${userData.first_name} liked your post`)
+            const sendNotification = await checkShouldSendNotification(NotificationType.LikedPostNotification, item.user_id, userData);
+            if (sendNotification) {
+              createNotification(item.user_id, NotificationType.LikedPostNotification, userData, item)
+              sendPushNotification(item.user_id, "Liked Post", `${userData.first_name} liked your post`)
+            }
           }
           setNumLikes(numLikes + 1);
           await updateDoc(postRef, {

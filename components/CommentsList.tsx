@@ -18,7 +18,7 @@ import { toFinite } from 'lodash';
 import { Link } from 'expo-router';
 import { createNotification } from './Helpers/CreatePlusAddNotification';
 import { isDate } from 'date-fns';
-import { sendPushNotification } from './Helpers/sendNotification';
+import { checkShouldSendNotification, sendPushNotification } from './Helpers/sendNotification';
 
 const screenWidth = Dimensions.screenWidth;
 const DELETE_WIDTH = 80;
@@ -202,8 +202,11 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
                 likes: arrayUnion(user.uid)
             });
             if (userData) {
-              createNotification(comment.user_id, NotificationType.LikedCommentNotification, userData, post, comment.comment)
-              sendPushNotification(comment.user_id, "Liked Comment", `${userData.first_name} liked your comment`)
+              const sendNotification = await checkShouldSendNotification(NotificationType.LikedCommentNotification, comment.user_id, userData);
+              if (sendNotification) {
+                createNotification(comment.user_id, NotificationType.LikedCommentNotification, userData, post, comment.comment)
+                sendPushNotification(comment.user_id, "Liked Comment", `${userData.first_name} liked your comment`)
+              }
             }
         }
     }, [isLiked, numLikes, user, post, comment.id, parentCommentID]);

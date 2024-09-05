@@ -1,7 +1,11 @@
 // notifications.ts
 
 import { fetchUserData } from "@/data/getComments";
-import { ExpoPushToken } from "expo-notifications";
+import {  NotificationType } from "@/constants/ImportTypes";
+import { collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
+import { FIREBASE_DB } from "@/firebaseConfig";
+
+const db = FIREBASE_DB;
 
 // Function to send a push notification using Expo
 export async function sendPushNotification(
@@ -13,6 +17,7 @@ export async function sendPushNotification(
     try {
       const receiverData = await fetchUserData(userID);
       const userPushToken = receiverData.userPushToken 
+      if (!userPushToken) return;
       // Define the message to be sent
       const message = {
         to: userPushToken,
@@ -44,3 +49,29 @@ export async function sendPushNotification(
     }
   }
 }
+
+export async function checkShouldSendNotification(notificationType: NotificationType, userID: string, userData: UserData) {
+  const timeLimit = 1 * 60 * 1000; // 1 minutes in milliseconds
+
+  const notificationsRef = collection(db, "users", userID, "notifications");
+  const q = query(
+    notificationsRef,
+    where("notification_type", "==", notificationType),
+    where("sender_id", "==", userData.user_id),
+    orderBy("created_at", "desc"),
+    limit(1),
+  );
+  const querySnapshot = await getDocs(q);
+  if (!querySnapshot.empty) {
+    const currentTime = new Date();
+    const lastNotification = querySnapshot.docs[0];
+    const lastNotificationTime = lastNotification.data().created_at.toDate();
+    const timeDiff = currentTime.getTime() - lastNotificationTime.getTime();
+    if (timeDiff < timeLimit) {
+      console.log('Follow notification sent recently, skipping notification.');
+      return false;
+    }
+  }
+  return true;
+}
+
