@@ -66,6 +66,16 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
               : actor.roles && actor.roles.length > 0 ? actor.roles[0].character
               : '' // Fallback in case roles are empty or undefined
           } as CastMember));
+          const director = json.crew.find((member: any) => member.job === 'Director');
+          if (director) {
+            actorsArray.unshift({
+             name: director.name,
+              popularity: director.popularity,
+              profile_path: director.profile_path,
+              job: 'Director',
+              character: 'Director'
+            } as CastMember);
+          }
           setCast(actorsArray)
         })
         .catch(error => console.error('Error Fetching Cast:', error));
