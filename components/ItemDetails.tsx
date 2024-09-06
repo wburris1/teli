@@ -12,7 +12,7 @@ import { useData } from '@/contexts/dataContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { addToBookmarked } from '@/data/addItem';
 import { removeFromList } from '@/data/deleteItem';
-import { CastMember, UserItem } from '@/constants/ImportTypes';
+import { CastMember, Post, UserItem } from '@/constants/ImportTypes';
 import { ExpandableText } from './AnimatedViews.tsx/ExpandableText';
 import AddToListsScreen from './AddToListsModal';
 import Toast from 'react-native-toast-message';
@@ -21,6 +21,8 @@ import { DisplayItemInfo } from './DisplayItemInfo';
 import { Reccomendation } from './Reccomendation';
 import { drop } from 'lodash';
 import { Logo } from './LogoView';
+import { useAuth } from '@/contexts/authContext';
+import { FetchFollowedUsersRankings } from './Helpers/FetchFunctions';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -36,6 +38,7 @@ type Props = {
 
 const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Props) => {
     const isMovie = 'title' in item ? true : false;
+    const {user} = useAuth();
     const listID = Values.seenListID;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
     //const [items, setItems] = useState<UserItem[]>([]);
@@ -50,6 +53,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
     const [score, setScore] = useState("");
     const [seenItems, setSeenItems] = useState<UserItem[]>([]);
     const [listsModalVisible, setListsModalVisible] = useState(false);
+    const [followedUsersPosts, setFollowedUsersPosts] = useState<Post[]>([]);
 
     var releaseYear = "";
     var title = "";
@@ -93,6 +97,15 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
             }
         }
     }, [movies, shows, refreshFlag])
+
+    useEffect(() => {
+      const fetchposts = async () => {
+        if (!user) return;
+        const adi = await FetchFollowedUsersRankings(item.id, user?.uid)
+        setFollowedUsersPosts(adi);
+      }
+      fetchposts();
+    }, [user])
 
     const listsModal = useCallback(() => {
         const isNew = isMovie && movies ? !movies.find(movie => movie.item_id == item.id) :
@@ -238,6 +251,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                 </View>}
                 
                   <DisplayItemInfo item={item}></DisplayItemInfo>
+                  <Text>{`${followedUsersPosts[0]?.user_id} ranked this a ${followedUsersPosts[0]?.score}`} </Text>
                 
                 <View style={styles.castContainer}>
                   <Text style={styles.castText}>Cast</Text>
