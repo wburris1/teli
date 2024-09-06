@@ -39,8 +39,8 @@ const RenderItem = ({ item }: RowProps) => {
 };
 export const MemoizedRenderItem = memo(RenderItem);
 
-export const RenderGrid = ({ listID, items }:
-  {listID: string, items: Item[] }) => {
+export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore }:
+  {listID: string, items: Item[], loadMoreItems: () => void, isLoadingMore: boolean }) => {
     const colorScheme = useColorScheme();
     const [popUpIndex, setPopUpIndex] = useState(-1);
     const topPadding = useSharedValue(0);
@@ -58,6 +58,10 @@ export const RenderGrid = ({ listID, items }:
         paddingTop: topPadding.value,
       }
     }, [topPadding.value]);
+    const renderFooter = () => {
+      if (!isLoadingMore) return null;
+      return <ActivityIndicator style={{ margin: 20 }} />;
+    };
     return (
       <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1, marginTop: 3}}>
         <Animated.FlatList
@@ -68,6 +72,9 @@ export const RenderGrid = ({ listID, items }:
           removeClippedSubviews={true}
           showsVerticalScrollIndicator={false}
           style={[animatedStyle, {flex: 1}]}
+          onEndReached={loadMoreItems}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
         /> 
       </View>
     )

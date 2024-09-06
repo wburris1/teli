@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import ItemScreen from "./SearchCard";
-import { useItemSearch } from "@/data/itemData";
+import { fetchMoreItems, useItemSearch } from "@/data/itemData";
 import _, { set } from 'lodash';
 import { RenderGrid } from "../GridItems";
 
@@ -10,6 +10,8 @@ export const MoviesTabContent = ({ query, isAdding, addItems, outItems, setAddIt
     const [movieList, setMovieList] = useState<Item[]>([]);
     const [displayGrid, setDisplayGrid] = useState(true);
     const cachedResults = useRef<Item[] | null>(null);
+    const startPage = useRef(2);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     const debouncedFetchData = useCallback(
         _.debounce(async (query) => {
@@ -27,12 +29,19 @@ export const MoviesTabContent = ({ query, isAdding, addItems, outItems, setAddIt
           }
         }, 300),[]
     );
+    const loadMore = async () => {
+      setIsLoadingMore(true);
+      const newItems = await fetchMoreItems(startPage.current, true)
+      setMovieList([...movieList, ...newItems]);
+      setIsLoadingMore(false);
+      startPage.current += 1;
+    }
 
     useEffect(() => {
         debouncedFetchData(query);
     }, [query, debouncedFetchData]);
     return (
-      displayGrid && !isAdding ? <RenderGrid listID={listID} items={movieList} /> 
+      displayGrid && !isAdding ? <RenderGrid listID={listID} items={movieList} isLoadingMore={isLoadingMore} loadMoreItems={loadMore} /> 
       : (<ItemScreen movieList={movieList} isAdding={isAdding} addItems={addItems} outItems={outItems}
          setAddItems={setAddItems} setOutItems={setOutItems} listID={listID} /> )
   )
@@ -44,6 +53,8 @@ export const ShowsTabContent = ({ query, isAdding, addItems, outItems, setAddIte
     const [tvList, setTvList] = useState<Item[]>([]);
     const [displayGrid, setDisplayGrid] = useState(true);
     const cachedResults = useRef<Item[] | null>(null);
+    const startPage = useRef(2);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     
     const debouncedFetchData = useCallback(
         _.debounce(async (query) => {
@@ -65,9 +76,16 @@ export const ShowsTabContent = ({ query, isAdding, addItems, outItems, setAddIte
     useEffect(() => {
         debouncedFetchData(query);
     }, [query, debouncedFetchData]);
+    const loadMore = async () => {
+      setIsLoadingMore(true);
+      const newItems = await fetchMoreItems(startPage.current, false)
+      setTvList([...tvList, ...newItems]);
+      setIsLoadingMore(false);
+      startPage.current += 1;
+    }
 
     return (
-      displayGrid && !isAdding ? <RenderGrid listID={listID} items={tvList} />
+      displayGrid && !isAdding ? <RenderGrid listID={listID} items={tvList} isLoadingMore={isLoadingMore} loadMoreItems={loadMore}/>
       : (<ItemScreen movieList={tvList} isAdding={isAdding} addItems={addItems} outItems={outItems}
         setAddItems={setAddItems} setOutItems={setOutItems} listID={listID} /> )
     )
