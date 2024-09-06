@@ -1,6 +1,6 @@
 import Dimensions from "@/constants/Dimensions"
 import { CastMember } from "@/constants/ImportTypes"
-import { TouchableOpacity, StyleSheet, Image, useColorScheme } from "react-native"
+import { TouchableOpacity, StyleSheet, Image, useColorScheme, ScrollView } from "react-native"
 import { Text, View } from "./Themed"
 import Colors from "@/constants/Colors"
 import { Ionicons } from "@expo/vector-icons"
@@ -28,36 +28,86 @@ export const DisplayItemInfo =  ({ item }: { item: Item }) => {
   }
   const convertRunTime = (runTime: number) => {
     return runTime < 60 ? 
-    `Runtime: ${runTime}m` : 
-    `Runtime: ${Math.floor(runTime / 60)}h ${runTime % 60}m`
+    `${runTime}m` : 
+    `${Math.floor(runTime / 60)}h ${runTime % 60}m`
   }
 
   return (
-    <View style={styles.castContainer}>
-      {item.number_of_seasons !== undefined && (
-      <Text style={styles.castText}>{`Total Seasons: ${item.number_of_seasons}`}</Text>
-    )}
-    
-    {item.number_of_episodes !== undefined && (
-      <Text style={styles.castText}>{`Total Episodes: ${item.number_of_episodes}`}</Text>
-    )}
-    
-    {item.vote_average > 0 && (
-      <Text style={styles.castText}>{`Average Score: ${item.vote_average.toFixed(2)}`}</Text>
-    )}
-    {item.vote_count > 500 && (
-      <Text style={styles.castText}>{`Ranked by ${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+ people`}</Text>
-    )}
-    {runTime > 0 && (
-      <Text style={styles.castText}>{convertRunTime(runTime)}</Text>
-    )}
-     {item.budget > 0 && (
-      <Text style={styles.castText}>{`Budget: ${convertNum(item.budget)}`}</Text>
-    )}
-    {item.revenue > 0 && (
-      <Text style={styles.castText}>{`Revenue: ${convertNum(item.revenue)}`}</Text>
-    )}
-    </View>
+    <ScrollView style={styles.castContainer} showsHorizontalScrollIndicator={false} horizontal>
+      <View style={styles.container}>
+      {item.vote_average > 0 && item.vote_count > 0 &&
+        <View style={[styles.infoContainer, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
+          <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>{item.vote_average.toFixed(2)}</Text>
+          <View style={styles.bottomText}>
+            <Text style={[styles.castText, {color: Colors[colorScheme ?? 'light'].background,}]}>
+              {item.vote_count > 500 ? `${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+` :
+              item.vote_count.toLocaleString()}
+            </Text>
+            <Ionicons name='person' size={20} color={Colors[colorScheme ??  'light'].background} />
+          </View>
+        </View>}
+
+        {item.number_of_seasons !== undefined && (
+          <View style={[styles.infoContainer, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
+            <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>
+              {item.number_of_seasons}
+            </Text>
+            <View style={styles.bottomText}>
+              <Text style={[styles.castText, {color: Colors[colorScheme ?? 'light'].background,}]}>Seasons</Text>
+            </View>
+          </View>
+        )}
+        
+        {item.number_of_episodes !== undefined && (
+          <View style={[styles.infoContainer, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
+            <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>
+              {item.number_of_episodes}
+            </Text>
+            <View style={styles.bottomText}>
+              <Text style={[styles.castText, {color: Colors[colorScheme ?? 'light'].background,}]}>Episodes</Text>
+            </View>
+          </View>
+        )}
+        
+        {runTime > 0 && (
+          <View style={[styles.infoContainer, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
+            <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>
+              {convertRunTime(runTime)}
+            </Text>
+            <View style={styles.bottomText}>
+              <Text style={[styles.castText, {color: Colors[colorScheme ?? 'light'].background,}]}>Runtime</Text>
+              <Ionicons name='timer' size={20} color={Colors[colorScheme ??  'light'].background} />
+            </View>
+          </View>
+        )}
+        {item.budget > 0 && (
+          <View style={[styles.infoContainer, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
+            <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>
+              {convertNum(item.budget)}
+            </Text>
+            <View style={styles.bottomText}>
+              <Text style={[styles.castText, {color: Colors[colorScheme ?? 'light'].background,}]}>
+                Budget
+              </Text>
+              <Ionicons name='wallet' size={20} color={Colors[colorScheme ??  'light'].background} />
+            </View>
+          </View>
+        )}
+        {item.revenue > 0 && (
+          <View style={[styles.infoContainer, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
+            <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>
+              {convertNum(item.revenue)}
+            </Text>
+            <View style={styles.bottomText}>
+              <Text style={[styles.castText, {color: Colors[colorScheme ?? 'light'].background,}]}>
+                Revenue
+              </Text>
+              <Ionicons name='cash' size={20} color={Colors[colorScheme ??  'light'].background} />
+            </View>
+          </View>
+        )}
+      </View>
+    </ScrollView>
   ) // ${(item.revenue/1000000).toLocaleString()}
 }
 
@@ -66,11 +116,33 @@ const styles = StyleSheet.create({
   castText: {
     textAlign: 'left',
     fontSize: screenWidth > 400 ? 16 : 14,
-    fontWeight: '400', 
-    paddingLeft: 10, // Ensure padding on the left to align with the rest of the content
+    fontWeight: '300', 
+    paddingRight: 2,
   },
   castContainer: {
     //flexDirection: 'column',
     width: screenWidth,
   },
+  container: {
+    flexDirection: 'row',
+    padding: 7.5,
+    alignItems: 'center',
+  },
+  infoContainer: {
+    borderRadius: 20,
+    padding: 5,
+    paddingHorizontal:  10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  numberText: {
+    fontSize: 18,
+    fontWeight: '600'
+  },
+  bottomText: {
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+  }
 })
