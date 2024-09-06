@@ -202,13 +202,16 @@ const ItemDetails = ({item, cast, reccomendations, redirectLink}: Props) => {
                     {item.tagline != "" && <Text style={{fontSize: 17, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
                     <ExpandableText text={item.overview} maxHeight={65} textStyle={styles.overview} startExpanded={false} />
                 </View>
-                <View style={styles.genreContainer}>
+                {item.genres && 
+                <ScrollView showsHorizontalScrollIndicator={false} horizontal>
+                    <View style={styles.genreContainer} >
                     {item.genres.map(genre => (
                         <View key={genre.id} style={[styles.genreButton, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
                             <Text>{genre.name}</Text>
                         </View>
                     ))}
-                </View> 
+                    </View>
+                </ScrollView>}
                 
                   <DisplayItemInfo item={item}></DisplayItemInfo>
                 
