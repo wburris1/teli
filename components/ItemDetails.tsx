@@ -19,6 +19,8 @@ import Toast from 'react-native-toast-message';
 import { CastList } from './CastList';
 import { DisplayItemInfo } from './DisplayItemInfo';
 import { Reccomendation } from './Reccomendation';
+import { drop } from 'lodash';
+import { Logo } from './LogoView';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -26,12 +28,13 @@ const screenHeight = Dimensions.screenHeight;
 
 type Props = {
     item: Item
+    director: CastMember | undefined
     cast: CastMember[]
     reccomendations: Item[]
     redirectLink: string
 };
 
-const ItemDetails = ({item, cast, reccomendations, redirectLink}: Props) => {
+const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Props) => {
     const isMovie = 'title' in item ? true : false;
     const listID = Values.seenListID;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
@@ -144,13 +147,16 @@ const ItemDetails = ({item, cast, reccomendations, redirectLink}: Props) => {
                                     </View>} 
                             </View>
                         </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', paddingVertical: 0 }}>
-                            <TouchableOpacity onPress={() => setRankVisible(true)} style={{}}>
-                                <Ionicons
-                                name={isDupe ? "eye" : "eye-outline"}
-                                size={35}
-                                color={Colors[colorScheme ?? 'light'].text}
-                                />
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
+                            <TouchableOpacity onPress={() => setRankVisible(true)} style={{
+                                flexDirection: 'row', alignItems: 'center', height: 35, borderWidth: 2,
+                                backgroundColor: 'white', borderRadius: 20, paddingHorizontal: 5,
+                                borderColor: Colors['theme'],
+                            }}>
+                                <Logo width={20} height={20} />
+                                <Text style={[styles.buttonText, {color: 'black', paddingLeft: 3}]}>
+                                    {isDupe ? 'Rerank' : 'Rank'}
+                                </Text>
                             </TouchableOpacity>
                             {((isMovie && movies) || (!isMovie && shows)) && !isDupe &&
                             <TouchableOpacity onPress={() => {
@@ -198,28 +204,44 @@ const ItemDetails = ({item, cast, reccomendations, redirectLink}: Props) => {
                         </View>
                     </View>
                 </View>
+                {item.overview &&
                 <View style={styles.overviewContainer}>
                     {item.tagline != "" && <Text style={{fontSize: 17, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
                     <ExpandableText text={item.overview} maxHeight={65} textStyle={styles.overview} startExpanded={false} />
-                </View>
-                {item.genres && 
-                <ScrollView showsHorizontalScrollIndicator={false} horizontal>
-                    <View style={styles.genreContainer} >
-                    {item.genres.map(genre => (
-                        <View key={genre.id} style={[styles.genreButton, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
-                            <Text>{genre.name}</Text>
+                </View>}
+                {director &&
+                <View style={[styles.castContainer, {justifyContent: 'space-between'}]}>
+                  <View>
+                    <Text style={styles.directorText}>Directed by
+                      <Text style={{fontWeight: '600'}}> {director.name}</Text>
+                    </Text>
+                    {item.genres && 
+                    <ScrollView showsHorizontalScrollIndicator={false} horizontal>
+                        <View style={styles.genreContainer} >
+                        {item.genres.map(genre => (
+                            <View key={genre.id} style={[styles.genreButton, {borderColor: Colors[colorScheme ?? 'light'].text,
+                                backgroundColor: Colors[colorScheme ?? 'light'].gray}]}>
+                                <Text style={{fontWeight: '600'}}>{genre.name}</Text>
+                            </View>
+                        ))}
                         </View>
-                    ))}
-                    </View>
-                </ScrollView>}
+                    </ScrollView>}
+                  </View>
+                  {director.profile_path && 
+                  <Image 
+                    style={{width: screenWidth > 400 ? 50 : 44, aspectRatio: 2/3, 
+                        borderRadius: 10, backgroundColor: 'gray', borderWidth: 1,
+                        borderColor: Colors[colorScheme ?? 'light'].text, marginRight: 10}}
+                    source={{ uri: imgUrl + director.profile_path }} />}
+                </View>}
                 
                   <DisplayItemInfo item={item}></DisplayItemInfo>
                 
                 <View style={styles.castContainer}>
                   <Text style={styles.castText}>Cast</Text>
                 </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View style={{flexDirection: 'row'}}>
+                <ScrollView style={{width: screenWidth}} horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={{flexDirection: 'row', justifyContent: 'flex-start'}}>
                   {cast.map((row, rowIndex) => (
                     <CastList key={rowIndex} cast={row} />
                   ))}
@@ -229,7 +251,7 @@ const ItemDetails = ({item, cast, reccomendations, redirectLink}: Props) => {
                   <Text style={styles.castText}>More Like This</Text>
                 </View>
 
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <ScrollView style={{width: screenWidth}} horizontal showsHorizontalScrollIndicator={false}>
                   <View style={{flexDirection: 'row'}}>
                   {reccomendations.map((item, rowIndex) => (
                     <Reccomendation key={rowIndex} item={item} redirectLink={redirectLink} />
@@ -282,6 +304,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingLeft: 10,
         paddingRight: 10,
+        paddingBottom: 2,
         justifyContent: 'flex-end',
         height: 140 * 1.5, //202.5
     },
@@ -309,7 +332,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: 300,
+        height: screenWidth > 400 ? 200 : 150,
     },
     title: {
         textAlign: 'right',
@@ -318,30 +341,31 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         paddingHorizontal: 1,
-        fontSize: screenWidth > 400 ?  16 : 12, //(Dimensions.screenWidth/1000) * 34 ,//PixelRatio.get() * 4, //16,
+        fontSize: screenWidth > 400 ?  22 : 18, //(Dimensions.screenWidth/1000) * 34 ,//PixelRatio.get() * 4, //16,
         fontWeight: '600',
     },
     date: {
         textAlign: 'right',
-        paddingBottom: 10,
+        paddingBottom: 5,
         fontSize: 14,
         alignSelf: 'flex-start'
     },
     overviewContainer: {
         width: screenWidth,
         paddingVertical: 5,
-        paddingLeft: 10,
-        paddingRight: 10,
         alignItems: 'center',
         //borderBottomWidth: 1,
     },
     overview: {
         textAlign: 'left',
         fontSize: 14,
+        width: screenWidth,
+        paddingLeft: 10,
+        paddingRight: 10,
     },
     genreContainer: {
         flexDirection: 'row',
-        width: screenWidth,
+        width: screenWidth > 400 ? screenWidth - 60 : screenWidth - 54,
         alignItems: 'center',
         paddingLeft: 5
     },
@@ -370,6 +394,12 @@ const styles = StyleSheet.create({
       fontSize: screenWidth > 400 ? 24 : 20,
       fontWeight: 'bold', 
       paddingLeft: 10, // Ensure padding on the left to align with the rest of the content
+  },
+  directorText: {
+    textAlign: 'left',
+    fontSize: screenWidth > 400 ? 21 : 17,
+    fontWeight: '400', 
+    paddingLeft: 10,
   }
 });
 
