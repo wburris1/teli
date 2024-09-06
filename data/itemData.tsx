@@ -44,6 +44,7 @@ export const useItemSearch = async (query: string, isMovie: boolean): Promise<It
 export const useItemDetails = (id: string, isMovie: boolean) => {
     const [item, setItem] = useState<Item>();
     const [cast, setCast] = useState<CastMember[]>([]);
+    const [director, setDirector] = useState<CastMember>();
     const [reccomendations, setReccomendations] = useState<Item[]>([]);
 
     const baseUrl = isMovie ? movieDetailsUrl : tvDetailsUrl;
@@ -67,16 +68,8 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
               : '' // Fallback in case roles are empty or undefined
           } as CastMember));
           const director = json.crew.find((member: any) => member.job === 'Director');
-          if (director) {
-            actorsArray.unshift({
-             name: director.name,
-              popularity: director.popularity,
-              profile_path: director.profile_path,
-              job: 'Director',
-              character: 'Director'
-            } as CastMember);
-          }
-          setCast(actorsArray)
+          setDirector(director);
+          setCast(actorsArray);
         })
         .catch(error => console.error('Error Fetching Cast:', error));
     }
@@ -101,5 +94,5 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
         getRecommendations();
     }, [id]);
 
-    return {item: item as Item, cast, reccomendations: reccomendations as Item[]};
+    return {item: item as Item, director, cast, reccomendations: reccomendations as Item[]};
 };

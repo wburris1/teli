@@ -37,7 +37,7 @@ export const DisplayItemInfo =  ({ item }: { item: Item }) => {
       <View style={styles.container}>
       {item.vote_average > 0 && item.vote_count > 0 &&
         <View style={[styles.infoContainer, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
-          <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>{item.vote_average.toFixed(2)}</Text>
+          <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>{item.vote_average.toFixed(1)}</Text>
           <View style={styles.bottomText}>
             <Text style={[styles.castText, {color: Colors[colorScheme ?? 'light'].background,}]}>
               {item.vote_count > 500 ? `${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+` :
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   infoContainer: {
-    borderRadius: 20,
+    borderRadius: 15,
     padding: 5,
     paddingHorizontal:  10,
     alignItems: 'center',
