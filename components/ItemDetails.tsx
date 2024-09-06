@@ -209,15 +209,17 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                     {item.tagline != "" && <Text style={{fontSize: 17, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
                     <ExpandableText text={item.overview} maxHeight={65} textStyle={styles.overview} startExpanded={false} />
                 </View>}
-                {director &&
+                {(director || item.genres) &&
                 <View style={[styles.castContainer, {justifyContent: 'space-between'}]}>
                   <View>
+                    {director &&
                     <Text style={styles.directorText}>Directed by
                       <Text style={{fontWeight: '600'}}> {director.name}</Text>
-                    </Text>
+                    </Text>}
                     {item.genres && 
                     <ScrollView showsHorizontalScrollIndicator={false} horizontal>
-                        <View style={styles.genreContainer} >
+                        <View style={[styles.genreContainer,
+                            {width: director ? screenWidth > 400 ? screenWidth - 60 : screenWidth - 54 : screenWidth,                            }]} >
                         {item.genres.map(genre => (
                             <View key={genre.id} style={[styles.genreButton, {borderColor: Colors[colorScheme ?? 'light'].text,
                                 backgroundColor: Colors[colorScheme ?? 'light'].gray}]}>
@@ -227,7 +229,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                         </View>
                     </ScrollView>}
                   </View>
-                  {director.profile_path && 
+                  {director && director.profile_path && 
                   <Image 
                     style={{width: screenWidth > 400 ? 50 : 44, aspectRatio: 2/3, 
                         borderRadius: 10, backgroundColor: 'gray', borderWidth: 1,
@@ -365,7 +367,6 @@ const styles = StyleSheet.create({
     },
     genreContainer: {
         flexDirection: 'row',
-        width: screenWidth > 400 ? screenWidth - 60 : screenWidth - 54,
         alignItems: 'center',
         paddingLeft: 5
     },
