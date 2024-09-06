@@ -11,22 +11,13 @@ const tvSearchUrl = "https://api.themoviedb.org/3/search/tv?api_key=";
 const tvDiscoverUrl = "https://api.themoviedb.org/3/discover/tv?api_key=";
 const tvDetailsUrl = "https://api.themoviedb.org/3/tv/";
 
-export const useItemSearch = async (query: string, isMovie: boolean): Promise<Item[]> => {
+export const useItemSearch = async (query: string, isMovie: boolean, startPage = 1): Promise<Item[]> => {
     const baseUrl = isMovie ? movieSearchUrl : tvSearchUrl;
     let fetchUrl = baseUrl + tmdbKey + "&query=" + query;
     let allResults: Item[] = [];
 
     if (!query) {
-        fetchUrl = (isMovie ? movieDiscoverUrl : tvDiscoverUrl) + tmdbKey;
-        const promises = [];
-        for (let page = 1; page <= 6; page++) { // 6 pages would return 120 results
-            const pageUrl = fetchUrl + "&page=" + page;
-            promises.push(fetch(pageUrl).then(res => res.json()));
-        }
-        const resultsArray = await Promise.all(promises);
-        resultsArray.forEach(pageJson => {
-            allResults = allResults.concat(pageJson.results);
-        });
+      allResults = await fetchMoreItems(1, isMovie)
     } else {
       const response = await fetch(fetchUrl);
       const json = await response.json();
@@ -35,10 +26,29 @@ export const useItemSearch = async (query: string, isMovie: boolean): Promise<It
     // Use a Map to filter out duplicates based on unique id
     const uniqueResults = Array.from(
       new Map(allResults.map(item => [item.id, item])).values()
-  );
-    
+    );
     return uniqueResults;
-    // return json.results;
+};
+
+export const fetchMoreItems = async (startPage = 1, isMovie: boolean): Promise<Item[]> => {
+  const promises = [];
+  const baseUrl = isMovie ? movieSearchUrl : tvSearchUrl;
+  let fetchUrl = baseUrl + tmdbKey + "&query=";
+  fetchUrl = (isMovie ? movieDiscoverUrl : tvDiscoverUrl) + tmdbKey;
+  let allResults: Item[] = [];
+
+  for (let page = startPage; page < startPage + 1; page++) { // 6 pages would return 120 results
+    const pageUrl = fetchUrl + "&page=" + page;
+    promises.push(fetch(pageUrl).then(res => res.json()));
+  }
+  const resultsArray = await Promise.all(promises);
+  resultsArray.forEach(pageJson => {
+      allResults = allResults.concat(pageJson.results);
+  });
+  const uniqueResults = Array.from(
+    new Map(allResults.map(item => [item.id, item])).values()
+  );
+  return uniqueResults;
 };
 
 export const useItemDetails = (id: string, isMovie: boolean) => {
