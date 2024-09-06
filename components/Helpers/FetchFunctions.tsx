@@ -49,19 +49,13 @@ export async function FetchFollowedUsersRankings (ItemID: string, userID: string
     where("user_id", "in", following),
   )
   const querySnapshot = await getDocs(filterPostsQuery);
-  const uniqueUserPosts: any = {}; // Map to store one post per user
   const posts: Post[] = [];
   if (!querySnapshot.empty) {
     querySnapshot.forEach((doc) => {
       const postData = doc.data();
-      const userId = postData.user_id;
-
-      // If the user is not yet in uniqueUserPosts, add their post
-      if (!uniqueUserPosts[userId]) {
-        uniqueUserPosts[userId] = postData;
         posts.push(postData as Post);
       }
-    });
+    )
   }
   return posts as Post[];
 };
