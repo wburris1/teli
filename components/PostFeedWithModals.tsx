@@ -51,9 +51,9 @@ PostListWithModalsProps) => {
     return <ActivityIndicator style={{ margin: 20 }} />;
   };
 
-
   return (
-    <GestureHandlerRootView style={{ width: '100%', height: '100%', backgroundColor: Colors[colorScheme ?? 'light'].background }}>
+    <GestureHandlerRootView style={{ width: '100%', height: '100%',
+    backgroundColor: Colors[colorScheme ?? 'light'].background, paddingBottom: redirectLink.includes('profile') ? 50 : 0 }}>
       {!loading ? (
         <>
           <FlatList

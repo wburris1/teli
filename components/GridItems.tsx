@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import Dimensions from '@/constants/Dimensions';
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withClamp, withSpring, withTiming } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type RowProps = {
     item: Item;
@@ -63,7 +64,14 @@ export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore }:
       return <ActivityIndicator style={{ margin: 20 }} />;
     };
     return (
-      <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1, marginTop: 3}}>
+      <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
+        <Text style={{fontSize: screenWidth  > 400 ? 24 : 20, fontWeight: 'bold',
+        position: 'absolute', top: 2, left: 5, zIndex: 2}}>
+          Browse
+        </Text>
+        <LinearGradient colors={[Colors[colorScheme ?? 'light'].background,
+          colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
+          style={{height: screenWidth > 400 ? 35 : 30, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1}} />
         <Animated.FlatList
           data={items}
           renderItem={({ item, index }) => <MemoizedRenderItem item={item} />}
@@ -71,7 +79,7 @@ export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore }:
           numColumns={3}
           removeClippedSubviews={true}
           showsVerticalScrollIndicator={false}
-          style={[animatedStyle, {flex: 1}]}
+          style={[animatedStyle, {flex: 1, paddingTop: screenWidth > 400 ? 32 : 28 }]}
           onEndReached={loadMoreItems}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}

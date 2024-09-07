@@ -80,7 +80,7 @@ export default function TabLayout() {
         options={{
           headerShown: false,
           tabBarShowLabel: false,
-          tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
+          tabBarIcon: ({ color, size, focused }) => <Ionicons name={focused ? "person" : "person-outline"} size={size} color={color} />,
           tabBarLabel: 'Profile',
           headerShadowVisible: false,
         }}

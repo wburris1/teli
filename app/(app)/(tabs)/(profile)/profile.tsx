@@ -83,7 +83,7 @@ const ProfilePage = () => {
   })  
   // Set loading to false once posts are loaded
   useEffect(() => {
-    if (posts.length > 0) {
+    if (posts) {
       setLoading(false);
     }
   }, [posts]);

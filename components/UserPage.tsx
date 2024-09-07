@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, RefreshControl } from 'react-native';
+import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, RefreshControl, SafeAreaView } from 'react-native';
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebaseConfig";
 import { Timestamp, collection, doc, getDoc, getDocs, query, serverTimestamp } from "firebase/firestore";
@@ -284,7 +284,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {completeReRender ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size="large" />
@@ -329,7 +329,8 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                     { user && user.uid != userID && 
                     <TouchableOpacity onPress={handleFollow}
                         style={[styles.followButton, {backgroundColor: isFollowing ? Colors[colorScheme ?? 'light'].text : 
-                        Colors[colorScheme ?? 'light'].background}]}>
+                        Colors[colorScheme ?? 'light'].background, borderColor: isFollowing ? Colors[colorScheme ?? 'light'].background : 
+                        Colors[colorScheme ?? 'light'].text,}]}>
                         <Ionicons name={isFollowing ? "checkmark-circle-outline" : "person-add-outline"} size={25}
                         color={isFollowing ? Colors[colorScheme ?? 'light'].background : Colors[colorScheme ?? 'light'].text} />
                         <Text style={{fontSize: 18, textAlign: 'center', paddingLeft: 5, fontWeight: '500',
@@ -355,7 +356,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
           <SearchTabs tabs={tabs} onTabChange={() => {}} index={0} />
         </>
       )}
-    </View>
+    </SafeAreaView>
   );  
 };
 

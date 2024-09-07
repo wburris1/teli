@@ -41,7 +41,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     const [numLikes, setNumLikes] = useState(item.likes.length);
     const id = item.user_id + "/" + (item.score >= 0 ? item.item_id : item.post_id);
     const feedFontSize = screenwidth > 400 ? 18 : 14.5
-    const [hideSpoilers, setHideSpoilers] = useState(user && item.has_spoilers && item.user_id != user.uid);
+    const [hideSpoilers, setHideSpoilers] = useState(user && item.has_spoilers && item.user_id != user.uid && item.caption);
     const isInitialRender = useRef(true);
     const [expanded, setExpanded] = useState(false);
 

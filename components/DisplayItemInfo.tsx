@@ -26,27 +26,10 @@ export const DisplayItemInfo =  ({ item }: { item: Item }) => {
       return `$${(revenue/1000000).toFixed(1)}M`
     }
   }
-  const convertRunTime = (runTime: number) => {
-    return runTime < 60 ? 
-    `${runTime}m` : 
-    `${Math.floor(runTime / 60)}h ${runTime % 60}m`
-  }
 
   return (
     <ScrollView style={styles.castContainer} showsHorizontalScrollIndicator={false} horizontal>
       <View style={styles.container}>
-      {item.vote_average > 0 && item.vote_count > 0 &&
-        <View style={[styles.infoContainer, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
-          <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>{item.vote_average.toFixed(1)}</Text>
-          <View style={styles.bottomText}>
-            <Text style={[styles.castText, {color: Colors[colorScheme ?? 'light'].background,}]}>
-              {item.vote_count > 500 ? `${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+` :
-              item.vote_count.toLocaleString()}
-            </Text>
-            <Ionicons name='person' size={20} color={Colors[colorScheme ??  'light'].background} />
-          </View>
-        </View>}
-
         {item.number_of_seasons !== undefined && (
           <View style={[styles.infoContainer, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
             <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>
@@ -69,17 +52,6 @@ export const DisplayItemInfo =  ({ item }: { item: Item }) => {
           </View>
         )}
         
-        {runTime > 0 && (
-          <View style={[styles.infoContainer, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
-            <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>
-              {convertRunTime(runTime)}
-            </Text>
-            <View style={styles.bottomText}>
-              <Text style={[styles.castText, {color: Colors[colorScheme ?? 'light'].background,}]}>Runtime</Text>
-              <Ionicons name='timer' size={20} color={Colors[colorScheme ??  'light'].background} />
-            </View>
-          </View>
-        )}
         {item.budget > 0 && (
           <View style={[styles.infoContainer, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
             <Text style={[styles.numberText, {color: Colors[colorScheme ?? 'light'].background}]}>

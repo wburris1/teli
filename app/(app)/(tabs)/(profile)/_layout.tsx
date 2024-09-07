@@ -7,7 +7,12 @@ export default function ProfileLayout() {
 
     return (
         <Stack>
-            <Stack.Screen name="profile" options={{headerShadowVisible: false}}/>
+            <Stack.Screen name="profile" options={{
+                headerShadowVisible: false,
+                headerStyle: {
+                    backgroundColor: Colors[colorScheme ?? 'light'].background
+                },
+            }}/>
             <Stack.Screen name="edit_profile" options={{ headerShown: true, headerBackTitle: "Cancel", headerTitle: "Edit Profile", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
                 headerStyle: {
                     backgroundColor: Colors[colorScheme ?? 'light'].background,

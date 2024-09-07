@@ -59,6 +59,7 @@ const SearchTabs = ({ tabs, onTabChange, index}: Props) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        zIndex: 3
     },
     tabs: {
         flexDirection: 'row',

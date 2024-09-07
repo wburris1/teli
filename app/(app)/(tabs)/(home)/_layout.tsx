@@ -14,6 +14,9 @@ export default function SearchLayout() {
           headerShown: true, 
           title: "",
           headerShadowVisible: true,
+          headerStyle: {
+            backgroundColor: Colors[colorScheme ?? 'light'].background
+          },
           headerRight: () => (
             <TouchableOpacity onPress={() => router.push({ pathname: "/addPost" })} style={{paddingRight: 10,}}>
               <Ionicons name="add" size={35} color={Colors[colorScheme ?? 'light'].text}/>

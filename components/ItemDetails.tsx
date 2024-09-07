@@ -12,7 +12,7 @@ import { useData } from '@/contexts/dataContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { addToBookmarked } from '@/data/addItem';
 import { removeFromList } from '@/data/deleteItem';
-import { CastMember, Post, UserItem } from '@/constants/ImportTypes';
+import { CastMember, FeedPost, Post, UserItem } from '@/constants/ImportTypes';
 import { ExpandableText } from './AnimatedViews.tsx/ExpandableText';
 import AddToListsScreen from './AddToListsModal';
 import Toast from 'react-native-toast-message';
@@ -23,6 +23,7 @@ import { drop } from 'lodash';
 import { Logo } from './LogoView';
 import { useAuth } from '@/contexts/authContext';
 import { FetchFollowedUsersRankings } from './Helpers/FetchFunctions';
+import { ItemPostList } from './ItemPostsList';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -53,7 +54,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
     const [score, setScore] = useState("");
     const [seenItems, setSeenItems] = useState<UserItem[]>([]);
     const [listsModalVisible, setListsModalVisible] = useState(false);
-    const [followedUsersPosts, setFollowedUsersPosts] = useState<Post[]>([]);
+    const [followedUsersPosts, setFollowedUsersPosts] = useState<FeedPost[] | undefined>();
 
     var releaseYear = "";
     var title = "";
@@ -101,7 +102,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
     useEffect(() => {
       const fetchposts = async () => {
         if (!user) return;
-        const adi = await FetchFollowedUsersRankings(item.id, user?.uid)
+        const adi = await FetchFollowedUsersRankings(item.id.toString(), user.uid)
         setFollowedUsersPosts(adi);
       }
       fetchposts();
@@ -130,12 +131,18 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         )
     }, [movies, shows, listsModalVisible])
 
+    const convertRunTime = (runTime: number) => {
+        return runTime < 60 ? 
+        `${runTime}m` : 
+        `${Math.floor(runTime / 60)}h ${runTime % 60}m`
+    }
+
     return (
         <>
         <TouchableOpacity style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].background}]} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={35} color={Colors[colorScheme ?? 'light'].text}/>
         </TouchableOpacity>
-        <ScrollView style={{flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background}}>
+        <ScrollView showsVerticalScrollIndicator={false} style={{flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background}}>
             <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                 <View style={{position: 'absolute'}}>
                     <Image source={{ uri: imgUrl + item.backdrop_path }} style={styles.backdropImage} />
@@ -145,14 +152,22 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                     />
                 </View>
                 <View style={[styles.info, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
-                    <View style={[styles.posterContainer, {borderColor: Colors[colorScheme ?? 'light'].text, shadowColor: Colors[colorScheme ?? 'light'].background}]}>
-                        <Image source={{ uri: imgUrl + item.poster_path }} style={styles.image} />
+                    <View style={styles.posterContainer}>
+                        <Image source={{ uri: imgUrl + item.poster_path }} style={[styles.image, {borderColor: Colors[colorScheme ?? 'light'].text}]} />
                     </View>
                     <View style={styles.rightInfo}>
                         <View>
                             <Text style={styles.title}>{title}</Text>
                             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end'}}>
-                                <Text style={styles.date}>{releaseYear}</Text> 
+                                <View style={{flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingBottom: 5}}>
+                                {item.runtime && (
+                                <>
+                                    <Text style={styles.date}>{convertRunTime(item.runtime)}</Text>
+                                    <Ionicons name="ellipse" size={5} color={Colors[colorScheme ?? 'light'].text} style={{paddingHorizontal: 3}} />
+                                </>
+                                )}
+                                <Text style={styles.date}>{releaseYear}</Text>
+                                </View> 
                                 {isDupe && score &&
                                     <View style={{borderWidth: 1, borderRadius: 50, borderColor: Colors[colorScheme ?? 'light'].text,
                                         height: 45, aspectRatio: 1, marginLeft: 8, marginVertical: 3, alignItems: 'center', justifyContent: 'center'}}>
@@ -162,9 +177,9 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
                             <TouchableOpacity onPress={() => setRankVisible(true)} style={{
-                                flexDirection: 'row', alignItems: 'center', height: 35, borderWidth: 2,
+                                flexDirection: 'row', alignItems: 'center', height: 35, borderWidth: 1.5,
                                 backgroundColor: 'white', borderRadius: 20, paddingHorizontal: 5,
-                                borderColor: Colors['theme'],
+                                borderColor: 'black',
                             }}>
                                 <Logo width={20} height={20} />
                                 <Text style={[styles.buttonText, {color: 'black', paddingLeft: 3}]}>
@@ -219,20 +234,22 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                 </View>
                 {item.overview &&
                 <View style={styles.overviewContainer}>
-                    {item.tagline != "" && <Text style={{fontSize: 17, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
+                    {item.tagline != "" && <Text style={{fontSize: 16, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
                     <ExpandableText text={item.overview} maxHeight={65} textStyle={styles.overview} startExpanded={false} />
                 </View>}
                 {(director || item.genres) &&
-                <View style={[styles.castContainer, {justifyContent: 'space-between'}]}>
+                <View style={[styles.castContainer, {justifyContent: 'space-between', alignItems: 'center'}]}>
                   <View>
                     {director &&
                     <Text style={styles.directorText}>Directed by
                       <Text style={{fontWeight: '600'}}> {director.name}</Text>
                     </Text>}
                     {item.genres && 
-                    <ScrollView showsHorizontalScrollIndicator={false} horizontal>
-                        <View style={[styles.genreContainer,
-                            {width: director ? screenWidth > 400 ? screenWidth - 60 : screenWidth - 54 : screenWidth,                            }]} >
+                    <ScrollView showsHorizontalScrollIndicator={false} horizontal style=
+                        {{width: director ? screenWidth > 400 ? screenWidth - 60 : screenWidth - 54 : screenWidth,
+                        marginRight: 5,}}
+                    >
+                        <View style={styles.genreContainer} >
                         {item.genres.map(genre => (
                             <View key={genre.id} style={[styles.genreButton, {borderColor: Colors[colorScheme ?? 'light'].text,
                                 backgroundColor: Colors[colorScheme ?? 'light'].gray}]}>
@@ -244,15 +261,46 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                   </View>
                   {director && director.profile_path && 
                   <Image 
-                    style={{width: screenWidth > 400 ? 50 : 44, aspectRatio: 2/3, 
+                    style={{flex: 1, aspectRatio: 2/3, 
                         borderRadius: 10, backgroundColor: 'gray', borderWidth: 1,
                         borderColor: Colors[colorScheme ?? 'light'].text, marginRight: 10}}
                     source={{ uri: imgUrl + director.profile_path }} />}
                 </View>}
-                
-                  <DisplayItemInfo item={item}></DisplayItemInfo>
-                  <Text>{`${followedUsersPosts[0]?.user_id} ranked this a ${followedUsersPosts[0]?.score}`} </Text>
-                
+                <TouchableOpacity style={{flex: 1}}>
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingVertical: 7,  alignItems: 'center'}}>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                            <Text style={styles.castText}>Reviews</Text>
+                            <View style={{alignItems: 'center', justifyContent: 'center', borderRadius: 50, marginLeft: 7, borderWidth: 1, 
+                            borderColor: Colors[colorScheme ?? 'light'].text, width: screenWidth > 400 ? 45 : 41, aspectRatio: 1}}>
+                                <Text style={{fontSize: screenWidth > 400 ? 24: 20, fontWeight:  '600'}}>
+                                    {item.vote_average.toFixed(1)}
+                                </Text>
+                            </View>
+                        </View>
+                        
+                        <View style={{flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 5}}>
+                            <Text style={{fontSize: 16, fontWeight: '300'}}>
+                            {item.vote_count > 500 ? `${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+` :
+                            item.vote_count.toLocaleString()}
+                            </Text>
+                            <Ionicons name='caret-forward' size={20} color={Colors[colorScheme ??  'light'].text} />
+                        </View>
+                    </View>
+                </TouchableOpacity>
+                {followedUsersPosts && followedUsersPosts.length > 0 &&
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{width: screenWidth, paddingHorizontal: 10, paddingBottom: 10}}>
+                    {followedUsersPosts.map(post => (
+                        <TouchableOpacity key={post.user_id}>
+                            <ItemPostList itemPost={post} />
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>}
+                {!followedUsersPosts && (
+                    <ActivityIndicator size='large' style={{width: screenWidth, height: 125}} />
+                )}
+                {
+                //<DisplayItemInfo item={item}></DisplayItemInfo>
+                }
                 <View style={styles.castContainer}>
                   <Text style={styles.castText}>Cast</Text>
                 </View>
@@ -327,16 +375,17 @@ const styles = StyleSheet.create({
     posterContainer: {
         zIndex: 1,
         borderRadius: 5,
-        borderWidth: 1,
         elevation: 4,
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 1,
         shadowOpacity: 1,
+        shadowColor: 'black'
     },
     image: {
         width: screenWidth/3,
         aspectRatio: 1 / 1.5,
         borderRadius: 5,
+        borderWidth: 1,
         //borderWidth: 0.5,
     },
     backdropImage: {
@@ -362,7 +411,6 @@ const styles = StyleSheet.create({
     },
     date: {
         textAlign: 'right',
-        paddingBottom: 5,
         fontSize: 14,
         alignSelf: 'flex-start'
     },
@@ -412,8 +460,8 @@ const styles = StyleSheet.create({
   },
   directorText: {
     textAlign: 'left',
-    fontSize: screenWidth > 400 ? 21 : 17,
-    fontWeight: '400', 
+    fontSize: 16,
+    fontWeight: '300', 
     paddingLeft: 10,
   }
 });

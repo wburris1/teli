@@ -1,8 +1,11 @@
-import { List, Post } from "@/constants/ImportTypes";
+import { FeedPost, List, Post } from "@/constants/ImportTypes";
 import Values from "@/constants/Values";
+import { fetchUserData } from "@/data/getComments";
 import { FIREBASE_DB } from "@/firebaseConfig"
 import { collection, doc, getDocs, orderBy, query, where } from "firebase/firestore";
 const db = FIREBASE_DB;
+
+const userCache = new Map<string, UserData>(); // Cache to locally store many ppl's userData
 
 // returns all users that are following
 export async function FetchFollowing (userID: string): Promise<string[]> {
@@ -37,16 +40,18 @@ export async function FetchTVLists (userID: string): Promise<List[]> {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));
 };
 
-export async function FetchFollowedUsersRankings (ItemID: string, userID: string): Promise<Post[]> {
+export async function FetchFollowedUsersRankings (ItemID: string, userID: string): Promise<FeedPost[]> {
   const following = await FetchFollowing(userID);
   if (!following.length) {
     return [];
-
   }
+
   const globalPostsRef = collection(db, 'globalPosts');
   const filterPostsQuery = query(globalPostsRef,
     where("item_id", "==", ItemID),
     where("user_id", "in", following),
+    where("score", ">=", 0),
+    where("score", "<=", 10)
   )
   const querySnapshot = await getDocs(filterPostsQuery);
   const posts: Post[] = [];
@@ -57,5 +62,23 @@ export async function FetchFollowedUsersRankings (ItemID: string, userID: string
       }
     )
   }
-  return posts as Post[];
+
+  const feedPosts = await Promise.all(querySnapshot.docs.map(async (docSnapshot) => {
+    const userData = await getUserData(docSnapshot.data().user_id);
+    return {
+      ...docSnapshot.data() as Post,
+      ...userData, // Combined user and post data in a single object
+    };
+  })); 
+
+  return feedPosts as FeedPost[];
+};
+
+const getUserData = async (userId: string): Promise<UserData> => {
+  if (userCache.has(userId)) {
+    return userCache.get(userId) as UserData; // Return cached data if available
+  }
+  const userData = await fetchUserData(userId)
+  userCache.set(userId, userData); // Cache the fetched data
+  return userData
 };

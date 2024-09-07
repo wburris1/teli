@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { Link } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View, useColorScheme } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, StyleSheet, Switch, TextInput, TouchableOpacity, View, useColorScheme } from "react-native";
 import { ListModalScreen } from "./ListModal";
 import { useData } from "@/contexts/dataContext";
 import { CreateListDB } from "@/data/addList";
@@ -15,6 +15,7 @@ import { useLoading } from "@/contexts/loading";
 import Toast from "react-native-toast-message";
 import { serverTimestamp } from "firebase/firestore";
 import { AddUnwatchedScreen } from "./AddUnwatched";
+import { Text } from "./Themed";
 
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;

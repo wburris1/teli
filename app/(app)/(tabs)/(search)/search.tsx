@@ -1,11 +1,10 @@
-import { StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { SafeAreaView, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import SearchInput from '@/components/Search/SearchInput';
 import SearchTabs from '@/components/Search/SearchTabs';
 import { useItemSearch } from '@/data/itemData';
 import { useCallback, useEffect, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '@/constants/Colors';
 import { fetchUsers } from '@/data/searchUsers';
 import { UsersListScreen } from '@/components/Search/UserSearchCard';
@@ -15,6 +14,7 @@ import { FIREBASE_DB } from '@/firebaseConfig';
 import { useAuth } from '@/contexts/authContext';
 import { fetchUserData } from '@/data/getComments';
 import { useLocalSearchParams } from 'expo-router';
+import Dimensions from '@/constants/Dimensions';
 
 const USERS_PAGE_SIZE = 10;
 
@@ -66,25 +66,6 @@ const UsersTabContent = ({ query }: { query: string }) => {
         setLoading(false);
     };
 
-    // const debouncedFetchData = useCallback(
-    //     _.debounce(async (query) => {
-    //         setUserList([]);
-    //         setLastVisible(null);
-    //         const { users, lastDoc } = await fetchUsers(query, null);
-    //         setUserList(users);
-    //         setLastVisible(lastDoc);
-    //     }, 300),
-    //     []
-    // );
-
-    // useEffect(() => {
-    //     if (query != "") {
-    //         debouncedFetchData(query);
-    //     } else {
-    //         setUserList([]);
-    //     }
-    // }, [query, debouncedFetchData]);
-
     return (
         <View style={{ flex: 1 }}>
             <UsersListScreen users={userList} redirectPath='search_user' onClose={() => {}} />
@@ -133,12 +114,12 @@ export default function SearchScreen() {
     ]; 
 
     return (
-        <View style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1 }}>
-            <SafeAreaView style={styles.container}>
+        <SafeAreaView style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1 }}>
+            <View style={styles.container}>
                 <SearchInput search={search} setSearch={setSearch} isFocused={false} />
                 <SearchTabs tabs={searchTabs} onTabChange={() => {}} index={whichTab}/>
-            </SafeAreaView>
-        </View>
+            </View>
+        </SafeAreaView>
     );
 }
 

@@ -12,6 +12,9 @@ export default function SearchLayout() {
         <Stack.Screen name="initialScreen" options={{ 
           headerShown: true, 
           title: "Notifications",
+          headerStyle: {
+            backgroundColor: Colors[colorScheme ?? 'light'].background
+          },
           }} />
       </Stack>
     );

@@ -37,7 +37,7 @@ const ChangePasswordScreen = () => {
             placeholder="Email address..."
             value={email}
             onChangeText={setEmail}
-            style={[styles.input, { borderColor: Colors[colorScheme ?? 'light'].gray }]}
+            style={[styles.input, { borderColor: Colors[colorScheme ?? 'light'].gray, color: Colors[colorScheme ?? 'light'].text }]}
             keyboardType="email-address"
             autoCapitalize="none"
         />
