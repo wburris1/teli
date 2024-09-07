@@ -57,8 +57,8 @@ export default function TabOneScreen() {
                 size={80}
                 color={Colors[colorScheme ?? 'light'].text}
               />
-              <Text style={styles.welcomeText}>Welcome to Take2</Text>
-              <Text style={styles.messageText}>Add friends to see their posts here</Text>
+              <Text style={[styles.welcomeText, {color: Colors[colorScheme ?? 'light'].text},]}>Welcome to Take2</Text>
+              <Text style={[styles.messageText, {color: Colors[colorScheme ?? 'light'].text},]}>Add friends to see their posts here</Text>
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => {
