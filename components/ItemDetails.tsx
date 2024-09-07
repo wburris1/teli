@@ -1,11 +1,11 @@
-import { StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, View, ScrollView, PixelRatio } from 'react-native'
+import { StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, View, ScrollView, PixelRatio, Platform, TouchableWithoutFeedback } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/TemplateFiles/useColorScheme';
 import { Link, useRouter } from 'expo-router';
-import Rank from './RankItem';
+import Rank, { RankItemWrapper } from './RankItem';
 import { Text } from './Themed';
 import Values from '@/constants/Values';
 import { useData } from '@/contexts/dataContext';
@@ -322,16 +322,25 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                   ))}
                   </View>
                 </ScrollView>
-                <Modal
+                {Platform.OS !== 'android' &&
+                  <Modal
                   animationType="fade"
                   transparent={true}
                   visible={rankVisible}
                   onRequestClose={() => setRankVisible(false)}>
-                    <Rank item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} />
+                    <Rank item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} isIOS={true} />
                 </Modal>
+                }
             </View>
         </ScrollView>
         {listsModal()}
+        {Platform.OS === 'android' && rankVisible && 
+            <TouchableWithoutFeedback onPress={() => setRankVisible(false)}>
+              <View style={[styles.fullScreen]}>
+                  <RankItemWrapper item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)}/>
+              </View>
+          </TouchableWithoutFeedback >
+        }
         </>
     )
 }; 
@@ -342,6 +351,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'flex-start',
         overflow: 'hidden',
+    },
+    fullScreen: {
+      position: 'absolute',  // Ensures it covers the whole screen
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      width: '100%',  // Ensures full width
+      height: '100%',  // Ensures full height
+      //backgroundColor: 'rgba(0, 0, 0, 0.5)',  // Optional: Dim the background
+      justifyContent: 'center',  // Centers content vertically
+      alignItems: 'center',  // Centers content horizontally
+      zIndex: 1,
     },
     backButton: {
         position: 'absolute',

@@ -25,6 +25,14 @@ type Props = {
     isDupe: boolean,
     setDupe: (dupe: boolean) => void,
     onClose: () => void,
+    isIOS: boolean,
+};
+type WrapperProps = {
+  item: Item,
+  items: UserItem[],
+  isDupe: boolean,
+  setDupe: (dupe: boolean) => void,
+  onClose: () => void,
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
@@ -36,7 +44,7 @@ const initialMehScore = 5;
 const initialDislikeScore = 4;
 const smallAssNumber = 0.0000001; // Used to make mid inclusive of 4 and 6 scores
 
-const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
+const Rank = ({item, items, isDupe, setDupe, onClose, isIOS}: Props) => {
   const { user } = useAuth();
   const isMovie = 'title' in item ? true : false;
   const listID = Values.seenListID;
@@ -314,6 +322,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
               <ActivityIndicator size="large" />
             </View>
           )}
+          {isIOS && (
           <TouchableOpacity onPress={() => {
               if (loading) return;
               setCompItem(null);
@@ -328,7 +337,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
               size={45}
               color={Colors[colorScheme ?? 'light'].text}
             />
-          </TouchableOpacity>
+          </TouchableOpacity>)}
 
           <View style={styles.container}>
             <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
@@ -551,12 +560,38 @@ const Rank = ({item, items, isDupe, setDupe, onClose}: Props) => {
   );
 };
 
+// only use this for andoiord 
+const RankItemWrapper = ({item, items, isDupe, setDupe, onClose}: WrapperProps) => {
+  return (
+    <View style={styles.fullScreen}>
+      <Image
+        source={{ uri: imgUrl + item.poster_path }}
+        style={[styles.blurredImage, { opacity: 1}]}
+        blurRadius={10} // Adjust the blur intensity here
+      />
+      <Rank item={item} items={items} isDupe={isDupe} setDupe={setDupe} onClose={onClose} isIOS={false}/>
+      </View>
+  )
+}
+
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     flex: 1,
     justifyContent: 'flex-start',
     padding: 10,
+  },
+  fullScreen: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    zIndex: 2,
+  },
+  blurredImage: {
+    ...StyleSheet.absoluteFillObject, // Make the image cover the entire view
+    width: '100%',
+    height: '100%',
+    position: 'absolute', // Ensure the image stays behind content
   },
   gradient: {
     position: 'absolute',
@@ -697,3 +732,4 @@ const styles = StyleSheet.create({
 });
 
 export default Rank;
+export { RankItemWrapper };
