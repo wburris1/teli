@@ -156,6 +156,15 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         `${runTime}m` : 
         `${Math.floor(runTime / 60)}h ${runTime % 60}m`
     }
+    useEffect(() => {
+      if (item.budget && item.revenue) {
+          console.log("BudgetA:", item.budget);
+          console.log("RevenueA:", item.revenue);
+      }
+    }, [item.budget, item.revenue]);
+    const checkRevBudget = ({ budget, revenue }: Item): boolean => {
+      return !!(budget && revenue && budget > 0 && revenue > 0)
+    }
 
     return (
         <>
@@ -278,7 +287,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                         </View>
                     </ScrollView>}
                   </View>
-                  {item.budget && item.revenue && (
+                  {checkRevBudget(item) && (
                     <View style={{marginRight: 10, alignItems: 'center', borderWidth: 0.5, width: 65,
                         borderColor: Colors[colorScheme ?? 'light'].gray, borderRadius: 10, padding: 5, justifyContent: 'center'}}>
                         <Text style={{fontSize: 12, fontWeight: '300'}}>{convertNum(item.budget)}</Text>
@@ -322,11 +331,9 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                   <Text style={styles.castText}>Cast</Text>
                 </View>
                 <ScrollView style={{width: screenWidth}} horizontal showsHorizontalScrollIndicator={false}>
-                  <View style={{flexDirection: 'row', justifyContent: 'flex-start'}}>
                   {cast.map((row, rowIndex) => (
                     <CastList key={rowIndex} cast={row} />
                   ))}
-                  </View>
                 </ScrollView>
                 <View style={styles.castContainer}>
                   <Text style={styles.castText}>More Like This</Text>
