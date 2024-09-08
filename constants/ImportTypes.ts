@@ -66,7 +66,6 @@ export interface DisplayComment extends UserComment {
     username: string,
     first_name: string,
     last_name: string,
-    userPushToken: string,
 }
 
 export enum NotificationType {

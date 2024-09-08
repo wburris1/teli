@@ -102,7 +102,6 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
         profile_picture: userData.profile_picture,
         first_name: userData.first_name,
         last_name: userData.last_name,
-        userPushToken: userData.userPushToken,
       }
       const localTimestamp = new Date();
       let displayComment = {id: '', ...userComment};
