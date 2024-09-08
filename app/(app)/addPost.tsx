@@ -43,14 +43,28 @@ export default function NewPostScreen() {
    } = useLocalSearchParams();
    const navigation = useNavigation();
 
-   const emptyItem = {
-    id: "",
-    name: "",
-    poster_path: "",
-    date: "",
-    listTypeID: "",
-   }
-   const [aboutItem, setAboutItem] = useState<AboutItem>(emptyItem);
+   const emptyItem: Item = {
+    id: '',
+    poster_path: '',
+    overview: '',
+    genres: [],
+    backdrop_path: '',
+    tagline: '',
+    vote_average: 0,
+    vote_count: 0,
+    title: '',
+    release_date: '',
+    revenue: 0,
+    budget: 0,
+    runtime: 0,
+    name: '',
+    first_air_date: '',
+    number_of_episodes: 0,
+    number_of_seasons: 0,
+    episode_run_time: 0,
+  };
+   
+   const [aboutItem, setAboutItem] = useState<Item>(emptyItem);
 
    const moviesTabContent = useCallback(() => 
     <View>
@@ -90,12 +104,12 @@ export default function NewPostScreen() {
       headerRight: () => (
         <>{caption && aboutItem.id &&
           <TouchableOpacity onPress={() => {
-              postFunc(caption, aboutItem.id, aboutItem.poster_path, aboutItem.name, hasSpoilers, aboutItem.listTypeID).then(() => {
+              postFunc(caption, aboutItem.id, aboutItem.poster_path, 'title' in aboutItem ? aboutItem.title : aboutItem.name, hasSpoilers, 'title' in aboutItem ? Values.movieListsID : Values.tvListsID, 'title' in aboutItem).then(() => {
                 requestRefresh();
                 router.back();
                 Toast.show({
                   type: 'info',
-                  text1: "You made a new post about " + aboutItem.name + "!",
+                  text1: "You made a new post about " + ('title' in aboutItem ? aboutItem.title : aboutItem.name) + "!",
                   position: "bottom",
                   visibilityTime: 3000,
                   bottomOffset: 100

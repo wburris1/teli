@@ -14,8 +14,8 @@ export type Post = {
     likes: string[],
     score: number,
     created_at: Timestamp | FieldValue,
-    userPushToken: string | undefined,
     user_id: string,
+    isMovie: boolean,
 }
 
 export interface FeedPost extends Post {

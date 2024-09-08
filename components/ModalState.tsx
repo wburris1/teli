@@ -8,7 +8,7 @@ const useModalState = () => {
   const [post, setPost] = useState<FeedPost>({
     post_id: "", user_id: "", score: -1, list_type_id: "", profile_picture: "", first_name: "", last_name: "",
     num_comments: 0, likes: [], item_id: "", item_name: "", has_spoilers: false,
-    created_at: serverTimestamp(), username: "", caption: "", poster_path: "", userPushToken: ""
+    created_at: serverTimestamp(), username: "", caption: "", poster_path: "", isMovie: false,
   });
   const [incrementComment, setIncrementComment] = useState(false)
 

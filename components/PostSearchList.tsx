@@ -9,18 +9,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/contexts/authContext";
 import { UserItem } from "@/constants/ImportTypes";
 import { getItems } from "@/data/userData";
+import convertUserItemToItem from "./Helpers/ConvertUserItemToItem";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 
-type AboutItem = {
-    id: string,
-    name: string,
-    poster_path: string,
-    date: string,
-    listTypeID: string,
-}
-
-export const NewPostSearchLists = ({ query, listTypeID, listID, onSelect }: { query: string, listTypeID: string, listID: string, onSelect: (item: AboutItem) => void }) => {
+export const NewPostSearchLists = ({ query, listTypeID, listID, onSelect }: { query: string, listTypeID: string, listID: string, onSelect: (item: Item) => void }) => {
     const [list, setList] = useState<Item[]>([]);
     const [userList, setUserList] = useState<UserItem[]>([]);
     const [filteredList, setFilteredList] = useState<UserItem[]>([]);
@@ -63,7 +56,7 @@ export const NewPostSearchLists = ({ query, listTypeID, listID, onSelect }: { qu
             title = item.name;
         }
         
-        return <ItemCard item={{id: item.id, name: title, poster_path: item.poster_path, date: date, listTypeID: listTypeID}} key={item.id} />
+        return <ItemCard item={item} />
     };
 
     const renderUserItem = ({ item, index }: { item: UserItem, index: number }) => {
@@ -76,13 +69,17 @@ export const NewPostSearchLists = ({ query, listTypeID, listID, onSelect }: { qu
             title = item.title;
         } else {
             title = item.name;
-        }
-        
-        return <ItemCard item={{id: item.item_id, name: title, poster_path: item.poster_path, date: date, listTypeID: listTypeID}} key={item.item_id} />
+        } 
+        return <ItemCard item={convertUserItemToItem(item)} />
     };
-
-    const ItemCard = ({ item }: { item: AboutItem }) => {
+    type ItemCardProps = {
+      item: Item;
+    };
+    const ItemCard = ({ item }: ItemCardProps) => {
         const colorScheme = useColorScheme();
+        const isMovie = 'title' in item;
+        const title = isMovie ? item.title : item.name;
+        const date = isMovie ? item.release_date : item.first_air_date;
 
         return (
             <View style={[styles.container, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]} key={item.id}>
@@ -93,8 +90,8 @@ export const NewPostSearchLists = ({ query, listTypeID, listID, onSelect }: { qu
                 />
                 </View>
                 <View style={styles.textContainer}>
-                    <Text style={styles.title}>{item.name}</Text>
-                    <Text style={{fontWeight: '200'}}>{item.date}</Text>
+                    <Text style={styles.title}>{title}</Text>
+                    <Text style={{fontWeight: '200'}}>{date}</Text>
                 </View>
                 <TouchableOpacity onPress={() => onSelect(item)}>
                     <Ionicons

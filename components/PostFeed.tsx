@@ -33,7 +33,6 @@ type PostFeedProps = {
 export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home', incrementComment}: PostFeedProps) => {
     const colorScheme = useColorScheme();
     const screenwidth = Dimensions.screenWidth;
-    const {userPushToken} = useData();
     const { user, userData } = useAuth();
     const formattedDate = formatDate(item.created_at as Timestamp);
     const maxCaptionHeight = 30;
@@ -44,8 +43,8 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     const [hideSpoilers, setHideSpoilers] = useState(user && item.has_spoilers && item.user_id != user.uid && item.caption);
     const isInitialRender = useRef(true);
     const [expanded, setExpanded] = useState(false);
-
     const [numComments, setNumComments] = useState(item.num_comments);
+    const isMovie = item.score == -1 ? item.isMovie : 'title' in item;
 
     useEffect(() => {
       if (isInitialRender.current) {
@@ -110,7 +109,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                       <View>
                         <Text style = {{fontWeight: '300', fontSize: feedFontSize}}>{item.score >= 0 ? " ranked " : (item.score == -2 ? " bookmarked " : " commented on ")}</Text>
                       </View>
-                      <Link href={{pathname: redirectLink + '_item' as any, params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
+                      <Link href={{pathname: redirectLink + '_item' as any, params: { id: item.item_id, groupKey: isMovie ? 'movie' : 'tv'}}} asChild>
                           <TouchableOpacity>
                               <Text style={{fontWeight: 'bold',fontSize: feedFontSize}}>{item.item_name}</Text>
                           </TouchableOpacity>
@@ -182,7 +181,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
           
         </View>
       </View>
-        <Link style={{height: 130}} href={{pathname: redirectLink + "_item" as any, params: { id: item.item_id, groupKey: 'title' in item ? "movie" : "tv" }}} asChild>
+        <Link style={{height: 130}} href={{pathname: redirectLink + "_item" as any, params: { id: item.item_id, groupKey: isMovie ? 'movie' : 'tv' }}} asChild>
           <TouchableOpacity>
             <Image
               source={{ uri: imgUrl + item.poster_path }}

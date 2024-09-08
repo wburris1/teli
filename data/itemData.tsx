@@ -63,7 +63,7 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
     const recURL = `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}/recommendations?api_key=${tmdbKey}`
 
     const getCast = () => {
-      fetch(isMovie? castURL : castURL)
+      fetch(castURL)
         .then(res => res.json())
         .then(json => {
           const actorsArray = json.cast
