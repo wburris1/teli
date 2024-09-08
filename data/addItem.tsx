@@ -19,7 +19,7 @@ export const AddToDatabase = () => {
     const {selectedLists, removeLists} = useTab();
     const { setLoading } = useLoading();
 
-    async function addToDB(newScore: number, item: Item, listID: string, isMovie: boolean, isDupe: boolean, items: UserItem[], caption: string, hasSpoilers: boolean) {
+    async function addToDB(newScore: number, item: Item, listID: string, isMovie: boolean, isDupe: boolean, items: UserItem[], caption: string, hasSpoilers: boolean, dupePostID: string) {
       setLoading(true);
         var newItem: UserItem;
         const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
@@ -67,7 +67,8 @@ export const AddToDatabase = () => {
           const itemRef = doc(db, "users", user.uid, isMovie ? "movies" : "shows", item.id.toString());
           const globalPostColRef = collection(db, "globalPosts")
           if (isDupe) {
-            const existingDoc = await getDoc(itemRef);
+            const gobalItemRef = doc(db, "globalPosts", dupePostID);
+            const existingDoc = await getDoc(gobalItemRef);
             const existingLists = existingDoc.exists() ? existingDoc.data().lists || [] : [];
 
             // Merge the new lists with the existing ones
@@ -97,14 +98,11 @@ export const AddToDatabase = () => {
               };
               try {
                 await updateDoc(itemRef, updateData);
-                const globalPostRef = await addDoc(globalPostColRef, newItem);
-                await updateDoc(globalPostRef, { post_id: globalPostRef.id });
-                await updateDoc(itemRef, { post_id: globalPostRef.id });
+                await updateDoc(gobalItemRef, updateData);
                 
                 items.forEach(seenItem => {
                   if (seenItem.item_id == item.id) {
                       seenItem.score = newScore;
-                      seenItem.post_id = globalPostRef.id;
                   }
                 });
                 await adjustScoreFunc(items, newScore, listID, listTypeID);

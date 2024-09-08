@@ -45,6 +45,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
     //const [items, setItems] = useState<UserItem[]>([]);
     const { refreshFlag, refreshListFlag, movies, shows } = useData();
     const [isDupe, setDupe] = useState(false);
+    const [dupePostID, setDupePostID] = useState("");
     //const [rankButtonLoading, setRankButtonLoading] = useState(true);
     const [rankVisible, setRankVisible] = useState(false);
     const [bookmarked, setBookmarked] = useState(false);
@@ -75,6 +76,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
               exists = true;
               if (seenItem.score <= 10 && seenItem.score >= 0) {
                 setScore(seenItem.score.toFixed(1));
+                setDupePostID(seenItem.post_id);
               }
             }
           });
@@ -328,7 +330,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                   transparent={true}
                   visible={rankVisible}
                   onRequestClose={() => setRankVisible(false)}>
-                    <Rank item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} isIOS={true} />
+                    <Rank item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} isIOS={true} dupePostID={dupePostID}  />
                 </Modal>
                 }
             </View>
@@ -337,7 +339,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         {Platform.OS === 'android' && rankVisible && 
             <TouchableWithoutFeedback onPress={() => setRankVisible(false)}>
               <View style={[styles.fullScreen]}>
-                  <RankItemWrapper item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)}/>
+                  <RankItemWrapper item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} dupePostID={dupePostID}/>
               </View>
           </TouchableWithoutFeedback >
         }

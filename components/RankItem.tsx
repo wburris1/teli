@@ -26,6 +26,7 @@ type Props = {
     setDupe: (dupe: boolean) => void,
     onClose: () => void,
     isIOS: boolean,
+    dupePostID: string
 };
 type WrapperProps = {
   item: Item,
@@ -33,6 +34,7 @@ type WrapperProps = {
   isDupe: boolean,
   setDupe: (dupe: boolean) => void,
   onClose: () => void,
+  dupePostID: string
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
@@ -44,7 +46,7 @@ const initialMehScore = 5;
 const initialDislikeScore = 4;
 const smallAssNumber = 0.0000001; // Used to make mid inclusive of 4 and 6 scores
 
-const Rank = ({item, items, isDupe, setDupe, onClose, isIOS}: Props) => {
+const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props) => {
   const { user } = useAuth();
   const isMovie = 'title' in item ? true : false;
   const listID = Values.seenListID;
@@ -123,7 +125,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS}: Props) => {
       setCompItem(newItem);
     } else {
       const newScore = initialScore;
-      addToDB(newScore, item, listID, isMovie, isDupe, items || [], comment, hasSpoilers).then(() => {
+      addToDB(newScore, item, listID, isMovie, isDupe, items || [], comment, hasSpoilers, dupePostID).then(() => {
         setDupe(true);
         onClose();
         requestRefresh();
@@ -148,7 +150,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS}: Props) => {
     setUpperScore(maxScore);
 
     if (minScore == maxScore) {
-      addToDB(minScore, item, listID, isMovie, isDupe, items, comment, hasSpoilers).then(() => {
+      addToDB(minScore, item, listID, isMovie, isDupe, items, comment, hasSpoilers, dupePostID).then(() => {
         setDupe(true);
         onClose();
         requestRefresh();
@@ -183,7 +185,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS}: Props) => {
         }
       } else {
         const newScore = maxScore - smallAssNumber;
-        addToDB(newScore, item, listID, isMovie, isDupe, items, comment, hasSpoilers).then(addItem => {
+        addToDB(newScore, item, listID, isMovie, isDupe, items, comment, hasSpoilers, dupePostID).then(addItem => {
           if (addItem) {
             setDupe(true);
             onClose();
@@ -561,7 +563,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS}: Props) => {
 };
 
 // only use this for andoiord 
-const RankItemWrapper = ({item, items, isDupe, setDupe, onClose}: WrapperProps) => {
+const RankItemWrapper = ({item, items, isDupe, setDupe, onClose, dupePostID}: WrapperProps) => {
   return (
     <View style={styles.fullScreen}>
       <Image
@@ -569,7 +571,7 @@ const RankItemWrapper = ({item, items, isDupe, setDupe, onClose}: WrapperProps) 
         style={[styles.blurredImage, { opacity: 1}]}
         blurRadius={10} // Adjust the blur intensity here
       />
-      <Rank item={item} items={items} isDupe={isDupe} setDupe={setDupe} onClose={onClose} isIOS={false}/>
+      <Rank item={item} items={items} isDupe={isDupe} setDupe={setDupe} onClose={onClose} isIOS={false} dupePostID={dupePostID}/>
       </View>
   )
 }
