@@ -18,7 +18,7 @@ import { useData } from "@/contexts/dataContext";
 import Dimensions from "@/constants/Dimensions";
 import { LinearGradient } from "expo-linear-gradient";
 
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const db = FIREBASE_DB;
 
 type PostFeedProps = {

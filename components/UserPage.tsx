@@ -29,7 +29,6 @@ import PostFeedWithModals from './PostFeedWithModals';
 
 const db = FIREBASE_DB;
 
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
 
 const emptyUser = {
   user_id: "",

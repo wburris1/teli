@@ -11,7 +11,6 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 
 const screenWidth = Dimensions.screenWidth
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const itemWidth = (Dimensions.screenWidth / 3) - 20;
 
 export const DisplayItemInfo =  ({ item }: { item: Item }) => {

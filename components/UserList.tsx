@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Dimensions from "@/constants/Dimensions";
 import { List } from "@/constants/ImportTypes";
 
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const itemWidth = (Dimensions.screenWidth / 3) - 20;
 
 const OverlappingImages = ({ images }: { images: string[] }) => {

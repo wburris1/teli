@@ -20,7 +20,7 @@ type RowProps = {
     listID: string;
 };
 
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl = 'https://image.tmdb.org/t/p/w342';
 
 const itemWidth = (Dimensions.screenWidth - 12) / 3;
 

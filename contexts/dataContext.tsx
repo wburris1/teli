@@ -31,7 +31,7 @@ type Props = {
 }
 
 const db = FIREBASE_DB;
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl = 'https://image.tmdb.org/t/p/w342';
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 

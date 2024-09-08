@@ -11,7 +11,7 @@ import { UserItem } from "@/constants/ImportTypes";
 import { getItems } from "@/data/userData";
 import convertUserItemToItem from "./Helpers/ConvertUserItemToItem";
 
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl = 'https://image.tmdb.org/t/p/w342';
 
 export const NewPostSearchLists = ({ query, listTypeID, listID, onSelect }: { query: string, listTypeID: string, listID: string, onSelect: (item: Item) => void }) => {
     const [list, setList] = useState<Item[]>([]);

@@ -30,7 +30,7 @@ type RowProps = {
     setselectedItems: (lists: UserItem[]) => void;
 };
 
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
 const itemWidth = (screenWidth - 12) / 3;

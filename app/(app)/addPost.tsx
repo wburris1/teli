@@ -14,7 +14,7 @@ import { MakePost } from '@/data/userPosts';
 import { useData } from '@/contexts/dataContext';
 import Toast from 'react-native-toast-message';
 
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl = 'https://image.tmdb.org/t/p/w342';
 
 
 type AboutItem = {

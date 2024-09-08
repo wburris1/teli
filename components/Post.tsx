@@ -14,7 +14,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl = 'https://image.tmdb.org/t/p/w342';
 
 export const ProfilePost = ({item, index, name}: {item: Post, index: number, name: string}) => {
     const colorScheme = useColorScheme();

@@ -23,7 +23,7 @@ type notiProps = {
 const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
   const { loading, setLoading } = useLoading();
   const [profilePic, setProfilePicture] = useState(noti.profile_picture);
-  const imgUrl = 'https://image.tmdb.org/t/p/w500';
+  const imgUrl = 'https://image.tmdb.org/t/p/w342';
   const homeFeedFontSize = 18
   const colorScheme = useColorScheme();
   const formattedDate = formatDate(noti.created_at as Timestamp);
