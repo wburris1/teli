@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
       width: itemWidth - 8,
       marginLeft: 0,
       marginTop: 5,
-      marginBottom: 25,
+      marginBottom: 0,
       borderRadius: 12,
     },
     Itemimage: {
