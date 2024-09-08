@@ -64,26 +64,12 @@ export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore }:
           hasPrefetched.current = true;
           await prefetchImages(items); // Prefetch all images
         }
-        setPrefetchedItems(items);   // Only update the state after all images are prefetched
-        triggerAnimation();
+        setPrefetchedItems(items);
       };
       prefetchImagesForGrid();
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     }, [items]);
-
     
-     // Shared values for the animation
-    const opacity = useSharedValue(0);
-    const translateY = useSharedValue(50);  // Start from 50 units down
-
-    // Trigger the fade-in and slide-up animation
-    const triggerAnimation = () => {
-      console.log('triggered');
-      // Animate opacity and translation (slide)
-      setTimeout(() => {
-        opacity.value = withTiming(1, { duration: 500 });
-        translateY.value = withTiming(0, { duration: 500 });
-      }, 300); // Add a small delay
-    }; 
 
     useEffect(() => {
       if (popUpIndex >= 0 && popUpIndex < 3) {
@@ -103,27 +89,9 @@ export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore }:
       return <ActivityIndicator style={{ margin: 20 }} />;
     };
 
-    const gridAnimatedStyle = useAnimatedStyle(() => {
-      return {
-        opacity: opacity.value,
-        transform: [{ translateY: translateY.value }]
-      };
-    });
-    useEffect(() => {
-      // LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    }, [prefetchedItems]);
-
     return (
       <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
-        <View style={styles.browseTextContainer}>
-          <Text style={{fontSize: screenWidth  > 400 ? 24 : 20, fontWeight: 'bold',
-          top: 2, left: 5, zIndex: 2}}>Browse</Text>
-        </View>
-        <LinearGradient colors={[Colors[colorScheme ?? 'light'].background,
-          colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
-          style={{height: screenWidth > 400 ? 35 : 30, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1}} />
         
-        <Animated.View style={[{ flex: 1 }, gridAnimatedStyle]}>
           <Animated.FlatList
             data={prefetchedItems}
             renderItem={({ item, index }) => <MemoizedRenderItem item={item} />}
@@ -135,7 +103,6 @@ export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore }:
             onEndReachedThreshold={0.5}
             ListFooterComponent={renderFooter}
           />
-        </Animated.View>
       </View>
     )
 }

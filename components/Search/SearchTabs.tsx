@@ -3,6 +3,7 @@ import React, { ReactElement, useEffect, useRef, useState } from 'react';
 import { LoadingProvider } from '@/contexts/loading';
 import Colors from '@/constants/Colors';
 import { useLocalSearchParams } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -48,7 +49,20 @@ const SearchTabs = ({ tabs, onTabChange, index}: Props) => {
                         </TouchableOpacity>
                     );
                 })}
+                
+                <View style={styles.browseTextContainer}>
+                  <Text style={{fontSize: screenWidth  > 400 ? 24 : 20, fontWeight: 'bold',
+                  top: 2, left: 5, zIndex: 2}}>Browse</Text>
+                </View>
+                <LinearGradient colors={[Colors[colorScheme ?? 'light'].background,
+                  colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
+                  style={{height: screenWidth > 400 ? 35 : 30, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1}} />
+            
+
+
+
             </View>
+            
             <LoadingProvider>
                 {tabs[tabIndex].content()}
             </LoadingProvider>
@@ -60,6 +74,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         zIndex: 3
+    },
+    browseTextContainer: {
+      position: 'absolute',
+      top: 2,
+      left: 5,
+      zIndex: 2,
+      width: '100%', // Ensure full-width
     },
     tabs: {
         flexDirection: 'row',
