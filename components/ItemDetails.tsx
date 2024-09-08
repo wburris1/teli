@@ -1,4 +1,4 @@
-import { StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, View, ScrollView, PixelRatio, Platform, TouchableWithoutFeedback } from 'react-native'
+import { StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, View, ScrollView, PixelRatio, Platform, TouchableWithoutFeedback, UIManager, LayoutAnimation } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,6 +37,10 @@ type Props = {
     redirectLink: string
 };
 
+if (Platform.OS === 'android') {
+    UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Props) => {
     const isMovie = 'title' in item ? true : false;
     const {user} = useAuth();
@@ -55,6 +59,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
     const [seenItems, setSeenItems] = useState<UserItem[]>([]);
     const [listsModalVisible, setListsModalVisible] = useState(false);
     const [followedUsersPosts, setFollowedUsersPosts] = useState<FeedPost[] | undefined>();
+    const runTime = 'title' in item ? item.runtime : item.episode_run_time; 
 
     var releaseYear = "";
     var title = "";
@@ -66,6 +71,10 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         releaseYear = item.first_air_date.slice(0, 4);
     }
     const colorScheme = useColorScheme();
+
+    const animate = () => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    };
 
     function checkDupe(localItems: UserItem[]) {
         var exists = false;
@@ -86,6 +95,14 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         return toFilter.filter(item => item.lists.includes(Values.seenListID));
     }
 
+    const convertNum = (revenue: number) => {
+        if (revenue > 1000000000) {
+          return `$${(revenue/1000000000).toFixed(1)}B`
+        } else {
+          return `$${(revenue/1000000).toFixed(1)}M`
+        }
+    }
+
     useEffect(() => {
         const items = filterByList(movies && listTypeID == Values.movieListsID ? movies :
             (shows && listTypeID == Values.tvListsID ? shows : []))
@@ -103,7 +120,8 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
       const fetchposts = async () => {
         if (!user) return;
         const adi = await FetchFollowedUsersRankings(item.id.toString(), user.uid)
-        setFollowedUsersPosts(adi);
+        setFollowedUsersPosts(adi.sort((a, b) => b.caption.length - a.caption.length));
+        animate();
       }
       fetchposts();
     }, [user])
@@ -160,19 +178,14 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                             <Text style={styles.title}>{title}</Text>
                             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end'}}>
                                 <View style={{flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingBottom: 5}}>
-                                {item.runtime && (
+                                {runTime && (
                                 <>
-                                    <Text style={styles.date}>{convertRunTime(item.runtime)}</Text>
+                                    <Text style={styles.date}>{convertRunTime(runTime)}</Text>
                                     <Ionicons name="ellipse" size={5} color={Colors[colorScheme ?? 'light'].text} style={{paddingHorizontal: 3}} />
                                 </>
                                 )}
                                 <Text style={styles.date}>{releaseYear}</Text>
                                 </View> 
-                                {isDupe && score &&
-                                    <View style={{borderWidth: 1, borderRadius: 50, borderColor: Colors[colorScheme ?? 'light'].text,
-                                        height: 45, aspectRatio: 1, marginLeft: 8, marginVertical: 3, alignItems: 'center', justifyContent: 'center'}}>
-                                        <Text style={{fontSize: 22, fontWeight: '600'}}>{score}</Text>
-                                    </View>} 
                             </View>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
@@ -229,6 +242,11 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                                     color={Colors[colorScheme ?? 'light'].text}
                                 />
                             </TouchableOpacity>
+                            {isDupe && score &&
+                            <View style={{borderWidth: 1, borderRadius: 50, borderColor: Colors[colorScheme ?? 'light'].text,
+                                height: 37, aspectRatio: 1, marginLeft: 5, alignItems: 'center', justifyContent: 'center'}}>
+                                <Text style={{fontSize: 18, fontWeight: 'bold'}}>{score}</Text>
+                            </View>} 
                         </View>
                     </View>
                 </View>
@@ -246,8 +264,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                     </Text>}
                     {item.genres && 
                     <ScrollView showsHorizontalScrollIndicator={false} horizontal style=
-                        {{width: director ? screenWidth > 400 ? screenWidth - 60 : screenWidth - 54 : screenWidth,
-                        marginRight: 5,}}
+                        {{width: item.budget && item.revenue ? screenWidth - 80 : screenWidth}}
                     >
                         <View style={styles.genreContainer} >
                         {item.genres.map(genre => (
@@ -259,23 +276,24 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                         </View>
                     </ScrollView>}
                   </View>
-                  {director && director.profile_path && 
-                  <Image 
-                    style={{flex: 1, aspectRatio: 2/3, 
-                        borderRadius: 10, backgroundColor: 'gray', borderWidth: 1,
-                        borderColor: Colors[colorScheme ?? 'light'].text, marginRight: 10}}
-                    source={{ uri: imgUrl + director.profile_path }} />}
+                  {item.budget && item.revenue && (
+                    <View style={{marginRight: 10, alignItems: 'center', borderWidth: 0.5, width: 65,
+                        borderColor: Colors[colorScheme ?? 'light'].gray, borderRadius: 10, padding: 5, justifyContent: 'center'}}>
+                        <Text style={{fontSize: 12, fontWeight: '300'}}>{convertNum(item.budget)}</Text>
+                        <Text style={{paddingBottom: 3, fontSize: 10, fontWeight: '300'}}>Budget</Text>
+                        <Text style={{fontSize: 12, fontWeight: '300'}}>{convertNum(item.revenue)}</Text>
+                        <Text style={{fontSize: 10, fontWeight: '300'}}>Revenue</Text>
+                    </View>
+                  )}
                 </View>}
                 <TouchableOpacity style={{flex: 1}}>
                     <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingVertical: 7,  alignItems: 'center'}}>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <Text style={styles.castText}>Reviews</Text>
-                            <View style={{alignItems: 'center', justifyContent: 'center', borderRadius: 50, marginLeft: 7, borderWidth: 1, 
-                            borderColor: Colors[colorScheme ?? 'light'].text, width: screenWidth > 400 ? 45 : 41, aspectRatio: 1}}>
-                                <Text style={{fontSize: screenWidth > 400 ? 24: 20, fontWeight:  '600'}}>
-                                    {item.vote_average.toFixed(1)}
-                                </Text>
-                            </View>
+                            <Ionicons name="ellipse" size={7} color={Colors[colorScheme ?? 'light'].text} style={{paddingLeft: 5}}/>
+                            <Text style={[styles.castText, { fontWeight:  'bold', paddingLeft: 5}]}>
+                                {item.vote_average.toFixed(1)}
+                            </Text>
                         </View>
                         
                         <View style={{flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 5}}>
@@ -295,9 +313,6 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                         </TouchableOpacity>
                     ))}
                 </ScrollView>}
-                {!followedUsersPosts && (
-                    <ActivityIndicator size='large' style={{width: screenWidth, height: 125}} />
-                )}
                 {
                 //<DisplayItemInfo item={item}></DisplayItemInfo>
                 }
@@ -419,7 +434,7 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        height: screenWidth > 400 ? 200 : 150,
+        height: screenWidth > 400 ? 100 : 80,
     },
     title: {
         textAlign: 'right',
@@ -485,6 +500,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '300', 
     paddingLeft: 10,
+    paddingBottom: 0
   }
 });
 
