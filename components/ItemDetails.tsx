@@ -156,12 +156,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         `${runTime}m` : 
         `${Math.floor(runTime / 60)}h ${runTime % 60}m`
     }
-    useEffect(() => {
-      if (item.budget && item.revenue) {
-          console.log("BudgetA:", item.budget);
-          console.log("RevenueA:", item.revenue);
-      }
-    }, [item.budget, item.revenue]);
+    
     const checkRevBudget = ({ budget, revenue }: Item): boolean => {
       return !!(budget && revenue && budget > 0 && revenue > 0)
     }
