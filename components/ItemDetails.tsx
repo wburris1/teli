@@ -303,7 +303,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                             {item.vote_count > 500 ? `${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+` :
                             item.vote_count.toLocaleString()}
                             </Text>
-                            <Ionicons name='caret-forward' size={20} color={Colors[colorScheme ??  'light'].text} />
+                            <Ionicons name='people' size={20} color={Colors[colorScheme ??  'light'].text} />
                         </View>
                     </View>
                 </TouchableOpacity>
