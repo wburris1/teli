@@ -26,17 +26,10 @@ export const ItemPostList =  ({ itemPost }: { itemPost: FeedPost }) => {
     return (
         <View style={{flexDirection: 'row', backgroundColor: 'transparent', 
             alignItems: 'center', marginLeft: 5, width: headerWidth,}}>
-            <Text ellipsizeMode="tail" numberOfLines={3} style={{backgroundColor: 'transparent', height: 50, paddingRight: 10, 
-                fontSize: 12, flex: 1, width: headerWidth ? headerWidth - 55 : 0}}>
+            <Text ellipsizeMode="tail" numberOfLines={2} style={{backgroundColor: 'transparent', maxHeight: 50, paddingRight: 10, 
+                fontSize: 14, flex: 1, width: headerWidth ? headerWidth - 10 : 0, paddingBottom: 5}}>
                 {itemPost.caption}
             </Text>
-            <View style={[styles.score, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
-                <Text style={{
-                    color: Colors[colorScheme ?? 'light'].background,
-                    fontSize: 20,
-                    fontWeight: '600'
-                }}>{itemPost.score.toFixed(1)}</Text>
-            </View>
         </View>
     )
   }, [headerWidth, itemPost])
@@ -50,22 +43,15 @@ export const ItemPostList =  ({ itemPost }: { itemPost: FeedPost }) => {
         style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
         />
         <Text style={{backgroundColor: 'transparent', fontSize: 16, fontWeight: '500', marginRight: 5}}>
-            {itemPost.first_name} <Text style={{fontWeight: '400'}}>ranked this</Text>
+            {itemPost.first_name} <Text style={{fontWeight: '400'}}>ranked this <Text style={{fontWeight: 'bold', fontSize: 18}}>
+                {itemPost.score.toFixed(1)}</Text></Text>
         </Text>
       </View>
-      {itemPost.caption ? (
+      {/*itemPost.caption && (
             <>
                 {caption()}
             </>
-        ) : (
-            <View style={[styles.score, {backgroundColor: Colors[colorScheme ?? 'light'].text}]}>
-                <Text style={{
-                    color: Colors[colorScheme ?? 'light'].background,
-                    fontSize: 20,
-                    fontWeight: '600'
-                }}>{itemPost.score.toFixed(1)}</Text>
-            </View>
-        )}
+      )*/}
     </View>
   )
 }
@@ -76,7 +62,6 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         borderRadius: 12,
         padding: 5,
-        height: 115
     },
     shadow: {
         shadowOffset: { width: 0, height: 2 },
