@@ -37,7 +37,7 @@ type WrapperProps = {
   dupePostID: string
 };
 
-const imgUrl = 'https://image.tmdb.org/t/p/w780';
+const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenHeight = Dimensions.screenHeight;
 const screenWidth = Dimensions.screenWidth;
 
