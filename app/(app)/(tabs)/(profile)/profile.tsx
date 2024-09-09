@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   profilePic: {
     width: 100,
-    height: 80,
+    height: 100,
     aspectRatio: 1,
     borderRadius: 50,
     borderWidth: 1,

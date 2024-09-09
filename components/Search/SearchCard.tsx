@@ -65,7 +65,7 @@ const ItemScreen = ({movieList, isAdding, addItems, outItems, setAddItems, setOu
                     <View style={[styles.container, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
                         <View style={[styles.imageBorder, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
                             <Image
-                                source={{ uri: imgUrl + item.poster_path }}
+                                source={item.poster_path ? { uri: imgUrl + item.poster_path } : require('../../assets/images/poster-placeholder.png')}
                                 style={styles.image}
                             />
                         </View>
@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
     },
     image: {
         width: 80,
+        height: 120,
         aspectRatio: 1 / 1.5,
     },
     imageBorder: {
