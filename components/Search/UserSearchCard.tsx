@@ -18,9 +18,8 @@ export const UsersListScreen = ({users, redirectPath, onClose}: {users: UserData
         return (
             <View key={item.user_id}>
                 <TouchableOpacity onPress={() => handleUserPress(item.user_id)} style={styles.userContainer}>
-                   
                         <Image
-                          source={{ uri: item.profile_picture || undefined, cache: 'force-cache' }}
+                          source={ item.profile_picture ? {uri: item.profile_picture,  cache: 'force-cache' } : require('../../assets/images/emptyprofilepic.jpg')}
                           style={styles.image}
                         />
                         <View>

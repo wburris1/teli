@@ -115,8 +115,11 @@ const ProfilePage = () => {
           <View style={{width: '100%', alignItems: 'center'}}>
             <Text style={styles.username}>@{userData.username}</Text>
             <Image
-              source={{ uri: userData.profile_picture || undefined }}
-              style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text }]}
+              source={userData.profile_picture
+                ? { uri: userData.profile_picture }  // Remote image
+                : require('../../../../assets/images/emptyprofilepic.jpg') // Local image
+                }  
+              style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text,  }]}
             />
           </View>
           <View style={{flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', padding: 10,}}>
@@ -195,6 +198,7 @@ const styles = StyleSheet.create({
   },
   profilePic: {
     width: 100,
+    height: 80,
     aspectRatio: 1,
     borderRadius: 50,
     borderWidth: 1,

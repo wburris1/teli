@@ -50,15 +50,7 @@ const SearchTabs = ({ tabs, onTabChange, index}: Props) => {
                     );
                 })}
                 
-                <View style={styles.browseTextContainer}>
-                  <Text style={{fontSize: screenWidth  > 400 ? 24 : 20, fontWeight: 'bold',
-                  top: 2, left: 5, zIndex: 2}}>Browse</Text>
-                </View>
-                <LinearGradient colors={[Colors[colorScheme ?? 'light'].background,
-                  colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
-                  style={{height: screenWidth > 400 ? 35 : 30, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1}} />
-            
-
+                
 
 
             </View>
