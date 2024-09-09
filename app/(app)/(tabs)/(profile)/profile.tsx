@@ -18,7 +18,6 @@ import useModalState from '@/components/ModalState';
 import PostFeedWithModals from '@/components/PostFeedWithModals';
 import { useNavigation } from '@react-navigation/native';
 import { ScreenNavigationProp } from '@/constants/ImportTypes';
-import { FetchFollowers, FetchFollowing } from '@/components/Helpers/FetchFunctions';
 
 const db = FIREBASE_DB;
 
@@ -47,12 +46,10 @@ const LogoutButton = () => {
 const ProfilePage = () => {
   const { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment } = useModalState();
   const {user, userData } = useAuth();
-  const [followers, setFollowers] = useState<string[]>([]);
-  const [following, setFollowing] = useState<string[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const { posts, loadMorePosts, isLoadingMore} = makeFeed(user ? user.uid : '', refreshing, setRefreshing);
   const [loading, setLoading] = useState(true);
-  const { refreshFlag, refreshListFlag } = useData();
+  const { followers, following } = useData();
   const navigation = useNavigation<ScreenNavigationProp>();
   const colorScheme = useColorScheme();
 
@@ -87,19 +84,6 @@ const ProfilePage = () => {
       setLoading(false);
     }
   }, [posts]);
-
-  useEffect(() => {
-    if (user) {
-      const updateFollowFollowers = async() => {
-        const newFollowers = await FetchFollowers(user.uid)
-        const newFollowing = await FetchFollowing(user.uid)
-        setFollowers(newFollowers)
-        setFollowing(newFollowing)
-      }
-      updateFollowFollowers();
-    }
-   
-  }, [refreshing, user])
 
   const handleNavigate = (whichTab: number) => {
     navigation.push('profile_follower' as keyof RootStackParamList, {

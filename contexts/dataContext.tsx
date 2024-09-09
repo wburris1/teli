@@ -12,6 +12,10 @@ type DataContextType = {
     setMovies: (items: UserItem[]) => void;
     shows: UserItem[] | null;
     setShows: (items: UserItem[]) => void;
+    following: string[];
+    setFollowing: (users: string[]) => void;
+    followers: string[];
+    setFollowers: (users: string[]) => void;
     tvLists: List[];
     setTVLists: (items: List[]) => void;
     movieLists: List[];
@@ -38,6 +42,8 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 export const DataProvider: React.FC<Props> = ({ children }: Props) => {
     const [movies, setMovies] = useState<UserItem[] | null>(null);
     const [shows, setShows] = useState<UserItem[] | null>(null);
+    const [followers, setFollowers] = useState<string[]>([]);
+    const [following, setFollowing] = useState<string[]>([]);
     const [tvLists, setTVLists] = useState<List[]>([]);
     const [movieLists, setMovieLists] = useState<List[]>([]);
     const [refreshFlag, setRefreshFlag] = useState(false);
@@ -160,10 +166,38 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
         }
     }, [refreshFlag, user]);
 
+    useEffect(() => {
+      if (user) {
+        const followRef = collection(db, "users", user.uid, "followers");
+        
+        const unsubscribe = onSnapshot(followRef, (snapshot) => {
+          setFollowers(snapshot.docs.map(doc => doc.id));
+        }, (error) => {
+          console.error("Error fetching users followers: ", error);
+        })
+
+        return () => unsubscribe();
+      }
+    }, [refreshFlag, user])
+
+    useEffect(() => {
+      if (user) {
+        const followRef = collection(db, "users", user.uid, "following");
+        
+        const unsubscribe = onSnapshot(followRef, (snapshot) => {
+          setFollowing(snapshot.docs.map(doc => doc.id));
+        }, (error) => {
+          console.error("Error fetching users following: ", error);
+        })
+
+        return () => unsubscribe();
+      }
+    }, [refreshFlag, user])
+
     return (
         <DataContext.Provider
-            value={{ movies, setMovies, shows, setShows,
-                tvLists, setTVLists, movieLists, setMovieLists,
+            value={{ movies, setMovies, shows, setShows, followers, setFollowers, following,
+                setFollowing, tvLists, setTVLists, movieLists, setMovieLists,
                 refreshFlag, requestRefresh, refreshListFlag, requestListRefresh,
                 replyID, requestReply, userPushToken, notification
             }}

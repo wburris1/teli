@@ -7,7 +7,6 @@ import { DocumentSnapshot, collection, doc, getDoc, getDocs, limit, orderBy, que
 import { useEffect, useRef, useState } from "react";
 import { fetchUserData } from "./getComments";
 import { LayoutAnimation, Platform, UIManager } from "react-native";
-import { FetchFollowing } from "@/components/Helpers/FetchFunctions";
 
 // TO DO IMPlement caching and smooth animation when adding posts. 
 
@@ -24,7 +23,7 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   const { user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const { refreshFlag } = useData();
+  const { refreshFlag, followers, following } = useData();
   const lastFetchedPost = useRef<DocumentSnapshot | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMorePost, setHasMorePost] = useState(true);
@@ -80,7 +79,7 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   const fetchFeed = async () => {
     if (user) {
       try {
-        const followedUsers = userID === 'Home' ? await FetchFollowing(user.uid) : [userID];
+        const followedUsers = userID === 'Home' ? following : [userID];
         const newPosts = await fetchPosts(followedUsers);
 
         if (refreshing) {

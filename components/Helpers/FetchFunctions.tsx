@@ -40,8 +40,7 @@ export async function FetchTVLists (userID: string): Promise<List[]> {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));
 };
 
-export async function FetchFollowedUsersRankings (ItemID: string, userID: string): Promise<FeedPost[]> {
-  const following = await FetchFollowing(userID);
+export async function FetchFollowedUsersRankings (ItemID: string, userID: string, following: string[]): Promise<FeedPost[]> {
   if (!following.length) {
     return [];
   }
