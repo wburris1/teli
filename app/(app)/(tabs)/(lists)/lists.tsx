@@ -63,7 +63,7 @@ export default function TabOneScreen() {
         <View style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1, }}>
           <SafeAreaView style={styles.container}>
             <AddList />
-            <SearchTabs tabs={searchTabs} onTabChange={index => setActiveTab(index)} index={0} />
+            <SearchTabs browse={false} tabs={searchTabs} onTabChange={index => setActiveTab(index)} index={0} />
           </SafeAreaView>
         </View>
       </GestureHandlerRootView>

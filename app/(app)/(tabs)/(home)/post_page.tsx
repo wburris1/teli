@@ -1,11 +1,11 @@
-import { View } from "@/components/Themed";
-import Dimensions from "@/constants/Dimensions";
-import { Ionicons } from "@expo/vector-icons";
+import { WritePost } from "@/components/WritePost";
+import { useLocalSearchParams } from "expo-router";
 
 export default function PostScreen() {
+    const { id, poster, name, groupKey } = useLocalSearchParams();
+
     return (
-        <View style={{zIndex: 2, width: Dimensions.screenWidth, height: Dimensions.screenHeight}}>
-            
-        </View>
+        <WritePost id={id as string} name={name as string} poster={poster as string}
+        groupKey={groupKey as string} isHome={true} onClose={() => {}}/>
     )
 }

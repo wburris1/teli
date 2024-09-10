@@ -117,7 +117,7 @@ export default function SearchScreen() {
         <SafeAreaView style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1 }}>
             <View style={styles.container}>
                 <SearchInput search={search} setSearch={setSearch} isFocused={false} />
-                <SearchTabs tabs={searchTabs} onTabChange={() => {}} index={whichTab}/>
+                <SearchTabs browse={true} tabs={searchTabs} onTabChange={() => {}} index={whichTab}/>
             </View>
         </SafeAreaView>
     );

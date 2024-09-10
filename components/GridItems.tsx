@@ -99,11 +99,14 @@ export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore, isPost
             keyExtractor={item => item.id}
             numColumns={3}
             showsVerticalScrollIndicator={false}
-            style={[animatedStyle, {flex: 1, paddingTop: screenWidth > 400 ? 32 : 28 }]}
+            style={[animatedStyle, {flex: 1, paddingTop: 5}]}
             onEndReached={loadMoreItems}
             onEndReachedThreshold={0.5}
             ListFooterComponent={renderFooter}
           />
+          <LinearGradient colors={[Colors[colorScheme ?? 'light'].background,
+            colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
+            style={{height: screenWidth > 400 ? 35 : 30, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1}} />
       </View>
     )
 }

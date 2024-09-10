@@ -59,7 +59,7 @@ export default function StartPost() {
         <SafeAreaView style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1 }}>
             <View style={styles.container}>
                 <SearchInput search={search} setSearch={setSearch} isFocused={false} />
-                <SearchTabs tabs={searchTabs} onTabChange={() => {}} index={0}/>
+                <SearchTabs browse={false} tabs={searchTabs} onTabChange={() => {}} index={0}/>
             </View>
         </SafeAreaView>
     );

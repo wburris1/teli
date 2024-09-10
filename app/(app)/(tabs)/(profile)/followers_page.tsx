@@ -196,7 +196,7 @@ export default function FollowerModalScreen({ userID, redirectLink, whichTab}: {
     <View style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1 }}>
       <View style={styles.container}>
           <SearchInput search={search} setSearch={setSearch} isFocused={false} />
-          <SearchTabs tabs={followingTabs} onTabChange={index => setActiveTab(index)} index= {whichTab} />
+          <SearchTabs browse={false} tabs={followingTabs} onTabChange={index => setActiveTab(index)} index= {whichTab} />
       </View>
     </View>
 );

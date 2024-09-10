@@ -24,6 +24,7 @@ import { Logo } from './LogoView';
 import { useAuth } from '@/contexts/authContext';
 import { FetchFollowedUsersRankings } from './Helpers/FetchFunctions';
 import { ItemPostList } from './ItemPostsList';
+import { WritePost } from './WritePost';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
@@ -60,7 +61,8 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
     const [seenItems, setSeenItems] = useState<UserItem[]>([]);
     const [listsModalVisible, setListsModalVisible] = useState(false);
     const [followedUsersPosts, setFollowedUsersPosts] = useState<FeedPost[] | undefined>();
-    const runTime = 'title' in item ? item.runtime : item.episode_run_time; 
+    const runTime = 'title' in item ? item.runtime : item.episode_run_time;
+    const [postModalVisible, setPostModalVisible] = useState(false);
 
     var releaseYear = "";
     var title = "";
@@ -165,7 +167,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
     }
 
     return (
-        <>
+        <View>
         <TouchableOpacity style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].background}]} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={35} color={Colors[colorScheme ?? 'light'].text}/>
         </TouchableOpacity>
@@ -209,6 +211,16 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                                     {isDupe ? 'Rerank' : 'Rank'}
                                 </Text>
                             </TouchableOpacity>
+                            <TouchableOpacity style={{ marginHorizontal: 5,
+                                alignItems: 'center', height: 30, aspectRatio: 1, borderWidth: 2, justifyContent: 'center',
+                                borderRadius: 20,
+                                borderColor: Colors[colorScheme ?? 'light'].text, }} onPress={() => setPostModalVisible(true)}>
+                              <Ionicons
+                                name={"pencil"}
+                                size={17}
+                                color={Colors[colorScheme ?? 'light'].text}
+                                />
+                            </TouchableOpacity>
                             {((isMovie && movies) || (!isMovie && shows)) && !isDupe &&
                             <TouchableOpacity onPress={() => {
                                     if (!bookmarked) {
@@ -237,7 +249,6 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                                         })
                                     }
                                 }}
-                                style={{ paddingLeft: 5 }}
                             >
                                 <Ionicons
                                 name={bookmarked ? "bookmark" : "bookmark-outline"}
@@ -245,7 +256,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                                 color={Colors[colorScheme ?? 'light'].text}
                                 />
                             </TouchableOpacity>}
-                            <TouchableOpacity onPress={() => setListsModalVisible(true)} style={{paddingLeft: 5}}>
+                            <TouchableOpacity onPress={() => setListsModalVisible(true)}>
                                 <Ionicons
                                     name={"add-circle-outline"}
                                     size={35}
@@ -306,8 +317,8 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                             </Text>
                         </View>
                         
-                        <View style={{flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 5}}>
-                            <Text style={{fontSize: 16, fontWeight: '300'}}>
+                        <View style={{flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 10}}>
+                            <Text style={{fontSize: 16, fontWeight: '300', paddingRight: 3}}>
                             {item.vote_count > 500 ? `${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+` :
                             item.vote_count.toLocaleString()}
                             </Text>
@@ -323,9 +334,6 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                         </TouchableOpacity>
                     ))}
                 </ScrollView>}
-                {
-                //<DisplayItemInfo item={item}></DisplayItemInfo>
-                }
                 <View style={styles.castContainer}>
                   <Text style={styles.castText}>Cast</Text>
                 </View>
@@ -364,7 +372,17 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
               </View>
           </TouchableWithoutFeedback >
         }
-        </>
+        <Modal
+            animationType="slide"
+            transparent={true}
+            visible={postModalVisible}
+            onRequestClose={() => setPostModalVisible(false)}
+        >
+            <WritePost id={item.id} name={isMovie ? item.title : item.name}
+                poster={item.poster_path} groupKey={isMovie ? "movies" : "shows"} isHome={false}
+                onClose={() => setPostModalVisible(false)} />
+        </Modal>
+        </View>
     )
 }; 
 

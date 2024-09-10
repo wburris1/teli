@@ -56,7 +56,7 @@ export const StartPostScreen = ({searchVisible, setSearchVisible}:
       <GestureHandlerRootView>
         <SafeAreaView style={[styles.container, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
             <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
-            <SearchTabs tabs={searchTabs} onTabChange={() => {}} index={0} />
+            <SearchTabs browse={false} tabs={searchTabs} onTabChange={() => {}} index={0} />
         </SafeAreaView>
       </GestureHandlerRootView>
     );

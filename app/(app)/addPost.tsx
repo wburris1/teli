@@ -123,7 +123,7 @@ export default function NewPostScreen() {
             </TouchableOpacity>
           </View>
           <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
-          <SearchTabs tabs={searchTabs} onTabChange={() => {}} index={0} />
+          <SearchTabs tabs={searchTabs} onTabChange={() => {}} index={0} browse={false} />
         </> :
         <View>
           <TextInput

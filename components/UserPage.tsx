@@ -351,7 +351,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                 </View>
             </View>
           </View>
-          <SearchTabs tabs={tabs} onTabChange={() => {}} index={0} />
+          <SearchTabs browse={false} tabs={tabs} onTabChange={() => {}} index={0} />
         </>
       )}
     </SafeAreaView>
