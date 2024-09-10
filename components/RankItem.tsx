@@ -345,7 +345,8 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
             <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
               <View>
                 <Image
-                  source={{ uri: imgUrl + item.poster_path }}
+                  source={item.poster_path ? { uri: imgUrl + item.poster_path } :
+                  require('../assets/images/poster-placeholder.png')}
                   style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].background}]}
                 />
                 <LinearGradient
