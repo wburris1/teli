@@ -177,7 +177,8 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                 </View>
                 <View style={[styles.info, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
                     <View style={styles.posterContainer}>
-                        <Image source={{ uri: imgUrl + item.poster_path }} style={[styles.image, {borderColor: Colors[colorScheme ?? 'light'].text}]} />
+                        <Image source={item.poster_path ? { uri: imgUrl + item.poster_path } :
+                      require('../assets/images/poster-placeholder.png')} style={[styles.image, {borderColor: Colors[colorScheme ?? 'light'].text}]} />
                     </View>
                     <View style={styles.rightInfo}>
                         <View>
@@ -423,6 +424,7 @@ const styles = StyleSheet.create({
         shadowColor: 'black'
     },
     image: {
+        height: 215,
         width: screenWidth/3,
         aspectRatio: 1 / 1.5,
         borderRadius: 5,

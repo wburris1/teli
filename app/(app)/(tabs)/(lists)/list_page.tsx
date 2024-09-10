@@ -159,7 +159,8 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
           <TouchableOpacity onPress={toggleSelect} onLongPress={handleLongPress} activeOpacity={selectionMode ? 1.0: .5}>
             <Animated.View style={[styles.innerContainer, animatedStyle, popUpIndex === index ? styles.shadow : {}]}>
               <Image
-                  source={{ uri: imgUrl + item.poster_path }}
+                  source={item.poster_path ? { uri: imgUrl + item.poster_path } :
+                  require('../../../../assets/images/poster-placeholder.png')}
                   style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
               />
                {selectionMode && (
@@ -586,6 +587,7 @@ const styles = StyleSheet.create({
       zIndex: 1,
     },
     image: {
+      height: 209,
       width: '100%',
       aspectRatio: 1 / 1.5,
       borderWidth: 1,

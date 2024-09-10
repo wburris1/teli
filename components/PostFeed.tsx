@@ -184,7 +184,8 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
         <Link style={{height: 130}} href={{pathname: redirectLink + "_item" as any, params: { id: item.item_id, groupKey: isMovie ? 'movie' : 'tv' }}} asChild>
           <TouchableOpacity>
             <Image
-              source={{ uri: imgUrl + item.poster_path }}
+              source={item.poster_path ? { uri: imgUrl + item.poster_path } :
+              require('../assets/images/poster-placeholder.png')}
               style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
             />
             {item.score && item.score >= 0 &&
