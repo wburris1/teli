@@ -87,11 +87,11 @@ export default function SearchScreen() {
 
     const moviesTabContent = useCallback(() => 
         <MoviesTabContent
-            query={search} isAdding={false} addItems={[]} outItems={[]} setAddItems={() => {}} setOutItems={() => {}} listID=''
+            query={search} isPosting={false} isAdding={false} addItems={[]} outItems={[]} setAddItems={() => {}} setOutItems={() => {}} listID=''
         />, [search]);
     const showsTabContent = useCallback(() => 
         <ShowsTabContent
-            query={search} isAdding={false} addItems={[]} outItems={[]} setAddItems={() => {}} setOutItems={() => {}} listID=''
+            query={search} isPosting={false} isAdding={false} addItems={[]} outItems={[]} setAddItems={() => {}} setOutItems={() => {}} listID=''
         />, [search]);
     const usersTabContent = useCallback(() => 
         <UsersTabContent 

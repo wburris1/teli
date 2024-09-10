@@ -24,7 +24,7 @@ const chunkLists = (lists: List[], size: number) => {
     if (lists.length <= 3) {
         result = [lists];
         return result;
-    } else if (lists.length == 4) {
+    } else if (lists.length == 4 && size != 4) {
         result.push(lists.slice(0, 3));
         result.push(lists.slice(3, 4));
         return result;
@@ -49,7 +49,8 @@ export const HorizontalListWithRows = ({lists, listTypeID, userID, isListTab, nu
     const chunkedUnwatched = chunkLists(unwatchedLists, numColumns);
   
     return (
-        <ScrollView style={[styles.listsContainer, {paddingTop: !isListTab ? 45 : 0}]} showsVerticalScrollIndicator={false}>
+        <SafeAreaView style={{flex: 1}}>
+        <ScrollView style={[styles.listsContainer, {paddingTop: !isListTab ? 0 : 0}]} showsVerticalScrollIndicator={false}>
         <View style={styles.topSeparator}>
             <Text style={styles.separatorText}>Watched</Text>
         </View>
@@ -79,6 +80,7 @@ export const HorizontalListWithRows = ({lists, listTypeID, userID, isListTab, nu
             </View>
         </ScrollView>
         </ScrollView>
+        </SafeAreaView>
     );
 };
 
@@ -89,7 +91,7 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
     },
     listsContainer: {
-      flex: 1,
+      //flex: 1,
       flexDirection: 'column',
     },
     row: {

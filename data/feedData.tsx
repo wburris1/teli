@@ -23,7 +23,7 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   const { user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const { refreshFlag, followers, following } = useData();
+  const { refreshFlag, following } = useData();
   const lastFetchedPost = useRef<DocumentSnapshot | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMorePost, setHasMorePost] = useState(true);
@@ -80,6 +80,7 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
     if (user) {
       try {
         const followedUsers = userID === 'Home' ? following : [userID];
+        if (!followedUsers) return;
         const newPosts = await fetchPosts(followedUsers);
 
         if (refreshing) {
@@ -106,8 +107,10 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   }, [user, refreshFlag, refreshing]);
 
   useEffect(() => {
-    fetchFeed();
-  }, []);
+    if (following) {
+      fetchFeed();
+    }
+  }, [following]);
   
   return { posts, loading, loadMorePosts, isLoadingMore };
 }

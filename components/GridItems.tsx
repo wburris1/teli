@@ -11,6 +11,7 @@ import _ from 'lodash';
 
 type RowProps = {
     item: Item;
+    isPosting: boolean;
 };
 const imgUrl = 'https://image.tmdb.org/t/p/w300';
 const screenWidth = Dimensions.screenWidth;
@@ -24,7 +25,7 @@ const prefetchImages = async (items: Item[]) => {
   );
 };
 
-const RenderItem = ({ item }: RowProps) => {
+const RenderItem = ({ item, isPosting }: RowProps) => {
   const isMovie = 'title' in item;
   const colorScheme = useColorScheme();
   let date = isMovie ? item.release_date : item.first_air_date;
@@ -33,7 +34,8 @@ const RenderItem = ({ item }: RowProps) => {
   return (
     <>
     <View>
-      <Link href={{pathname: "/search_item", params: { id: item.id, groupKey: isMovie ? "movie" : "tv" }}} asChild>
+      <Link href={{pathname: isPosting ? "/post_page" : "/search_item", params: 
+      { id: item.id, poster: item.poster_path, name: 'title' in item ? item.title : item.name, groupKey: isMovie ? "movie" : "tv" }}} asChild>
         <TouchableOpacity>
           <Animated.View style={[styles.innerContainer, styles.shadow]}>
             <Image
@@ -49,8 +51,8 @@ const RenderItem = ({ item }: RowProps) => {
 };
 export const MemoizedRenderItem = memo(RenderItem);
 
-export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore }:
-  {listID: string, items: Item[], loadMoreItems: () => void, isLoadingMore: boolean }) => {
+export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore, isPosting }:
+  {listID: string, items: Item[], loadMoreItems: () => void, isLoadingMore: boolean, isPosting: boolean }) => {
     const colorScheme = useColorScheme();
     const [popUpIndex, setPopUpIndex] = useState(-1);
     const topPadding = useSharedValue(0);
@@ -91,10 +93,9 @@ export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore }:
 
     return (
       <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
-        
           <Animated.FlatList
             data={prefetchedItems}
-            renderItem={({ item, index }) => <MemoizedRenderItem item={item} />}
+            renderItem={({ item, index }) => <MemoizedRenderItem item={item} isPosting={isPosting} />}
             keyExtractor={item => item.id}
             numColumns={3}
             showsVerticalScrollIndicator={false}

@@ -5,6 +5,7 @@ import { FeedPost } from '@/constants/ImportTypes';
 import { PostFeed } from '@/components/PostFeed';
 import LikesModal from '@/components/LikesModal';
 import CommentsModal from '@/components/CommentsModal';
+import Dimensions from '@/constants/Dimensions';
 
 type PostListWithModalsProps = {
   posts: FeedPost[];
@@ -52,8 +53,8 @@ PostListWithModalsProps) => {
   };
 
   return (
-    <GestureHandlerRootView style={{ width: '100%', height: '100%',
-    backgroundColor: Colors[colorScheme ?? 'light'].background, paddingBottom: redirectLink.includes('profile') ? 50 : 0 }}>
+    <GestureHandlerRootView style={{ width: Dimensions.screenWidth, flex: 1,
+    backgroundColor: Colors[colorScheme ?? 'light'].background}}>
       {!loading ? (
         <>
           <FlatList

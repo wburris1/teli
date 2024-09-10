@@ -19,12 +19,12 @@ export const AddUnwatchedScreen = ({listID, listTypeID, onClose, onSave}:
 
     const moviesTabContent = useCallback(() => 
         <MoviesTabContent
-            query={search} isAdding={true} addItems={addItems} outItems={outItems}
+            query={search} isPosting={false} isAdding={true} addItems={addItems} outItems={outItems}
             setAddItems={setAddItems} setOutItems={setOutItems} listID={listID}
         />, [search, addItems, outItems]);
     const showsTabContent = useCallback(() => 
         <ShowsTabContent
-            query={search} isAdding={true} addItems={addItems} outItems={outItems}
+            query={search} isPosting={false} isAdding={true} addItems={addItems} outItems={outItems}
             setAddItems={setAddItems} setOutItems={setOutItems} listID={listID}
         />, [search, addItems, outItems]);
 

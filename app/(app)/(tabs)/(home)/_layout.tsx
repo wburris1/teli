@@ -17,11 +17,6 @@ export default function SearchLayout() {
           headerStyle: {
             backgroundColor: Colors[colorScheme ?? 'light'].background
           },
-          headerRight: () => (
-            <TouchableOpacity onPress={() => router.push({ pathname: "/addPost" })} style={{paddingRight: 10,}}>
-              <Ionicons name="add" size={35} color={Colors[colorScheme ?? 'light'].text}/>
-            </TouchableOpacity>
-          ),
           headerLeft: () => (
             <Text style={{fontSize: 25, fontWeight: 'bold', color: Colors[colorScheme ?? 'light'].text}}>Home</Text>
           )
@@ -36,6 +31,16 @@ export default function SearchLayout() {
                     backgroundColor: Colors[colorScheme ?? 'light'].background,
                 }
              }} />
+        <Stack.Screen name="start_post_page" options={{ headerShown: true, headerBackTitle: "", headerTitle: "What's this about?", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+            headerStyle: {
+                backgroundColor: Colors[colorScheme ?? 'light'].background,
+            }
+        }} />
+        <Stack.Screen name="post_page" options={{ headerShown: true, headerBackTitle: "Back", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+            headerStyle: {
+                backgroundColor: Colors[colorScheme ?? 'light'].background,
+            }
+        }} />
     </Stack>
     );
 }

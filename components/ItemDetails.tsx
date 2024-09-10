@@ -121,7 +121,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
     useEffect(() => {
       const fetchposts = async () => {
         if (!user) return;
-        const adi = await FetchFollowedUsersRankings(item.id.toString(), user.uid, following)
+        const adi = await FetchFollowedUsersRankings(item.id.toString(), user.uid, following || [])
         setFollowedUsersPosts(adi.sort((a, b) => b.caption.length - a.caption.length));
         animate();
       }

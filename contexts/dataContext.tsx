@@ -12,8 +12,8 @@ type DataContextType = {
     setMovies: (items: UserItem[]) => void;
     shows: UserItem[] | null;
     setShows: (items: UserItem[]) => void;
-    following: string[];
-    setFollowing: (users: string[]) => void;
+    following: string[] | undefined;
+    setFollowing: (users: string[] | undefined) => void;
     followers: string[];
     setFollowers: (users: string[]) => void;
     tvLists: List[];
@@ -43,7 +43,7 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
     const [movies, setMovies] = useState<UserItem[] | null>(null);
     const [shows, setShows] = useState<UserItem[] | null>(null);
     const [followers, setFollowers] = useState<string[]>([]);
-    const [following, setFollowing] = useState<string[]>([]);
+    const [following, setFollowing] = useState<string[] | undefined>();
     const [tvLists, setTVLists] = useState<List[]>([]);
     const [movieLists, setMovieLists] = useState<List[]>([]);
     const [refreshFlag, setRefreshFlag] = useState(false);

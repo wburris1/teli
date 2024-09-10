@@ -16,15 +16,6 @@ import Toast from 'react-native-toast-message';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
 
-
-type AboutItem = {
-  id: string,
-  name: string,
-  poster_path: string,
-  date: string,
-  listTypeID: string,
-}
-
 export default function NewPostScreen() {
   const colorScheme = useColorScheme();
   const [caption, setCaption] = useState("");
@@ -68,18 +59,12 @@ export default function NewPostScreen() {
 
    const moviesTabContent = useCallback(() => 
     <View>
-      <View>
-        <SearchCategories listTypeID={Values.movieListsID} isPost={true} onChange={selectedID => setMovieListID(selectedID)} listID={movieListID} />
-      </View>
       <NewPostSearchLists query={search} listTypeID={Values.movieListsID} listID={movieListID} onSelect={item => setAboutItem(item)} />
     </View>
    , [search, movieListID])
 
    const showsTabContent = useCallback(() => 
     <View>
-      <View>
-        <SearchCategories listTypeID={Values.tvListsID} isPost={true} onChange={selectedID => setTVListID(selectedID)} listID={tvListID} />
-      </View>
       <NewPostSearchLists query={search} listTypeID={Values.tvListsID} listID={tvListID} onSelect={item => setAboutItem(item)} />
     </View>
    , [search, tvListID])
@@ -134,7 +119,7 @@ export default function NewPostScreen() {
             <TouchableOpacity onPress={() => {
               setSearchVisible(prev => !prev);
             }}>
-              <Ionicons name={searchVisible ? "close" : "search"} size={35} color={Colors[colorScheme ?? 'light'].text} />
+              <Ionicons name={searchVisible ? "close" : "search"} size={30} color={Colors[colorScheme ?? 'light'].text} />
             </TouchableOpacity>
           </View>
           <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
@@ -217,7 +202,7 @@ const styles = StyleSheet.create({
     fontWeight: '300',
   },
   aboutText: {
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: '500',
   },
   rank: {

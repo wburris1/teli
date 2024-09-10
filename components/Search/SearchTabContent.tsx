@@ -4,8 +4,8 @@ import { fetchMoreItems, useItemSearch } from "@/data/itemData";
 import _, { set } from 'lodash';
 import { RenderGrid } from "../GridItems";
 
-export const MoviesTabContent = ({ query, isAdding, addItems, outItems, setAddItems, setOutItems, listID }:
-    { query: string, isAdding: boolean, addItems: Item[], outItems: Item[], 
+export const MoviesTabContent = ({ query, isPosting, isAdding, addItems, outItems, setAddItems, setOutItems, listID }:
+    { query: string, isPosting: boolean, isAdding: boolean, addItems: Item[], outItems: Item[], 
     setAddItems: (items: Item[]) => void, setOutItems: (items: Item[]) => void, listID: string }) => {
     const [movieList, setMovieList] = useState<Item[]>([]);
     const [displayGrid, setDisplayGrid] = useState(true);
@@ -41,14 +41,14 @@ export const MoviesTabContent = ({ query, isAdding, addItems, outItems, setAddIt
         debouncedFetchData(query);
     }, [query, debouncedFetchData]);
     return (
-      displayGrid && !isAdding ? <RenderGrid listID={listID} items={movieList} isLoadingMore={isLoadingMore} loadMoreItems={loadMore} /> 
+      displayGrid && !isAdding ? <RenderGrid listID={listID} items={movieList} isLoadingMore={isLoadingMore} loadMoreItems={loadMore} isPosting={isPosting} /> 
       : (<ItemScreen movieList={movieList} isAdding={isAdding} addItems={addItems} outItems={outItems}
-         setAddItems={setAddItems} setOutItems={setOutItems} listID={listID} /> )
+         setAddItems={setAddItems} setOutItems={setOutItems} listID={listID} isPosting={isPosting} /> )
   )
 };
 
-export const ShowsTabContent = ({ query, isAdding, addItems, outItems, setAddItems, setOutItems, listID }:
-    { query: string, isAdding: boolean, addItems: Item[], outItems: Item[], 
+export const ShowsTabContent = ({ query, isPosting, isAdding, addItems, outItems, setAddItems, setOutItems, listID }:
+    { query: string, isPosting: boolean, isAdding: boolean, addItems: Item[], outItems: Item[], 
     setAddItems: (items: Item[]) => void, setOutItems: (items: Item[]) => void, listID: string }) => {
     const [tvList, setTvList] = useState<Item[]>([]);
     const [displayGrid, setDisplayGrid] = useState(true);
@@ -85,8 +85,8 @@ export const ShowsTabContent = ({ query, isAdding, addItems, outItems, setAddIte
     }
 
     return (
-      displayGrid && !isAdding ? <RenderGrid listID={listID} items={tvList} isLoadingMore={isLoadingMore} loadMoreItems={loadMore}/>
+      displayGrid && !isAdding ? <RenderGrid listID={listID} items={tvList} isLoadingMore={isLoadingMore} loadMoreItems={loadMore} isPosting={isPosting} />
       : (<ItemScreen movieList={tvList} isAdding={isAdding} addItems={addItems} outItems={outItems}
-        setAddItems={setAddItems} setOutItems={setOutItems} listID={listID} /> )
+        setAddItems={setAddItems} setOutItems={setOutItems} listID={listID} isPosting={isPosting} /> )
     )
 };

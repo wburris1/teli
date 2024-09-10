@@ -22,9 +22,10 @@ type Props = {
     setAddItems: (items: Item[]) => void,
     setOutItems: (items: Item[]) => void,
     listID: string,
+    isPosting: boolean,
 };
 
-const ItemScreen = ({movieList, isAdding, addItems, outItems, setAddItems, setOutItems, listID}: Props) => {
+const ItemScreen = ({movieList, isAdding, addItems, outItems, setAddItems, setOutItems, listID, isPosting}: Props) => {
     const colorScheme = useColorScheme();
     const {movies, shows} = useData();
     const isMovieList = movieList.length > 0 && 'title' in movieList[0];
@@ -60,7 +61,8 @@ const ItemScreen = ({movieList, isAdding, addItems, outItems, setAddItems, setOu
 
         return (
             <>{!isAdding ?
-            <Link href={{pathname: "/search_item", params: { id: item.id, groupKey: isMovie ? "movie" : "tv" }}} asChild>
+            <Link href={{pathname: isPosting ? "/post_page" : "/search_item", params: 
+            { id: item.id, poster: item.poster_path, name: 'title' in item ? item.title : item.name, groupKey: isMovie ? "movie" : "tv" }}} asChild>
                 <TouchableOpacity>
                     <View style={[styles.container, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
                         <View style={[styles.imageBorder, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
@@ -81,7 +83,7 @@ const ItemScreen = ({movieList, isAdding, addItems, outItems, setAddItems, setOu
                         />
                     </View>
                 </TouchableOpacity>
-            </Link> : 
+            </Link> :
             <TouchableOpacity onPress={handleSelect}>
                 <View style={[styles.container, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
                     <View style={[styles.imageBorder, {borderColor: Colors[colorScheme ?? 'light'].text}]}>

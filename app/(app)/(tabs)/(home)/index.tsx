@@ -1,24 +1,37 @@
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import { ActivityIndicator, FlatList, Modal, RefreshControl, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { makeFeed } from '@/data/feedData';
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import useModalState from '@/components/ModalState';
 import PostFeedWithModals from '@/components/PostFeedWithModals';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
-import {  router } from 'expo-router';
+import {  router, useNavigation } from 'expo-router';
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
+import { StartPostScreen } from '@/components/StartPost';
 
 export default function TabOneScreen() {
   const { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment} = useModalState();
   const [refreshing, setRefreshing] = useState(false);
   const { posts, loading, loadMorePosts, isLoadingMore } = makeFeed('Home', refreshing, setRefreshing);
+  const [postModalVisible, setPostModalVisible] = useState(false);
   const colorScheme = useColorScheme();
+  const navigation = useNavigation();
   
   const handleRefresh = () => {
     setRefreshing(true);
   };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={() => router.push('/start_post_page')} style={{paddingRight: 10,}}>
+          <Ionicons name="add" size={35} color={Colors[colorScheme ?? 'light'].text}/>
+        </TouchableOpacity>
+      ),
+    })
+  }, [])
 
   return (
     <View style={styles.container}>

@@ -48,10 +48,11 @@ const emptyUser = {
 const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string}) => {
   const { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment } = useModalState();
   const { user } = useAuth();
+  const { following } = useData();
   const [isFollowing, setIsFollowing] = useState(false);
   const [profileData, setProfileData] = useState<UserData>(emptyUser);
   const [followers, setFollowers] = useState<string[]>([]);
-  const [following, setFollowing] = useState<string[]>([])
+  const [followingUsers, setFollowing] = useState<string[]>([])
   const [refreshing, setRefreshing] = useState(false);
 
   const { posts, loadMorePosts, isLoadingMore } = makeFeed(userID, refreshing, setRefreshing);
@@ -122,9 +123,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   useEffect(() => {
     const checkIfFollowing = async () => {
       if (user && userID) {
-        const followingDocRef = doc(db, 'users', user.uid, 'following', userID);
-        const docSnap = await getDoc(followingDocRef);
-        setIsFollowing(docSnap.exists());
+        setIsFollowing(following ? following.includes(userID) : false);
       }
     };
 
@@ -186,10 +185,10 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   const handleFollow = () => {
     setLoading(true);
     if (isFollowing) {
+        setIsFollowing(false);
         unfollowFunc(userID).then(() => {
           const newFollowers = followers.filter(id => id !== (user?.uid || ''));
           setFollowers(newFollowers);
-          setIsFollowing(false);
           requestRefresh();
           setLoading(false);
           Toast.show({
@@ -202,10 +201,10 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
           });
         })
       } else {
+        setIsFollowing(true);
         followFunc(userID).then(() => {
           const newFollowers = [...followers, user?.uid || ''];
           setFollowers(newFollowers);
-            setIsFollowing(true);
             requestRefresh();
             setLoading(false);
             Toast.show({
@@ -246,7 +245,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
 
   const listsTabContent = useCallback(() => 
     <>
-        <View style={{flexDirection: 'row', marginBottom: 10, position: 'absolute', top: 50, left: 5, zIndex: 1, backgroundColor: 'transparent'}}>
+        <View style={{flexDirection: 'row', marginBottom: 10, position: 'absolute', top: 47.5, right: 5, zIndex: 1, backgroundColor: 'transparent'}}>
             <TouchableOpacity onPress={() => setIsMovies(true)} style={[styles.listButton, { borderColor: Colors[colorScheme ?? 'light'].text,
                 backgroundColor: isMovies ? Colors[colorScheme ?? 'light'].text : Colors[colorScheme ?? 'light'].background}]}>
                 <Text style={[styles.listButtonText, { 
@@ -324,7 +323,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
             />
             <View>
             <Text style={styles.headerText}>{profileData.first_name + " " + profileData.last_name}</Text>
-                <View style={{flexDirection: 'row', alignItems: 'center', paddingTop: 3,}}>
+                <View style={{flexDirection: 'row', alignItems: 'center', paddingTop: 3, justifyContent: user && user.uid ==  userID ? 'flex-start' : 'space-between'}}>
                     { user && user.uid != userID && 
                     <TouchableOpacity onPress={handleFollow}
                         style={[styles.followButton, {backgroundColor: isFollowing ? Colors[colorScheme ?? 'light'].text : 
@@ -338,7 +337,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                         </Text>
                     </TouchableOpacity>}
                     <TouchableOpacity onPress={() => handleNavigate(0)}>
-                    <View style={styles.followContainer}>
+                    <View style={[styles.followContainer, {marginLeft: user && user.uid == userID ? 10 : 5}]}>
                         <Text style={styles.follow}>Followers</Text>
                         <Text style={styles.follow}>{followers.length}</Text>
                     </View>
@@ -346,7 +345,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                     <TouchableOpacity onPress={() => handleNavigate(1)}>
                     <View style={styles.followContainer}>
                         <Text style={styles.follow}>Following</Text>
-                        <Text style={styles.follow}>{following.length}</Text>
+                        <Text style={styles.follow}>{followingUsers.length}</Text>
                     </View>
                     </TouchableOpacity>
                 </View>
@@ -388,11 +387,11 @@ const styles = StyleSheet.create({
   },
   followContainer: {
     alignItems: 'center',
+    marginLeft: 10
   },
   follow: {
     fontSize: 16,
     fontWeight: '300',
-    marginHorizontal: 10,
   },
   profilePic: {
     width: 75,
@@ -402,7 +401,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'gray',
   },
   listButton: {
-    padding: 5,
+    padding: 3,
     paddingHorizontal: 7,
     marginLeft: 10,
     marginTop: 10,
@@ -410,7 +409,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   listButtonText: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '300',
   },
 });

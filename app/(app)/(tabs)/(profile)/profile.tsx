@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable, Alert, Modal } from 'react-native';
+import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable, Alert, Modal, SafeAreaView } from 'react-native';
 
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebaseConfig";
@@ -93,7 +93,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {userData && (
         <>
           <View style={{width: '100%', alignItems: 'center'}}>
@@ -106,7 +106,8 @@ const ProfilePage = () => {
               style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text,  }]}
             />
           </View>
-          <View style={{flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', padding: 10,}}>
+          <View style={{flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', padding: 10,
+            borderBottomWidth: 1, borderColor: Colors[colorScheme ?? 'light'].text}}>
           <TouchableOpacity onPress={() => handleNavigate(0)}>
           <View style={styles.followContainer}>
             <View style={{flexDirection: 'column', alignItems: 'center'}}>
@@ -119,7 +120,7 @@ const ProfilePage = () => {
                 <View style={styles.followContainer}>
                   <View style={{flexDirection: 'column', alignItems: 'center'}}>
                 <Text style={styles.follow}>Following</Text>
-                <Text style={styles.follow}>{following.length}</Text>
+                {following && <Text style={styles.follow}>{following.length}</Text>}
                 </View>
               </View>
               </TouchableOpacity>
@@ -152,7 +153,7 @@ const ProfilePage = () => {
           />
         </>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

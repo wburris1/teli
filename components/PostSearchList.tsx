@@ -10,6 +10,7 @@ import { useAuth } from "@/contexts/authContext";
 import { UserItem } from "@/constants/ImportTypes";
 import { getItems } from "@/data/userData";
 import convertUserItemToItem from "./Helpers/ConvertUserItemToItem";
+import { Link } from "expo-router";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
 
@@ -79,10 +80,14 @@ export const NewPostSearchLists = ({ query, listTypeID, listID, onSelect }: { qu
         const colorScheme = useColorScheme();
         const isMovie = 'title' in item;
         const title = isMovie ? item.title : item.name;
-        const date = isMovie ? item.release_date : item.first_air_date;
+        let date = isMovie ? item.release_date : item.first_air_date;
+        date = date.slice(0,4);
 
         return (
-            <View style={[styles.container, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]} key={item.id}>
+            <Link href={{ pathname: '/post_page',
+                params: { itemID: item.id, itemName: isMovie ? item.title : item.name, poster: item.poster_path} }}
+                style={[styles.container, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]} key={item.id} asChild>
+            <TouchableOpacity> 
                 <View style={[styles.imageBorder, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
                 <Image
                     source={{ uri: imgUrl + item.poster_path }}
@@ -93,15 +98,14 @@ export const NewPostSearchLists = ({ query, listTypeID, listID, onSelect }: { qu
                     <Text style={styles.title}>{title}</Text>
                     <Text style={{fontWeight: '200'}}>{date}</Text>
                 </View>
-                <TouchableOpacity onPress={() => onSelect(item)}>
                     <Ionicons
-                        name="add-circle-outline"
-                        size={45}
+                        name="arrow-forward"
+                        size={30}
                         color={Colors[colorScheme ?? 'light'].text}
                         style={{padding: 5,}}
                     />
-                </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
+            </Link>
         );
     }
 
