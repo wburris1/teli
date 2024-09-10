@@ -156,6 +156,9 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         `${runTime}m` : 
         `${Math.floor(runTime / 60)}h ${runTime % 60}m`
     }
+    const checkRunTime = (runTime: number) => {
+        return !!(runTime && runTime > 0)
+    }
     
     const checkRevBudget = ({ budget, revenue }: Item): boolean => {
       return !!(budget && revenue && budget > 0 && revenue > 0)
@@ -185,7 +188,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                             <Text style={styles.title}>{title}</Text>
                             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end'}}>
                                 <View style={{flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingBottom: 5}}>
-                                {runTime && (
+                                {checkRunTime(runTime) && (
                                 <>
                                     <Text style={styles.date}>{convertRunTime(runTime)}</Text>
                                     <Ionicons name="ellipse" size={5} color={Colors[colorScheme ?? 'light'].text} style={{paddingHorizontal: 3}} />
