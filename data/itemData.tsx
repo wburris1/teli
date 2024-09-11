@@ -105,12 +105,10 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
           if (!data) {
             return;
           }
-          console.log("we made it here")
           // const options: { provider: string; price: number }[] = [];
           const result: StreamingService[] = [];
           console.log(data);
           if (data.buy && data.buy.length > 0) {
-            console.log("we made it here1")
               result.push(...data.buy.map((service: StreamingService) => ({
                   provider_name: service.provider_name,
                   logo_path: service.logo_path,
@@ -142,7 +140,7 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
             console.log(entry)
           })
         })
-        .catch(error => console.error('Error Fetching Streaming Availability'))
+        .catch(error => console.error('Error Fetching Streaming Availability: ' + error))
     }
     const getRecommendations = () => {
         fetch(recURL)
