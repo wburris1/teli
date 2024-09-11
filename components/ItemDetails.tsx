@@ -29,6 +29,14 @@ import { WritePost } from './WritePost';
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
+const overViewFontSize = screenWidth * 0.03255814; // fontsize 14
+const titleFontSize = screenWidth > 400 ? 24 : 20 // screenWidth * 0.05581395; // fontsize 24
+const directorFontSize = screenWidth * 0.0372093; // fontsize 16
+const rerankButtonFontSize = screenWidth > 400 ? 22 : 18  // fontsize 22
+const logoWidthHeight = screenWidth > 400 ? 20 : 18;
+const budgetNumFontSize = screenWidth * 0.02790698; // fontsize 12
+const budgetTextFontSize = screenWidth * 0.02325581 // fontsize 10
+const genreFontSize = screenWidth > 400 ? overViewFontSize : 12;
 
 type Props = {
     item: Item
@@ -101,9 +109,11 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
 
     const convertNum = (revenue: number) => {
         if (revenue > 1000000000) {
-          return `$${(revenue/1000000000).toFixed(1)}B`
+          const billionRevenue = revenue / 1000000000;
+          return `$${billionRevenue % 1 === 0 ? billionRevenue.toFixed(0) : billionRevenue.toFixed(1)}B`
         } else {
-          return `$${(revenue/1000000).toFixed(1)}M`
+          const millionRevenue = revenue / 1000000;
+          return `$${millionRevenue % 1 === 0 ?millionRevenue.toFixed(0) : millionRevenue.toFixed(1)}M`
         }
     }
 
@@ -206,7 +216,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                                 backgroundColor: 'white', borderRadius: 20, paddingHorizontal: 5,
                                 borderColor: 'black',
                             }}>
-                                <Logo width={20} height={20} />
+                                <Logo width={logoWidthHeight} height={logoWidthHeight} />
                                 <Text style={[styles.buttonText, {color: 'black', paddingLeft: 3}]}>
                                     {isDupe ? 'Rerank' : 'Rank'}
                                 </Text>
@@ -266,14 +276,14 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                             {isDupe && score &&
                             <View style={{borderWidth: 1, borderRadius: 50, borderColor: Colors[colorScheme ?? 'light'].text,
                                 height: 37, aspectRatio: 1, marginLeft: 5, alignItems: 'center', justifyContent: 'center'}}>
-                                <Text style={{fontSize: 18, fontWeight: 'bold'}}>{score}</Text>
+                                <Text style={{fontSize: screenWidth * 0.04186047, fontWeight: 'bold'}}>{score}</Text>
                             </View>} 
                         </View>
                     </View>
                 </View>
                 {item.overview &&
                 <View style={styles.overviewContainer}>
-                    {item.tagline != "" && <Text style={{fontSize: 16, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
+                    {item.tagline != "" && <Text style={{fontSize: directorFontSize, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
                     <ExpandableText text={item.overview} maxHeight={65} textStyle={styles.overview} startExpanded={false} />
                 </View>}
                 {(director || item.genres) &&
@@ -291,19 +301,19 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                         {item.genres.map(genre => (
                             <View key={genre.id} style={[styles.genreButton, {borderColor: Colors[colorScheme ?? 'light'].text,
                                 backgroundColor: Colors[colorScheme ?? 'light'].gray}]}>
-                                <Text style={{fontWeight: '600'}}>{genre.name}</Text>
+                                <Text style={{fontWeight: '600', fontSize: genreFontSize}}>{genre.name}</Text>
                             </View>
                         ))}
                         </View>
                     </ScrollView>}
                   </View>
                   {checkRevBudget(item) && (
-                    <View style={{marginRight: 10, alignItems: 'center', borderWidth: 0.5, width: 65,
+                    <View style={{marginRight: 10, alignItems: 'center', borderWidth: 0.5, width: screenWidth > 400 ? 63 : 68, // don't change this width -adi
                         borderColor: Colors[colorScheme ?? 'light'].gray, borderRadius: 10, padding: 5, justifyContent: 'center'}}>
-                        <Text style={{fontSize: 12, fontWeight: '300'}}>{convertNum(item.budget)}</Text>
-                        <Text style={{paddingBottom: 3, fontSize: 10, fontWeight: '300'}}>Budget</Text>
-                        <Text style={{fontSize: 12, fontWeight: '300'}}>{convertNum(item.revenue)}</Text>
-                        <Text style={{fontSize: 10, fontWeight: '300'}}>Revenue</Text>
+                        <Text style={{fontSize: budgetNumFontSize, fontWeight: '300'}}>{convertNum(item.budget)}</Text>
+                        <Text style={{paddingBottom: 3, fontSize: budgetTextFontSize, fontWeight: '300'}}>Budget</Text>
+                        <Text style={{fontSize: budgetNumFontSize, fontWeight: '300'}}>{convertNum(item.revenue)}</Text>
+                        <Text style={{fontSize: budgetTextFontSize, fontWeight: '300'}}>Revenue</Text>
                     </View>
                   )}
                 </View>}
@@ -318,7 +328,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                         </View>
                         
                         <View style={{flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 10}}>
-                            <Text style={{fontSize: 16, fontWeight: '300', paddingRight: 3}}>
+                            <Text style={{fontSize: directorFontSize,fontWeight: '300', paddingRight: 3}}> 
                             {item.vote_count > 500 ? `${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+` :
                             item.vote_count.toLocaleString()}
                             </Text>
@@ -445,11 +455,12 @@ const styles = StyleSheet.create({
         shadowColor: 'black'
     },
     image: {
-        height: 215,
+        height: screenHeight * 0.2306867, //  215,
         width: screenWidth/3,
         aspectRatio: 1 / 1.5,
         borderRadius: 5,
         borderWidth: 1,
+        marginRight: 1,
         //borderWidth: 0.5,
     },
     backdropImage: {
@@ -465,17 +476,17 @@ const styles = StyleSheet.create({
     },
     title: {
         textAlign: 'right',
-        fontSize: screenWidth > 400 ? 24 : 20,
+        fontSize: titleFontSize, 
         fontWeight: 'bold'
     },
     buttonText: {
         paddingHorizontal: 1,
-        fontSize: screenWidth > 400 ?  22 : 18, //(Dimensions.screenWidth/1000) * 34 ,//PixelRatio.get() * 4, //16,
+        fontSize: rerankButtonFontSize,
         fontWeight: '600',
     },
     date: {
         textAlign: 'right',
-        fontSize: 14,
+        fontSize: overViewFontSize, 
         alignSelf: 'flex-start'
     },
     overviewContainer: {
@@ -486,7 +497,7 @@ const styles = StyleSheet.create({
     },
     overview: {
         textAlign: 'left',
-        fontSize: 14,
+        fontSize: overViewFontSize,
         width: screenWidth,
         paddingLeft: 10,
         paddingRight: 10,
@@ -518,17 +529,18 @@ const styles = StyleSheet.create({
   },
   castText: {
       textAlign: 'left',
-      fontSize: screenWidth > 400 ? 24 : 20,
+      fontSize: titleFontSize,
       fontWeight: 'bold', 
       paddingLeft: 10, // Ensure padding on the left to align with the rest of the content
   },
   directorText: {
     textAlign: 'left',
-    fontSize: 16,
+    fontSize: directorFontSize,
     fontWeight: '300', 
     paddingLeft: 10,
     paddingBottom: 0
   }
 });
+console.log(screenHeight)
 
 export default ItemDetails;
