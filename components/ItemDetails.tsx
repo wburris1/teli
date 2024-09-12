@@ -543,6 +543,5 @@ const styles = StyleSheet.create({
     paddingBottom: 0
   }
 });
-console.log(screenHeight)
 
 export default ItemDetails;
