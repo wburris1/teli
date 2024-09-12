@@ -192,12 +192,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
   , [reply, displayComments, post, redirectLink])
 
   return (
-        <Modal
-            animationType="slide"
-            transparent={true}
-            visible={visible}
-            onRequestClose={onClose}
-        >
+    <>
             <TouchableWithoutFeedback onPress={onClose}>
                 <View style={{flex: 1, backgroundColor: 'transparent'}}/>
             </TouchableWithoutFeedback>
@@ -256,7 +251,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
                 </View>
             </KeyboardAvoidingView>
             <View style={{position: 'absolute', bottom: 0, height: 40, width: '100%', zIndex: 1}} />
-        </Modal>
+        </>
   );
 };
 

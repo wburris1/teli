@@ -92,8 +92,8 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
     }
   }));
 
-  let toastText1;
-  let toastText2;
+  let toastText1: string;
+  let toastText2: string;
   if (isMovie) {
     toastText1 = "You Ranked " + item.title
     toastText2 = "You successfully ranked " + item.title
@@ -259,9 +259,9 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
           runOnJS(setSwipingAway)(true);
           runOnJS(handleComp)(score, score, 0);
           if (nextActive) {
-            nextTranslationY.value = withSpring(-screenHeight);
+            nextTranslationY.value = withSpring(screenHeight);
           } else {
-            translationY.value = withSpring(-screenHeight);
+            translationY.value = withSpring(screenHeight);
           }
         } else {
           if (nextActive) {
@@ -320,7 +320,9 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
       {item &&
         <BlurView intensity={100} style={styles.blurContainer}>
           {loading && (
-            <View style={styles.spinnerOverlay}>
+            <View style={[styles.spinnerOverlay, {backgroundColor: Colors[colorScheme ?? 'light'].background,
+              borderColor: Colors[colorScheme ?? 'light'].gray}]}>
+              <Text style={{paddingBottom: 10, fontSize: 16, fontWeight: '500'}}>Finishing Ranking...</Text>
               <ActivityIndicator size="large" />
             </View>
           )}
@@ -359,42 +361,6 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
 
             {!compItem && (
               <View style={[styles.initialRankView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
-                <Text style={styles.feedbackText}>Did you like it?</Text>
-                <View style={styles.feedback}>
-                  <TouchableOpacity onPress={() => {
-                    if (loading) return;
-                    setSelectedPref("like");
-                  }}>
-                    <Ionicons
-                      name="checkmark-circle-outline"
-                      size={60}
-                      color={selectedPref == "like" ? "#00ff00" : Colors[colorScheme ?? 'light'].text}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => {
-                    if (loading) return;
-                    setSelectedPref("mid");
-                  }}>
-                    <Ionicons
-                      name="remove-circle-outline"
-                      size={60}
-                      color={selectedPref == "mid" ? 'gray' : Colors[colorScheme ?? 'light'].text}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => {
-                    if (loading) return;
-                    setSelectedPref("dislike");
-                  }}>
-                    <Ionicons
-                      name="close-circle-outline"
-                      size={60}
-                      color={selectedPref == "dislike" ? "#ff0000" : Colors[colorScheme ?? 'light'].text}
-                    />
-                  </TouchableOpacity>
-                </View>
-                
-                {selectedPref != "none" &&
-                <>
                   <View style={{width: '100%'}}>
                   <TouchableOpacity onPress={() => setCommentModalVisible(true)}>
                   <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}]}>
@@ -407,7 +373,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
                     <TouchableOpacity onPress={() => {
                       setListsModalVisible(true);
                     }}>
-                      <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
+                      <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text, paddingTop: 10}]}>
                         <Text>Add to lists...</Text>
                         {localSelectedLists.length > 0 &&
                                 <Text style={{ color: Colors[colorScheme ?? 'light'].text }}>
@@ -416,21 +382,42 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
                       </View>
                     </TouchableOpacity>
                   </View>
-                  <View style={{width: '100%'}}>
-                    <TouchableOpacity onPress={() => {
-                      if (selectedPref === "like") {
-                        handleFeedback(initialLikeScore, 10.1, 10);
-                      } else if (selectedPref === "dislike") {
-                        handleFeedback(0, initialDislikeScore, initialDislikeScore - 1);
-                      } else if (selectedPref === "mid") {
-                        handleFeedback(initialDislikeScore - smallAssNumber, initialLikeScore + smallAssNumber, initialMehScore);
-                      }
-                    }}>
-                      <View style={[styles.rankTab, {borderColor: Colors[colorScheme ?? 'light'].text}, {justifyContent: 'center'}]}>
-                        <Text style={{fontSize: 16, fontWeight: 'bold'}}>Rank</Text>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
+                  <Text style={styles.feedbackText}>Did you like it?</Text>
+                <View style={styles.feedback}>
+                  <TouchableOpacity onPress={() => {
+                    if (loading) return;
+                    setSelectedPref("like");
+                    handleFeedback(initialLikeScore, 10.1, 10);
+                  }}>
+                    <Ionicons
+                      name="checkmark-circle-outline"
+                      size={60}
+                      color={selectedPref == "like" ? "#00ff00" : Colors[colorScheme ?? 'light'].text}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => {
+                    if (loading) return;
+                    setSelectedPref("mid");
+                    handleFeedback(initialDislikeScore - smallAssNumber, initialLikeScore + smallAssNumber, initialMehScore);
+                  }}>
+                    <Ionicons
+                      name="remove-circle-outline"
+                      size={60}
+                      color={selectedPref == "mid" ? 'gray' : Colors[colorScheme ?? 'light'].text}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => {
+                    if (loading) return;
+                    setSelectedPref("dislike");
+                    handleFeedback(0, initialDislikeScore, initialDislikeScore - 1);
+                  }}>
+                    <Ionicons
+                      name="close-circle-outline"
+                      size={60}
+                      color={selectedPref == "dislike" ? "#ff0000" : Colors[colorScheme ?? 'light'].text}
+                    />
+                  </TouchableOpacity>
+                </View>
                   <Modal
                     animationType="slide"
                     transparent={true}
@@ -458,7 +445,6 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
                           setCommentModalVisible(false);
                         }} />
                   </Modal>
-                </>}
               </View>
             )}
 
@@ -647,12 +633,14 @@ const styles = StyleSheet.create({
   feedbackText: {
     fontSize: 18,
     fontWeight: '200',
+    paddingTop: 10
   },
   rankTab: {
     flexDirection: 'row',
     width: '100%',
-    padding: 10,
-    borderTopWidth: 1,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
@@ -691,13 +679,17 @@ const styles = StyleSheet.create({
   },
   spinnerOverlay: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: screenHeight / 3,
+    left: screenWidth / 4,
+    right: screenWidth / 4,
+    bottom: screenHeight / 2,
+    top: screenHeight / 2.5,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
     zIndex: 1,
+    backgroundColor: 'black',
+    padding: 10,
+    borderWidth: 1,
+    borderRadius: 20,
   },
   swipeIndicator: {
     position: 'absolute',

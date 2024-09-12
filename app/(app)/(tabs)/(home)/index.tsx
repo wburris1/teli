@@ -26,12 +26,12 @@ export default function TabOneScreen() {
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity onPress={() => router.push('/start_post_page')} style={{paddingRight: 10,}}>
+        <TouchableOpacity onPress={() => router.push('/start_post_page')}>
           <Ionicons name="add" size={35} color={Colors[colorScheme ?? 'light'].text}/>
         </TouchableOpacity>
       ),
     })
-  }, [])
+  }, [colorScheme])
 
   return (
     <View style={styles.container}>

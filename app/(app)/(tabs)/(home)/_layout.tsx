@@ -13,7 +13,7 @@ export default function SearchLayout() {
         <Stack.Screen name="index" options={{ 
           headerShown: true, 
           title: "",
-          headerShadowVisible: true,
+          headerShadowVisible: false,
           headerStyle: {
             backgroundColor: Colors[colorScheme ?? 'light'].background
           },

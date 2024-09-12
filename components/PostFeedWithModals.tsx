@@ -1,4 +1,4 @@
-import { ActivityIndicator, FlatList, StyleSheet, useColorScheme, View as RNView, View, RefreshControl } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, useColorScheme, View as RNView, View, RefreshControl, Modal } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Colors from '@/constants/Colors';
 import { FeedPost } from '@/constants/ImportTypes';
@@ -60,14 +60,22 @@ PostListWithModalsProps) => {
           <FlatList
             data={posts}
             keyExtractor={(item) => item.post_id}
-            renderItem={({ item, index }) => <PostFeed item={item} index={index} handleComments={handleComments} handleLikes={handleLikes} redirectLink={redirectLink} incrementComment={incrementComment} />}
+            renderItem={({ item, index }) => <PostFeed item={item} index={index} handleComments={handleComments}
+              handleLikes={handleLikes} redirectLink={redirectLink} incrementComment={incrementComment} />}
             onEndReached={loadMorePosts}
             onEndReachedThreshold={0.75}
             ListFooterComponent={renderFooter}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink={redirectLink} />
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={showComments}
+            onRequestClose={() => setShowComments(false)}
+          >
           <CommentsModal post={post} onClose={() => setShowComments(false)} visible={showComments} redirectLink={redirectLink} handleIncrementComment={handleIncrementComment}/>
+          </Modal>
         </>
       ) : (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>

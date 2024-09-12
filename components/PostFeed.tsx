@@ -27,7 +27,7 @@ type PostFeedProps = {
   handleComments: (show: boolean, post: FeedPost) => void;
   handleLikes: (show: boolean, post: FeedPost) => void;
   redirectLink?: string; // Optional parameter with default value
-  incrementComment: boolean
+  incrementComment: boolean,
 };
 
 export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home', incrementComment}: PostFeedProps) => {
@@ -86,8 +86,9 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     }
 
     return (
-      <View style={[styles.postContainer, {flexDirection: 'row', width: '100%', 
-        justifyContent: 'space-between', borderColor: Colors[colorScheme ?? 'light'].gray, }]}>
+      <View style={[styles.postContainer, {flexDirection: 'row', 
+        justifyContent: 'space-between', borderColor: Colors[colorScheme ?? 'light'].gray,
+        marginTop: redirectLink.includes('home') ? 0 : 10, marginBottom: redirectLink.includes('home') ? 10 : 0 }]}>
       <View style={[{borderColor: Colors[colorScheme ?? 'light'].gray, flex: 1}]} key={id}>
         <View style={{flexDirection: 'row', flex: 1,}}>
             <Link href={{pathname: redirectLink + '_user' as any, params: { userID: item.user_id }}} asChild>
@@ -254,7 +255,13 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     },
     postContainer: {
       padding: 10,
-      borderBottomWidth: 1,
+      borderWidth: 1,
+      marginHorizontal: 10,
+      borderRadius: 20,
+      shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 1,
+        shadowOpacity: 0.5,
+        shadowColor: 'black'
     },
     itemImage: {
       //flex: 1,

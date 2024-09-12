@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
       zIndex: 1,
     },
     image: {
-      height: 209,
+      //height: 209,
       width: '100%',
       aspectRatio: 1 / 1.5,
       borderWidth: 1,
