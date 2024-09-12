@@ -31,7 +31,7 @@ export default function SearchLayout() {
                     backgroundColor: Colors[colorScheme ?? 'light'].background,
                 }
              }} />
-        <Stack.Screen name="start_post_page" options={{ headerShown: true, headerBackTitle: "", headerTitle: "What's this about?", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+        <Stack.Screen name="start_post_page" options={{ headerShown: true, headerBackTitle: "", headerTitle: "What's this post about?", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
             headerStyle: {
                 backgroundColor: Colors[colorScheme ?? 'light'].background,
             }

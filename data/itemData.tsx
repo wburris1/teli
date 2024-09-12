@@ -1,5 +1,11 @@
 import { CastMember } from '@/constants/ImportTypes';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
+
+interface StreamingService {
+  provider_name: string;
+  logo_path: string;
+  price?: number;
+}
 
 const tmdbKey = "0d2333678b1855f85120aecc3077e72d";
 const movieSearchUrl = "https://api.themoviedb.org/3/search/movie?api_key=";
@@ -61,6 +67,7 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
     const fetchUrl = baseUrl + id + "?api_key=" + tmdbKey;
     const castURL = `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}/${isMovie ? 'credits' : 'aggregate_credits'}?api_key=${tmdbKey}`;
     const recURL = `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}/recommendations?api_key=${tmdbKey}`
+    const streamingAvailabilityURL = `https://api.themoviedb.org/3/${isMovie ? 'movie' : 'tv'}/${id}/watch/providers?api_key=${tmdbKey}`
 
     const getCast = () => {
       fetch(castURL)
@@ -90,6 +97,51 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
           setItem(json);
         })
     } 
+    const getStreamingAvailability = () => {
+      fetch(streamingAvailabilityURL)
+        .then(res => res.json())
+        .then(json => {
+          const data = json.results['US'];
+          if (!data) {
+            return;
+          }
+          // const options: { provider: string; price: number }[] = [];
+          const result: StreamingService[] = [];
+          console.log(data);
+          if (data.buy && data.buy.length > 0) {
+              result.push(...data.buy.map((service: StreamingService) => ({
+                  provider_name: service.provider_name,
+                  logo_path: service.logo_path,
+                  price_type: "buy"
+              })));
+          }
+
+
+          if (data.rent && data.rent.length > 0) {
+              result.push(...data.rent.map((service: StreamingService) => ({
+                  provider_name: service.provider_name,
+                  logo_path: service.logo_path,
+                  price_type: "rent"
+                })));
+          }
+
+          if (data.flatrate && data.flatrate.length > 0) {
+              result.push(...data.flatrate.map((service: StreamingService) => ({
+                  provider_name: service.provider_name,
+                  logo_path: service.logo_path,
+                  price_type: "flatrate"
+                })));
+          }
+          // Remove duplicate provider_name entries
+          const uniqueResult = result.filter((service, index, self) =>
+            index === self.findIndex((s) => s.provider_name === service.provider_name)
+          );
+          uniqueResult.forEach((entry) => {
+            console.log(entry)
+          })
+        })
+        .catch(error => console.error('Error Fetching Streaming Availability: ' + error))
+    }
     const getRecommendations = () => {
         fetch(recURL)
         .then(res=>res.json())
@@ -102,6 +154,7 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
         getItem();
         getCast();
         getRecommendations();
+        //getStreamingAvailability();
     }, [id]);
 
     return {item: item as Item, director, cast, reccomendations: reccomendations as Item[]};
