@@ -17,7 +17,7 @@ const OverlappingImages = ({ images }: { images: string[] }) => {
         {images.map((image, index) => (
           <Image
             key={index}
-            source={{ uri: image }}
+            source={!image.endsWith('null') ? { uri: image } : require('../assets/images/poster-placeholder.png')}
             style={[styles.image,
               { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
                 opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text,
