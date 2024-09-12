@@ -9,6 +9,7 @@ import { Text } from '../Themed';
 import Colors from '@/constants/Colors';
 import { useData } from '@/contexts/dataContext';
 import Values from '@/constants/Values';
+import { DefaultPost } from '../LogoView';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenHeight = Dimensions.screenHeight;
@@ -66,10 +67,11 @@ const ItemScreen = ({movieList, isAdding, addItems, outItems, setAddItems, setOu
                 <TouchableOpacity>
                     <View style={[styles.container, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
                         <View style={[styles.imageBorder, {borderColor: Colors[colorScheme ?? 'light'].text}]}>
+                          {item.poster_path ? 
                             <Image
-                                source={item.poster_path ? { uri: imgUrl + item.poster_path } : require('../../assets/images/poster-placeholder.png')}
+                                source={{ uri: imgUrl + item.poster_path }}
                                 style={styles.image}
-                            />
+                            /> : <DefaultPost style={styles.image}/>}
                         </View>
                         <View style={styles.textContainer}>
                             <Text style={styles.title}>{title}</Text>

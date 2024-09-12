@@ -184,7 +184,8 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         <ScrollView showsVerticalScrollIndicator={false} style={{flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background}}>
             <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                 <View style={{position: 'absolute'}}>
-                    <Image source={{ uri: imgUrl + item.backdrop_path }} style={styles.backdropImage} />
+                    <Image source={item.backdrop_path ? { uri: imgUrl + item.backdrop_path } :
+                      require('../assets/images/linear_gradient.png')} style={styles.backdropImage} />
                     <LinearGradient
                         colors={['transparent', Colors[colorScheme ?? 'light'].background]}
                         style={styles.gradient}
@@ -464,6 +465,7 @@ const styles = StyleSheet.create({
         //borderWidth: 0.5,
     },
     backdropImage: {
+      height: '100%',
         width: screenWidth,
         aspectRatio: 1.5,
     },
