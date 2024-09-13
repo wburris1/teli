@@ -130,14 +130,10 @@ const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
       noti.profile_picture = newProfilePicture;
     }
   };
-
-  const jsonItem = JSON.stringify(item);
-// Split the JSON string into an array of substrings
-  //const stringArray = jsonItem.match(/.{1,100}/g);
   
   return (
-    <Link href={{ pathname: item ? 'notification_post' as any : 'notification_user' as any,
-      params: item ? { post: jsonItem } : { userID: noti.sender_id } }} key={noti.noti_id} asChild>
+    <Link href={{ pathname: noti.post_id ? 'notification_post' as any : 'notification_user' as any,
+      params: noti.post_id ? { postID: noti.post_id } : { userID: noti.sender_id } }} key={noti.noti_id} asChild>
     <TouchableOpacity>
     <GestureDetector gesture={panGesture} key={noti.noti_id}>
     

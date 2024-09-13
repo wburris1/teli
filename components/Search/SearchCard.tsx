@@ -63,7 +63,8 @@ const ItemScreen = ({movieList, isAdding, addItems, outItems, setAddItems, setOu
         return (
             <>{!isAdding ?
             <Link href={{pathname: isPosting ? "/post_page" : "/search_item", params: 
-            { id: item.id, poster: item.poster_path, name: 'title' in item ? item.title : item.name, groupKey: isMovie ? "movie" : "tv" }}} asChild>
+            { id: item.id, poster: item.poster_path, name: 'title' in item ? item.title : item.name,
+            groupKey: isMovie ? "movie" : "tv", backdrop: item.backdrop_path, runtime: isMovie ? item.runtime : item.episode_run_time }}} asChild>
                 <TouchableOpacity>
                     <View style={[styles.container, { borderBottomColor: Colors[colorScheme ?? 'light'].text }]}>
                         <View style={[styles.imageBorder, {borderColor: Colors[colorScheme ?? 'light'].text}]}>

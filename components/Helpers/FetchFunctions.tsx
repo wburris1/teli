@@ -2,7 +2,7 @@ import { FeedPost, List, Post } from "@/constants/ImportTypes";
 import Values from "@/constants/Values";
 import { fetchUserData } from "@/data/getComments";
 import { FIREBASE_DB } from "@/firebaseConfig"
-import { collection, doc, getDocs, orderBy, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, orderBy, query, where } from "firebase/firestore";
 const db = FIREBASE_DB;
 
 const userCache = new Map<string, UserData>(); // Cache to locally store many ppl's userData
@@ -73,7 +73,7 @@ export async function FetchFollowedUsersRankings (ItemID: string, userID: string
   return feedPosts as FeedPost[];
 };
 
-const getUserData = async (userId: string): Promise<UserData> => {
+export const getUserData = async (userId: string): Promise<UserData> => {
   if (userCache.has(userId)) {
     return userCache.get(userId) as UserData; // Return cached data if available
   }

@@ -9,8 +9,9 @@ export const createNotification = async (
   userData: UserData,
   item?: FeedPost,
   comment_id?: string,
+  post_id?: string
 ) => {
-
+  console.log(post_id);
   const db = FIREBASE_DB;
   const newNotification: AppNotification = {
     noti_id: "",
@@ -21,7 +22,8 @@ export const createNotification = async (
     profile_picture: userData.profile_picture,
     created_at: serverTimestamp(),
     item: item ?? null,
-    notification_type: notificationType
+    notification_type: notificationType,
+    post_id: post_id ?? '',
   };
 
   try {

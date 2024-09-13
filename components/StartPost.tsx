@@ -3,24 +3,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import Colors from '@/constants/Colors';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { AnimatedSearch } from '@/components/AnimatedSearch';
 import SearchTabs from '@/components/Search/SearchTabs';
 import { SearchCategories } from '@/components/SearchCategories';
 import Values from '@/constants/Values';
 import { NewPostSearchLists } from '@/components/PostSearchList';
-import { MakePost } from '@/data/userPosts';
-import { useData } from '@/contexts/dataContext';
-import Toast from 'react-native-toast-message';
 import { Text, View } from './Themed';
 
 export const StartPostScreen = ({searchVisible, setSearchVisible}:
     {searchVisible: boolean, setSearchVisible: (vis: boolean) => void}) => {
     const colorScheme = useColorScheme();
     const [search, setSearch] = useState('');
-    const { requestRefresh } = useData();
-    const postFunc = MakePost();
-    const router = useRouter();
     const [movieListID, setMovieListID] = useState('');
     const [tvListID, setTVListID] = useState('');
     // TODO: Implement functionality to pass movei/show props, or episode or season props to post

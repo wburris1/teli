@@ -391,7 +391,8 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         >
             <WritePost id={item.id} name={isMovie ? item.title : item.name}
                 poster={item.poster_path} groupKey={isMovie ? "movies" : "shows"} isHome={false}
-                onClose={() => setPostModalVisible(false)} />
+                onClose={() => setPostModalVisible(false)} backdrop={item.backdrop_path}
+                runtime={isMovie ? item.runtime : item.episode_run_time} />
         </Modal>
         </View>
     )

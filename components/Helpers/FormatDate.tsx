@@ -1,8 +1,14 @@
 import { differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds, format } from "date-fns";
 import { Timestamp } from "firebase/firestore";
 
-export function formatDate(created_at: Timestamp): string {
-    const date = created_at ? created_at.toDate() : new Date();
+export function formatDate(created_at: Timestamp, isWeird?: boolean): string {
+    let date: Date;
+    if (isWeird) {
+      const milliseconds = created_at.seconds * 1000 + created_at.nanoseconds / 1000000;
+      date = new Date(milliseconds);
+    } else {
+      date = created_at ? created_at.toDate() : new Date();
+    }
     return getDate(date);
 }
 

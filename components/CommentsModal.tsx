@@ -24,7 +24,8 @@ if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementComment}: {post: FeedPost, onClose: () => void, visible: boolean, redirectLink: string, handleIncrementComment: () => void}) => {
+const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementComment, isPostPage = false}:
+  {post: any, onClose: () => void, visible: boolean, redirectLink: string, handleIncrementComment: () => void, isPostPage?: boolean}) => {
   const { user, userData } = useAuth();
   const translateY = useSharedValue(0);
   const [dragging, setDragging] = useState(false);
@@ -84,6 +85,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
     setReplyUsername(username);
     setReplyCommentID(comment_id);
     setReplyParentID(parentCommentID);
+    animateComment();
 
     if (textInputRef.current) {
       textInputRef.current.focus();
@@ -152,7 +154,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
         requestReply(resp.id);
       }
       if (userData) {
-        createNotification(post.user_id, NotificationType.CommentNotification, userData, post, userComment.comment)
+        createNotification(post.user_id, NotificationType.CommentNotification, userData, post, userComment.comment, post.id)
         sendPushNotification(post.user_id, `${userData.first_name} commented on your post`, userComment.comment)
       }
       setReply(null);
@@ -192,6 +194,8 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
   , [reply, displayComments, post, redirectLink])
 
   return (
+    <>
+    {!isPostPage ? 
     <>
             <TouchableWithoutFeedback onPress={onClose}>
                 <View style={{flex: 1, backgroundColor: 'transparent'}}/>
@@ -251,6 +255,55 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
                 </View>
             </KeyboardAvoidingView>
             <View style={{position: 'absolute', bottom: 0, height: 40, width: '100%', zIndex: 1}} />
+        </> : 
+        <View>
+            {replyUsername != "" && (
+                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingTop: 5, paddingLeft: 5}}>
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    <Ionicons name="caret-forward" size={20} color={Colors[colorScheme ?? 'light'].text} />
+                    <Text style={styles.replyText}>Replying to <Text style={styles.username}>@{replyUsername}</Text></Text>
+                  </View>
+                  <TouchableOpacity onPress={() => {
+                    setReplyUsername('');
+                    setReplyCommentID('');
+                    animateComment();
+                  }}>
+                    <Ionicons name="close" size={20} color={Colors[colorScheme ?? 'light'].text} />
+                  </TouchableOpacity>
+                </View>
+            )}
+            <View style={[styles.inputContainer, {borderTopWidth: 0, height: 40}]}>
+              <View style={{flexDirection: 'row', flex: 1, alignItems: 'center'}}>
+                <TextInput
+                    ref={textInputRef}
+                    placeholder="Write a comment..."
+                    placeholderTextColor="#999"
+                    value={comment}
+                    onChangeText={setComment}
+                    style={[styles.input,{color: Colors[colorScheme ?? 'light'].text,}]}
+                />
+                {comment != "" && (
+                  <TouchableOpacity onPress={handleComment} style={{
+                    borderRadius: 20, paddingHorizontal: 10, paddingVertical: 7,
+                    backgroundColor: Colors[colorScheme ?? 'light'].text,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                    <Text style={{fontSize: 16, fontWeight: 'bold', color: Colors[colorScheme ?? 'light'].background}}>Post</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={[styles.postPageContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
+                    {!loading ? commentsList() : (
+                      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 30}}>
+                        <ActivityIndicator size="large" />
+                      </View>
+                    )}
+                </View>
+            </TouchableWithoutFeedback>
+            </View>}
         </>
   );
 };
@@ -259,6 +312,9 @@ const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  postPageContainer: {
+    
   },
   container: {
     position: 'absolute',

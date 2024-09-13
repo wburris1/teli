@@ -41,7 +41,9 @@ export const AddToDatabase = () => {
             list_type_id: Values.movieListsID,
             lists: [listID, ...selectedLists.map(list => list.list_id)],
             user_id: user ? user.uid : '',
-            post_id: ''
+            post_id: '',
+            backdrop_path: item.backdrop_path,
+            runtime: item.runtime
           };
         } else {
           newItem = {
@@ -59,7 +61,9 @@ export const AddToDatabase = () => {
             list_type_id: Values.tvListsID,
             lists: [listID, ...selectedLists.map(list => list.list_id)],
             user_id: user ? user.uid : '',
-            post_id: ''
+            post_id: '',
+            backdrop_path: item.backdrop_path,
+            runtime: item.runtime,
           };
         }
     
@@ -162,6 +166,8 @@ export const addToBookmarked = () => {
         lists: [listID],
         user_id: user ? user.uid : '',
         post_id: '',
+        backdrop_path: item.backdrop_path,
+        runtime: item.runtime
       };
     } else {
       newItem = {
@@ -180,6 +186,8 @@ export const addToBookmarked = () => {
         lists: [listID],
         user_id: user ? user.uid : '',
         post_id: '',
+        backdrop_path: item.backdrop_path,
+        runtime: item.episode_run_time
       };
     }
 

@@ -13,8 +13,9 @@ import Dimensions from "@/constants/Dimensions"
 
 const imgUrl = 'https://image.tmdb.org/t/p/w300';
 
-export const WritePost = ({id, poster, name, isHome, groupKey, onClose}:
-    {id: string, poster: string, name: string, isHome: boolean, groupKey: string, onClose: () => void}) => {
+export const WritePost = ({id, poster, backdrop, runtime, name, isHome, groupKey, onClose}:
+    {id: string, poster: string, name: string, isHome: boolean, groupKey: string, onClose: () => void
+    backdrop: string, runtime: number}) => {
     const colorScheme = useColorScheme();
     const router = useRouter();
     const { requestRefresh } = useData();
@@ -68,8 +69,8 @@ export const WritePost = ({id, poster, name, isHome, groupKey, onClose}:
           {caption && id &&
               <TouchableOpacity onPress={() => {
                   setLoading(true);
-                  postFunc(caption, id, poster, name,
-                    hasSpoilers, groupKey == "movies" ? Values.movieListsID : Values.tvListsID, groupKey == "movies").then(() => {
+                  postFunc(caption, id, poster, name, hasSpoilers,
+                    groupKey == "movies" ? Values.movieListsID : Values.tvListsID, groupKey == "movies", backdrop, runtime,).then(() => {
                     requestRefresh();
                     setLoading(false);
                     setCaption('');

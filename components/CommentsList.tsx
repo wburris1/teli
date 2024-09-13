@@ -33,7 +33,7 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
     redirectLink, changeComments, newReply, updateNumReplies, animateComment }: 
     {
         comments: any[],
-        comment: any, parentCommentID: string, post: FeedPost,
+        comment: any, parentCommentID: string, post: any,
         handleReply: (username: string, comment_id: string, parentCommentID: string) => void,
         deleteReply: (comment_id: string) => void,  onClose: () => void, redirectLink: string,
         changeComments: (comments: any[]) => void,
@@ -204,7 +204,7 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
             if (userData) {
               const sendNotification = await checkShouldSendNotification(NotificationType.LikedCommentNotification, comment.user_id, userData);
               if (sendNotification) {
-                createNotification(comment.user_id, NotificationType.LikedCommentNotification, userData, post, comment.comment)
+                createNotification(comment.user_id, NotificationType.LikedCommentNotification, userData, post, comment.comment, post.id)
                 sendPushNotification(comment.user_id, "Liked Comment", `${userData.first_name} liked your comment`)
               }
             }
@@ -358,7 +358,7 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
 });
 
 export const CommentsList = ({comments, post, handleReply, onClose, redirectLink, changeComments, newReply, updateNumReplies, animateComment }:
-{ comments: any[], post: FeedPost,
+{ comments: any[], post: any,
     handleReply: (username: string, comment_id: string, parentCommentID: string) => void,
     onClose: () => void, redirectLink: string,
     changeComments: (comments: any[]) => void,

@@ -8,7 +8,8 @@ const db = FIREBASE_DB;
 export const MakePost = () => {
     const { userData } = useAuth();
 
-    async function makePost(caption: string, itemID: string, posterPath: string, itemName: string, hasSpoilers: boolean, listTypeID: string, isMovie: boolean) {
+    async function makePost(caption: string, itemID: string, posterPath: string,
+        itemName: string, hasSpoilers: boolean, listTypeID: string, isMovie: boolean, backdrop: string, runtime: number) {
         if (userData) {
             var post: Post = {
                 post_id: "",
@@ -24,6 +25,8 @@ export const MakePost = () => {
                 created_at: serverTimestamp(),
                 user_id: userData.user_id,
                 isMovie: isMovie,
+                backdrop_path: backdrop,
+                runtime: runtime
             }
             try {
                 const userPostsRef = collection(db, 'users', userData.user_id, 'posts');

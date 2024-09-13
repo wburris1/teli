@@ -8,9 +8,9 @@ import CommentsModal from '@/components/CommentsModal';
 import Dimensions from '@/constants/Dimensions';
 
 type PostListWithModalsProps = {
-  posts: FeedPost[];
+  posts: any[];
   loading: boolean;
-  post: FeedPost;
+  post: any;
   showComments: boolean;
   showLikes: boolean;
   handleComments: (show: boolean, post: FeedPost) => void;

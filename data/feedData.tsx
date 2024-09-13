@@ -36,7 +36,7 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
     }
   };
 
-  const fetchPosts = async (followedUsers: string[]): Promise<FeedPost[]> => {
+  const fetchPosts = async (followedUsers: string[]): Promise<any[]> => {
       if (followedUsers.length == 0) return [];
       const userPostsCollectionRef = collection(db, 'globalPosts');
       const shouldStartAfter = lastFetchedPost.current && !refreshing; // Combined condition
@@ -61,6 +61,7 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
       const allPosts = await Promise.all(userPostsSnapshot.docs.map(async (docSnapshot) => {
         const userData = await getUserData(docSnapshot.data().user_id);
         return {
+          id: docSnapshot.id,
           ...docSnapshot.data() as Post,
           ...userData, // Combined user and post data in a single object
         };

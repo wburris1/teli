@@ -16,6 +16,8 @@ export type Post = {
     created_at: Timestamp | FieldValue,
     user_id: string,
     isMovie: boolean,
+    backdrop_path: string,
+    runtime: number,
 }
 
 export interface FeedPost extends Post {
@@ -39,6 +41,8 @@ type BaseUserItem = {
     lists: string[],
     user_id: string,
     post_id: string,
+    backdrop_path: string,
+    runtime: number,
 }
 
 export interface UserMovie extends BaseUserItem {
@@ -85,6 +89,7 @@ export type AppNotification = {
     created_at: Timestamp | FieldValue,
     notification_type: NotificationType
     item: FeedPost | null,
+    post_id?: string,
 }
 
 export type List = {

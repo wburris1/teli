@@ -11,27 +11,6 @@ import { Pressable, SafeAreaView, StyleSheet, useColorScheme } from "react-nativ
 import { GestureHandlerRootView, TouchableOpacity } from "react-native-gesture-handler";
 
 export default function StartPost() {
-    /*const [searchVisible, setSearchVisible] = useState(false);
-    const navigation = useNavigation();
-    const colorScheme = useColorScheme();
-
-    useLayoutEffect(() => {
-        navigation.setOptions({
-            headerRight: () =>  (
-                <Pressable onPress={() => setSearchVisible(prev => !prev)}>
-                     {({ pressed }) => (
-                        <Ionicons name={searchVisible ? "close" : "search"} size={searchVisible ? 35 : 30} color={Colors[colorScheme ?? 'light'].text} style={{
-                            opacity: pressed ? 0.5 : 1,
-                        }}/>
-                     )}
-                </Pressable>
-            )
-        })
-    }, [searchVisible])
-
-    return (
-        <StartPostScreen searchVisible={searchVisible} setSearchVisible={setSearchVisible} />
-    )*/
     const colorScheme = useColorScheme();
     const [search, setSearch] = useState('');
 

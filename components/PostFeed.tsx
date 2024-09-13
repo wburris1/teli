@@ -22,19 +22,20 @@ const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const db = FIREBASE_DB;
 
 type PostFeedProps = {
-  item: FeedPost;
+  item: any;
   index: number;
   handleComments: (show: boolean, post: FeedPost) => void;
   handleLikes: (show: boolean, post: FeedPost) => void;
   redirectLink?: string; // Optional parameter with default value
   incrementComment: boolean,
+  isPostPage?: boolean,
 };
 
-export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home', incrementComment}: PostFeedProps) => {
+export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home', incrementComment, isPostPage = false}: PostFeedProps) => {
     const colorScheme = useColorScheme();
     const screenwidth = Dimensions.screenWidth;
     const { user, userData } = useAuth();
-    const formattedDate = formatDate(item.created_at as Timestamp);
+    const formattedDate = formatDate(item.created_at as Timestamp, isPostPage);
     const maxCaptionHeight = 30;
     const [isLiked, setIsLiked] = useState(item.likes.includes(user?.uid || ""));
     const [numLikes, setNumLikes] = useState(item.likes.length);
@@ -43,7 +44,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     const [hideSpoilers, setHideSpoilers] = useState(user && item.has_spoilers && item.user_id != user.uid && item.caption);
     const isInitialRender = useRef(true);
     const [expanded, setExpanded] = useState(false);
-    const [numComments, setNumComments] = useState(item.num_comments);
+    const [numComments, setNumComments] = useState<number>(item.num_comments);
     const isMovie = item.score == -1 ? item.isMovie : 'title' in item;
 
     useEffect(() => {
@@ -71,7 +72,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
           if (userData) {
             const sendNotification = await checkShouldSendNotification(NotificationType.LikedPostNotification, item.user_id, userData);
             if (sendNotification) {
-              createNotification(item.user_id, NotificationType.LikedPostNotification, userData, item)
+              createNotification(item.user_id, NotificationType.LikedPostNotification, userData, item, '', item.id)
               sendPushNotification(item.user_id, "Liked Post", `${userData.first_name} liked your post`)
             }
           }
@@ -179,7 +180,6 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                 </View>
             </View>
           </View>
-          
         </View>
       </View>
         <Link style={{height: 130}} href={{pathname: redirectLink + "_item" as any, params: { id: item.item_id, groupKey: isMovie ? 'movie' : 'tv' }}} asChild>
