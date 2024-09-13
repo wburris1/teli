@@ -48,11 +48,13 @@ type BaseUserItem = {
 export interface UserMovie extends BaseUserItem {
     title: string,
     release_date: string,
+    runtime: number,
 }
 
 export interface UserShow extends BaseUserItem {
     name: string,
     first_air_date: string,
+    episode_run_time: number,
 }
 
 export type UserItem = UserMovie | UserShow;

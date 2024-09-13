@@ -43,7 +43,7 @@ export const AddToDatabase = () => {
             user_id: user ? user.uid : '',
             post_id: '',
             backdrop_path: item.backdrop_path,
-            runtime: item.runtime
+            runtime: item.runtime ? item.runtime : 0
           };
         } else {
           newItem = {
@@ -63,7 +63,7 @@ export const AddToDatabase = () => {
             user_id: user ? user.uid : '',
             post_id: '',
             backdrop_path: item.backdrop_path,
-            runtime: item.runtime,
+            runtime: item.episode_run_time ? item.episode_run_time : 0,
           };
         }
     
@@ -167,7 +167,7 @@ export const addToBookmarked = () => {
         user_id: user ? user.uid : '',
         post_id: '',
         backdrop_path: item.backdrop_path,
-        runtime: item.runtime
+        runtime: item.runtime ? item.runtime : 0
       };
     } else {
       newItem = {
@@ -187,7 +187,7 @@ export const addToBookmarked = () => {
         user_id: user ? user.uid : '',
         post_id: '',
         backdrop_path: item.backdrop_path,
-        runtime: item.episode_run_time
+        runtime: item.episode_run_time ? item.episode_run_time : 0
       };
     }
 
