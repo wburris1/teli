@@ -42,7 +42,6 @@ type BaseUserItem = {
     user_id: string,
     post_id: string,
     backdrop_path: string,
-    runtime: number,
 }
 
 export interface UserMovie extends BaseUserItem {
