@@ -61,6 +61,28 @@ const ProfilePage = () => {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 
+  // following use effect gets the total movie run time should we make this a context? 
+  /* useEffect(() => {
+    // fetch total run time 
+    const getRunTime = async () => {
+      if (user) {
+        const moviesRef = collection(db, 'users', user.uid, 'movies');
+        const querySnapshot = await getDocs(moviesRef);
+
+        // Return 0 if no movies are found
+        if (querySnapshot.empty) return 0;
+
+        // Use reduce to sum the runtimes of all movies
+        const totalRuntime = querySnapshot.docs.reduce((acc, doc) => {
+          const runtime = doc.data()?.runtime;
+          return acc + (typeof runtime === 'number' ? runtime : 0);
+        }, 0);
+        console.log('Total Movie Watch Time is:', totalRuntime)
+      }
+    }
+    getRunTime();
+  },[user]); */
+
   useLayoutEffect(() => {
     navigation.setOptions({
       title: userData ? userData.first_name + " " + userData.last_name : '',
