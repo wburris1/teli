@@ -185,7 +185,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
             <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                 <View style={{position: 'absolute'}}>
                     <Image source={item.backdrop_path ? { uri: imgUrl + item.backdrop_path } :
-                      require('../assets/images/linear_gradient.png')} style={styles.backdropImage} />
+                      require('../assets/images/download2.jpg')} style={styles.backdropImage} />
                     <LinearGradient
                         colors={['transparent', Colors[colorScheme ?? 'light'].background]}
                         style={styles.gradient}
@@ -471,8 +471,8 @@ const styles = StyleSheet.create({
     },
     backdropImage: {
       height: '100%',
-        width: screenWidth,
-        aspectRatio: 1.5,
+      width: screenWidth,
+      aspectRatio: 1.5,
     },
     gradient: {
         position: 'absolute',
