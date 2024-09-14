@@ -5,24 +5,31 @@ import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Dimensions from "@/constants/Dimensions";
 import { List } from "@/constants/ImportTypes";
+import { DefaultPost } from "./LogoView";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const itemWidth = (Dimensions.screenWidth / 3) - 20;
 
-const OverlappingImages = ({ images }: { images: string[] }) => {
+const OverlappingImages = ({ images, list }: { images: string[], list: List }) => {
     const colorScheme = useColorScheme();
   
     return (
       <View style={styles.imageContainer}>
         {images.map((image, index) => (
-          <Image
-            key={index}
-            source={!image.endsWith('null') ? { uri: image } : require('../assets/images/poster-placeholder.png')}
-            style={[styles.image,
-              { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
-                opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text,
-               }]}
-          />
+          <View key={index}>
+          {!image.endsWith('null') ? 
+            (<Image
+                source={{ uri: image }}
+                style={[styles.image,
+                  { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
+                    opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden'
+                   }]}
+                />) : (<DefaultPost style={[styles.image,
+                  { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
+                    opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden'
+                   }]}/>)
+            }
+          </View>
         ))}
       </View>
     );
@@ -50,7 +57,7 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectL
         <View style={styles.emptyList}>
 
         </View> : 
-        <OverlappingImages images={posters} />}
+        <OverlappingImages images={posters} list={list} />}
         <Text numberOfLines={2} style={!isEmpty ? styles.title : styles.emptyListTitle}>{listName}</Text>
       </TouchableOpacity>
     </Link>

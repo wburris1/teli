@@ -17,6 +17,7 @@ import { checkShouldSendNotification, sendPushNotification } from "./Helpers/sen
 import { useData } from "@/contexts/dataContext";
 import Dimensions from "@/constants/Dimensions";
 import { LinearGradient } from "expo-linear-gradient";
+import { DefaultPost } from "./LogoView";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const db = FIREBASE_DB;
@@ -184,11 +185,11 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
       </View>
         <Link style={{height: 130}} href={{pathname: redirectLink + "_item" as any, params: { id: item.item_id, groupKey: isMovie ? 'movie' : 'tv' }}} asChild>
           <TouchableOpacity>
-            <Image
-              source={item.poster_path ? { uri: imgUrl + item.poster_path } :
-              require('../assets/images/poster-placeholder.png')}
-              style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
-            />
+          {item.poster_path ? 
+                            <Image
+                                source={{ uri: imgUrl + item.poster_path }}
+                                style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }]}
+                                /> : <DefaultPost style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }]}/>}
             {item.score && item.score >= 0 &&
               <>
                 <LinearGradient

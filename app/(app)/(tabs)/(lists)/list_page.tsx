@@ -17,6 +17,7 @@ import { UserItem } from '@/constants/ImportTypes';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useData } from '@/contexts/dataContext';
 import  AddToListsScreen  from '@/components/AddToListsModal';
+import { DefaultPost } from '@/components/LogoView';
 
 type RowProps = {
     item: UserItem;
@@ -158,11 +159,13 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
       >
           <TouchableOpacity onPress={toggleSelect} onLongPress={handleLongPress} activeOpacity={selectionMode ? 1.0: .5}>
             <Animated.View style={[styles.innerContainer, animatedStyle, popUpIndex === index ? styles.shadow : {}]}>
-              <Image
-                  source={item.poster_path ? { uri: imgUrl + item.poster_path } :
-                  require('../../../../assets/images/poster-placeholder.png')}
-                  style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
-              />
+              
+              {item.poster_path ? 
+                            <Image
+                                source={{ uri: imgUrl + item.poster_path }}
+                                style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
+                                /> : <DefaultPost style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }, ]}
+                                text={isMovie ? item.title : item.name}/>}
                {selectionMode && (
               <TouchableOpacity onPress={toggleSelect} style={styles.checkbox}>
                 <Ionicons

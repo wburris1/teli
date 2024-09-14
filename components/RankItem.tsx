@@ -18,6 +18,7 @@ import { useLoading } from '@/contexts/loading';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useDerivedValue, useSharedValue, withDecay, withSpring } from 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
+import { DefaultPost } from './LogoView';
 
 type Props = {
     item: Item,
@@ -346,11 +347,11 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
           <View style={styles.container}>
             <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
               <View>
-                <Image
-                  source={item.poster_path ? { uri: imgUrl + item.poster_path } :
-                  require('../assets/images/poster-placeholder.png')}
-                  style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].background}]}
-                />
+              {item.poster_path ? 
+                            <Image
+                                source={{ uri: imgUrl + item.poster_path }}
+                                style={[styles.movieImage, { borderColor: Colors[colorScheme ?? 'light'].background, overflow: 'hidden' }]}
+                                /> : <DefaultPost style={[styles.movieImage, { borderColor: Colors[colorScheme ?? 'light'].background, overflow: 'hidden' }]}/>}
                 <LinearGradient
                     colors={['transparent', 'black']}
                     style={styles.gradient}

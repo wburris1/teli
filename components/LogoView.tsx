@@ -1,5 +1,7 @@
 import { Image, ImageBackground, ImageStyle, StyleProp, StyleSheet } from "react-native"
 import { Text, View } from './Themed';
+import Dimensions from "@/constants/Dimensions";
+const screenWidth = Dimensions.screenWidth;
 
 export const Logo = ({width, height}: { width: number, height: number }) => {
     return (
@@ -10,17 +12,19 @@ export const Logo = ({width, height}: { width: number, height: number }) => {
     )
 }
 
-export const DefaultPost = ({style}: { style: StyleProp<ImageStyle>}) => {
+export const DefaultPost = ({style, text}: { style: StyleProp<ImageStyle>, text?: string}) => {
   return (
-      <ImageBackground
-          source={require('../assets/images/default_poster.jpg')} ////poster-placeholder.png'
-          style={style}
-      >
-        <View style={styles.textContainer}>
-          <Text style={styles.movieName}>POSTER NOT YET AVAILABLE</Text>
-        </View>
-        
-      </ImageBackground>
+      text ? 
+      (<ImageBackground
+        source={require('../assets/images/plain_poster_background.jpg')} ////poster-placeholder.png'
+        style={style}>
+          <View style={styles.textContainer}>
+            <Text style={styles.movieName}>{text}</Text>
+          </View>
+      </ImageBackground>)
+      : (<ImageBackground
+        source={require('../assets/images/poster-placeholder.jpg')} ////poster-placeholder.png'
+        style={style}/>) 
   )
 } //           <Text style={styles.movieName}>POSTER NOT YET AVAILABLE</Text>
 
@@ -36,8 +40,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   movieName: {
-    color: '#000', // White text for contrast // 555
-    fontSize: 9, // change font size to be dependent on screen size
+    color: '#999', // White text for contrast // 555
+    fontSize: screenWidth > 400 ? 20 : 16, // change font size to be dependent on screen size
     fontWeight: 'bold',
     textAlign: 'center',
     fontStyle: 'italic', // Make text italicized

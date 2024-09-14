@@ -20,7 +20,7 @@ import { CastList } from './CastList';
 import { DisplayItemInfo } from './DisplayItemInfo';
 import { Reccomendation } from './Reccomendation';
 import { drop } from 'lodash';
-import { Logo } from './LogoView';
+import { DefaultPost, Logo } from './LogoView';
 import { useAuth } from '@/contexts/authContext';
 import { FetchFollowedUsersRankings } from './Helpers/FetchFunctions';
 import { ItemPostList } from './ItemPostsList';
@@ -193,8 +193,12 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                 </View>
                 <View style={[styles.info, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
                     <View style={styles.posterContainer}>
-                        <Image source={item.poster_path ? { uri: imgUrl + item.poster_path } :
-                      require('../assets/images/poster-placeholder.png')} style={[styles.image, {borderColor: Colors[colorScheme ?? 'light'].text}]} />
+                    {item.poster_path ? 
+                            <Image
+                                source={{ uri: imgUrl + item.poster_path }}
+                                style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
+                                /> : <DefaultPost style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }]}/>}
+                        
                     </View>
                     <View style={styles.rightInfo}>
                         <View>
