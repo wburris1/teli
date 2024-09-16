@@ -2,15 +2,16 @@ import { getUserData } from "@/components/Helpers/FetchFunctions";
 import { PostScreen } from "@/components/PostScreen";
 import { FeedPost, Post } from "@/constants/ImportTypes";
 import { FIREBASE_DB } from "@/firebaseConfig";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 
 const db = FIREBASE_DB;
 
 export default function NavigationPost() {
     const { postID } = useLocalSearchParams();  
     const [post, setPost] = useState<any>();  
+    const navigation = useNavigation();
     
     useEffect(() => {
         fetchPost(postID as string);
@@ -28,6 +29,12 @@ export default function NavigationPost() {
           })
         }
     }
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerShown: false,
+        })
+    }, [])
 
     const display = useCallback(() => {
         return (
