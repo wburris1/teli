@@ -357,7 +357,7 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
     );
 });
 
-export const CommentsList = ({comments, post, handleReply, onClose, redirectLink, changeComments, newReply, updateNumReplies, animateComment }:
+export const CommentsList = ({comments, post, handleReply, onClose, redirectLink, changeComments, newReply, updateNumReplies, animateComment, isPostPage=false }:
 { comments: any[], post: any,
     handleReply: (username: string, comment_id: string, parentCommentID: string) => void,
     onClose: () => void, redirectLink: string,
@@ -365,6 +365,7 @@ export const CommentsList = ({comments, post, handleReply, onClose, redirectLink
     newReply: any,
     updateNumReplies: (parentID: string, inc: number) => void,
     animateComment: () => void,
+    isPostPage?: boolean
 }) => {
     const colorScheme = useColorScheme();
 
@@ -377,13 +378,20 @@ export const CommentsList = ({comments, post, handleReply, onClose, redirectLink
     if (comments) {
         return (
             <View style={{marginBottom: 150}}>
+                {!isPostPage ? 
                 <FlatList
                     data={comments}
                     renderItem={renderCallback}
                     keyExtractor={item => item.id}
                     numColumns={1}
                     removeClippedSubviews={true}
-                />
+                /> : 
+                comments.map((item, index) => (
+                    <View key={index}>
+                        <RenderItem comments={comments} comment={item} parentCommentID='' post={post} handleReply={handleReply}
+                        deleteReply={() => {}} onClose={onClose} redirectLink={redirectLink} changeComments={changeComments}
+                        newReply={newReply} updateNumReplies={updateNumReplies} animateComment={animateComment} />
+                    </View>))}
             </View>
             
         )

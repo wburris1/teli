@@ -1,7 +1,7 @@
 import { AppNotification, FeedPost, NotificationType } from "@/constants/ImportTypes";
 import { Timestamp, addDoc, arrayRemove, arrayUnion, collection, doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Image, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
+import { Alert, Image, Pressable, ScrollView, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Text, View } from "./Themed";
 import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,13 +10,14 @@ import { FIREBASE_DB } from "@/firebaseConfig";
 import Values from "@/constants/Values";
 import { formatDate } from "./Helpers/FormatDate";
 import { ExpandableText } from "./AnimatedViews.tsx/ExpandableText";
-import { Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import React from "react";
 import { createNotification } from "./Helpers/CreatePlusAddNotification";
 import { checkShouldSendNotification, sendPushNotification } from "./Helpers/sendNotification";
 import { useData } from "@/contexts/dataContext";
 import Dimensions from "@/constants/Dimensions";
 import { LinearGradient } from "expo-linear-gradient";
+import { getUserData } from "./Helpers/FetchFunctions";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const db = FIREBASE_DB;
@@ -31,7 +32,7 @@ type PostFeedProps = {
   isPostPage?: boolean,
 };
 
-export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home', incrementComment, isPostPage = false}: PostFeedProps) => {
+export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home', incrementComment, isPostPage = false,}: PostFeedProps) => {
     const colorScheme = useColorScheme();
     const screenwidth = Dimensions.screenWidth;
     const { user, userData } = useAuth();
@@ -46,6 +47,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     const [expanded, setExpanded] = useState(false);
     const [numComments, setNumComments] = useState<number>(item.num_comments);
     const isMovie = item.score == -1 ? item.isMovie : 'title' in item;
+    const router = useRouter();
 
     useEffect(() => {
       if (isInitialRender.current) {
@@ -87,6 +89,8 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     }
 
     return (
+      <>
+      {!isPostPage ?
       <View style={[styles.postContainer, {flexDirection: 'row', 
         justifyContent: 'space-between', borderColor: Colors[colorScheme ?? 'light'].gray,
         marginTop: redirectLink.includes('home') ? 0 : 10, marginBottom: redirectLink.includes('home') ? 10 : 0 }]}>
@@ -211,7 +215,119 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
               }
           </TouchableOpacity>
         </Link>
-      </View>
+      </View> : 
+      <View>
+        <View style={{padding: 10}}>
+        <TouchableOpacity style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].background}]} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={35} color={Colors[colorScheme ?? 'light'].text}/>
+        </TouchableOpacity>
+        <View style={{position: 'absolute'}}>
+                    <Image source={item.backdrop_path ? { uri: imgUrl + item.backdrop_path } :
+                      require('../assets/images/linear_gradient.png')} style={styles.backdropImage} />
+                    <LinearGradient
+                        colors={['transparent', Colors[colorScheme ?? 'light'].background]}
+                        style={styles.gradientBackdrop}
+                    />
+                </View>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: (Dimensions.screenWidth / 1.5) - 120, backgroundColor: 'transparent'}}>
+            <Link href={{pathname: redirectLink + '_user' as any, params: { userID: item.user_id }}} style={{alignSelf: 'flex-end', paddingBottom: 5}} asChild>
+              <TouchableOpacity>
+                  <Image
+                    source={{ uri: item.profile_picture || undefined, cache: 'force-cache' }}
+                    style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
+                  />
+              </TouchableOpacity>
+            </Link>
+            <View style={{flex: 1, alignItems: 'flex-start', paddingLeft: 7, paddingBottom: 5, alignSelf: 'flex-end',
+              backgroundColor: 'transparent'}}>
+              <View style={{flexDirection: 'row', alignItems: 'flex-start', backgroundColor: 'transparent'}}>
+                  <Text numberOfLines={2} style={{fontSize: 17, marginBottom: 3, flex: 1, paddingRight: 15,}}>
+                    <Link href={{pathname: redirectLink + '_user' as any, params: { userID: item.user_id }}} asChild>
+                        <TouchableOpacity>
+                          <Text style={{fontWeight: '500',fontSize: feedFontSize}}>{item.first_name}</Text>
+                        </TouchableOpacity>
+                    </Link>
+                    <View style={{backgroundColor: 'transparent'}}>
+                      <Text style = {{fontWeight: '300', fontSize: feedFontSize}}>{item.score >= 0 ? " ranked " : (item.score == -2 ? " bookmarked " : " commented on ")}</Text>
+                    </View>
+                    <Link href={{pathname: redirectLink + '_item' as any, params: { id: item.item_id, groupKey: isMovie ? 'movie' : 'tv'}}} asChild>
+                        <TouchableOpacity>
+                            <Text style={{fontWeight: 'bold',fontSize: feedFontSize}}>{item.item_name}</Text>
+                        </TouchableOpacity>
+                    </Link>
+                  </Text>
+              </View>
+              <View style={{flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', paddingRight: 15,
+              backgroundColor: 'transparent'}}>
+                <Link href={{pathname: redirectLink + '_user' as any, params: { userID: item.user_id }}} asChild>
+                  <TouchableOpacity style={{paddingRight: 5}}>
+                      <Text numberOfLines={1} style={{fontSize: 14, fontWeight: '300',}}>@{item.username}</Text>
+                  </TouchableOpacity>
+                </Link>
+                <Text numberOfLines={1} style={{fontSize: 14, fontWeight: '200', alignSelf: 'flex-start',}}>{formattedDate}</Text>
+              </View>   
+            </View>
+            <Link style={{height: 130}} href={{pathname: redirectLink + "_item" as any, params: { id: item.item_id, groupKey: isMovie ? 'movie' : 'tv' }}} asChild>
+          <TouchableOpacity>
+            <Image
+              source={item.poster_path ? { uri: imgUrl + item.poster_path } :
+              require('../assets/images/poster-placeholder.png')}
+              style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text }]}
+            />
+            {item.score && item.score >= 0 &&
+              <>
+                <LinearGradient
+                  colors={['transparent', 'black']}
+                  style={{position: 'absolute',
+                  bottom: 1,
+                  left: 1,
+                  right: 1,
+                  height: 60,
+                  borderBottomLeftRadius: 10,
+                  borderBottomRightRadius: 10,}}
+                />
+                <Text style={[styles.scoreText, {color: 'white', position: 'absolute',
+                  bottom: 5,
+                  right: 6,
+                  backgroundColor: 'transparent'}]}>
+                    {item.score.toFixed(1)}
+                </Text>
+              </>
+              }
+          </TouchableOpacity>
+        </Link>
+          </View>    
+        </View>
+        {!hideSpoilers ? (
+          item.caption && <Text style={styles.postText}>{item.caption}</Text>
+        ) : (
+          <View style={{height: maxCaptionHeight, alignItems: 'center', justifyContent: 'center'}}>
+            <TouchableOpacity style={{alignItems: 'center', justifyContent: 'center', flexDirection: 'row'}} onPress={() => {
+              Alert.alert(
+                "Show Spoilers?",
+                "",
+                [
+                    {
+                        text: "Cancel",
+                        style: "cancel"
+                    },
+                    {
+                        text: "Reveal",
+                        onPress: () => {
+                            setExpanded(true);
+                            setHideSpoilers(false);
+                        }
+                    }
+                ]
+              );
+            }}>
+              <Text style={{fontSize: 16, fontWeight: '600', paddingRight: 3}}>Spoiler Alert</Text>
+              <Ionicons name="alert-circle" size={30} color={Colors[colorScheme ?? 'light'].text} />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>}
+      </>
     )
   }
 
@@ -239,6 +355,12 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
       fontSize: 16,
       fontWeight: '300',
       paddingRight: 15,
+    },
+    postText: {
+      fontSize: 16,
+      fontWeight: '300',
+      paddingHorizontal: 10,
+      paddingBottom: 5,
     },
     name: {
       fontSize: 24,
@@ -284,5 +406,26 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     scoreText: {
       fontSize: 24,
       fontWeight: 'bold',
+    },
+    backdropImage: {
+      height: '100%',
+        width: Dimensions.screenWidth,
+        aspectRatio: 1.5,
+    },
+    gradientBackdrop: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: Dimensions.screenWidth > 400 ? 100 : 80,
+    },
+    backButton: {
+      position: 'absolute',
+      zIndex: 1,
+      top: 50,
+      left: 10,
+      borderWidth: 2,
+      borderRadius: 50,
+      padding: 1,
     },
   });

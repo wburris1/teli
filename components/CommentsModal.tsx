@@ -24,8 +24,11 @@ if (Platform.OS === 'android') {
   UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementComment, isPostPage = false}:
-  {post: any, onClose: () => void, visible: boolean, redirectLink: string, handleIncrementComment: () => void, isPostPage?: boolean}) => {
+const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementComment, isPostPage = false,
+setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = null, cmts = [], setCmts = () => {}}:
+  {post: any, onClose: () => void, visible: boolean, redirectLink: string, handleIncrementComment: () => void, isPostPage?: boolean,
+  setUsername?: (name: string) => void, setCommentID?: (id: string) => void, setParentID?: (id: string) => void,
+  rep?: any, cmts?: any[], setCmts?: (cmts: any[]) => void}) => {
   const { user, userData } = useAuth();
   const translateY = useSharedValue(0);
   const [dragging, setDragging] = useState(false);
@@ -48,7 +51,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
 
   useEffect(() => {
     if (comments) {
-      setDisplayComments(comments);
+      isPostPage ? setCmts(comments) : setDisplayComments(comments);
     }
   }, [comments])
 
@@ -73,6 +76,12 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
   }, [visible])
 
   const updateNumReplies = (parentID: string, inc: number) => {
+    isPostPage ? setCmts(cmts.map(cmt => {
+      if (cmt.id === parentID) {
+        return { ...cmt, num_replies: cmt.num_replies + inc };
+      }
+      return cmt;
+    })) :
     setDisplayComments(prevComments => prevComments.map(cmt => {
       if (cmt.id === parentID) {
         return { ...cmt, num_replies: cmt.num_replies + inc };
@@ -81,12 +90,23 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
     }));
   }
 
-  const handleReply = async (username: string, comment_id: string, parentCommentID: string) => {
-    setReplyUsername(username);
-    setReplyCommentID(comment_id);
-    setReplyParentID(parentCommentID);
+  const handleReply = (username: string, comment_id: string, parentCommentID: string) => {
+    if (isPostPage) {
+      setUsername(username);
+      setCommentID(comment_id);
+      setParentID(parentCommentID);
+    } else {
+      setReplyUsername(username);
+      setReplyCommentID(comment_id);
+      setReplyParentID(parentCommentID);
+    }
+    
     animateComment();
 
+    focusInput();
+  }
+
+  const focusInput = () => {
     if (textInputRef.current) {
       textInputRef.current.focus();
     }
@@ -189,9 +209,9 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
   }, [dragging, visible])
 
   const commentsList = useCallback(() => 
-    <CommentsList comments={displayComments} post={post} handleReply={handleReply} onClose={onClose}
-    redirectLink={redirectLink} changeComments={setDisplayComments} newReply={reply} updateNumReplies={updateNumReplies} animateComment={animateComment}/>
-  , [reply, displayComments, post, redirectLink])
+    <CommentsList comments={isPostPage ? cmts : displayComments} post={post} handleReply={handleReply} onClose={onClose}
+    redirectLink={redirectLink} changeComments={isPostPage ? setCmts : setDisplayComments} newReply={isPostPage ? rep : reply} updateNumReplies={updateNumReplies} animateComment={animateComment} isPostPage={isPostPage}/>
+  , [reply, rep, displayComments, cmts, post, redirectLink])
 
   return (
     <>
@@ -256,44 +276,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
             </KeyboardAvoidingView>
             <View style={{position: 'absolute', bottom: 0, height: 40, width: '100%', zIndex: 1}} />
         </> : 
-        <View>
-            {replyUsername != "" && (
-                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', paddingTop: 5, paddingLeft: 5}}>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <Ionicons name="caret-forward" size={20} color={Colors[colorScheme ?? 'light'].text} />
-                    <Text style={styles.replyText}>Replying to <Text style={styles.username}>@{replyUsername}</Text></Text>
-                  </View>
-                  <TouchableOpacity onPress={() => {
-                    setReplyUsername('');
-                    setReplyCommentID('');
-                    animateComment();
-                  }}>
-                    <Ionicons name="close" size={20} color={Colors[colorScheme ?? 'light'].text} />
-                  </TouchableOpacity>
-                </View>
-            )}
-            <View style={[styles.inputContainer, {borderTopWidth: 0, height: 40}]}>
-              <View style={{flexDirection: 'row', flex: 1, alignItems: 'center'}}>
-                <TextInput
-                    ref={textInputRef}
-                    placeholder="Write a comment..."
-                    placeholderTextColor="#999"
-                    value={comment}
-                    onChangeText={setComment}
-                    style={[styles.input,{color: Colors[colorScheme ?? 'light'].text,}]}
-                />
-                {comment != "" && (
-                  <TouchableOpacity onPress={handleComment} style={{
-                    borderRadius: 20, paddingHorizontal: 10, paddingVertical: 7,
-                    backgroundColor: Colors[colorScheme ?? 'light'].text,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                    <Text style={{fontSize: 16, fontWeight: 'bold', color: Colors[colorScheme ?? 'light'].background}}>Post</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
+        <>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={[styles.postPageContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                     {!loading ? commentsList() : (
@@ -303,7 +286,7 @@ const CommentsModal = ({post, onClose, visible, redirectLink, handleIncrementCom
                     )}
                 </View>
             </TouchableWithoutFeedback>
-            </View>}
+            </>}
         </>
   );
 };
@@ -314,7 +297,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   postPageContainer: {
-    
+    height: '100%'
   },
   container: {
     position: 'absolute',
