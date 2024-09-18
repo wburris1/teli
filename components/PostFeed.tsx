@@ -92,9 +92,11 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     return (
       <>
       {!isPostPage ?
+      <Link href={{pathname: redirectLink + '_post' as any, params: { postID: item.id }}} asChild>
+      <TouchableOpacity>
       <View style={[styles.postContainer, {flexDirection: 'row', 
         justifyContent: 'space-between', borderColor: Colors[colorScheme ?? 'light'].gray,
-        marginTop: redirectLink.includes('home') ? 0 : 10, marginBottom: redirectLink.includes('home') ? 10 : 0 }]}>
+        marginBottom: 10 }]}>
       <View style={[{borderColor: Colors[colorScheme ?? 'light'].gray, flex: 1}]} key={id}>
         <View style={{flexDirection: 'row', flex: 1,}}>
             <Link href={{pathname: redirectLink + '_user' as any, params: { userID: item.user_id }}} asChild>
@@ -216,7 +218,9 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
               }
           </TouchableOpacity>
         </Link>
-      </View> : 
+      </View>
+      </TouchableOpacity>
+      </Link> : 
       <View>
         <View style={{padding: 10}}>
         <TouchableOpacity style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].background}]} onPress={() => router.back()}>

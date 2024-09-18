@@ -33,6 +33,11 @@ export default function ProfileLayout() {
                   backgroundColor: Colors[colorScheme ?? 'light'].background,
               }
             }}/>
+            <Stack.Screen name="profile_post" options={{ headerShown: false, headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+              headerStyle: {
+                  backgroundColor: Colors[colorScheme ?? 'light'].background,
+              }
+            }}/>
         </Stack>
     );
 }

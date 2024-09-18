@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Animated, LayoutAnimation, Platform, Pressable, StyleSheet, TextStyle, UIManager, useColorScheme } from "react-native";
-import { Text } from "../Themed";
+import { Text, View } from "../Themed";
 import { LinearGradient } from "expo-linear-gradient";
 import Colors from "@/constants/Colors";
 
@@ -9,8 +9,8 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-export const ExpandableText = ({ text, maxHeight, textStyle, startExpanded }:
-  { text: string, maxHeight: number, textStyle: TextStyle, startExpanded: boolean }) => {
+export const ExpandableText = ({ text, maxHeight, textStyle, startExpanded, isDesc = false }:
+  { text: string, maxHeight: number, textStyle: TextStyle, startExpanded: boolean, isDesc?: boolean }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [textHeight, setCaptionHeight] = useState<number | null>(null);
     const animatedHeight = useRef(new Animated.Value(0)).current;
@@ -56,23 +56,35 @@ export const ExpandableText = ({ text, maxHeight, textStyle, startExpanded }:
       };
 
       return (
-        <Pressable onPress={() => {
-            if (textHeight && textHeight > maxHeight) {
-                toggleExpanded();
-            }
-            }}>
-            <Animated.View style={animatedStyle}>
-            <Text style={textStyle} onLayout={onTextLayout}>
+        <>
+          {(textHeight == null || textHeight > maxHeight) ? 
+            <Pressable onPress={() => {
+                if (textHeight && textHeight > maxHeight) {
+                    toggleExpanded();
+                }
+                }}>
+                <Animated.View style={animatedStyle}>
+                <Text style={textStyle} onLayout={onTextLayout}>
+                    {text}
+                </Text>
+                </Animated.View>
+                {!isExpanded && textHeight && textHeight > maxHeight && (
+                <LinearGradient
+                    colors={[colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent', Colors[colorScheme ?? 'light'].background]}
+                    style={styles.gradient}
+                />
+                )}
+            </Pressable> : !isDesc ?
+            <View style={{height: maxHeight}}>
+              <Text style={textStyle} onLayout={onTextLayout}>
                 {text}
-            </Text>
-            </Animated.View>
-            {!isExpanded && textHeight && textHeight > maxHeight && (
-            <LinearGradient
-                colors={[colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent', Colors[colorScheme ?? 'light'].background]}
-                style={styles.gradient}
-            />
-            )}
-        </Pressable>
+              </Text>
+            </View> : 
+            <View>
+              <Text style={textStyle} onLayout={onTextLayout}>
+                {text}
+              </Text>
+            </View>}</>
       );
 }
 

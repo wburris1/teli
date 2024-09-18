@@ -26,6 +26,7 @@ import { ScreenNavigationProp } from '@/constants/ImportTypes';
 import { fetchUserData } from '@/data/getComments';
 import { FetchFollowers, FetchFollowing, FetchMovieLists, FetchTVLists } from './Helpers/FetchFunctions';
 import PostFeedWithModals from './PostFeedWithModals';
+import { ExpandableText } from './AnimatedViews.tsx/ExpandableText';
 
 const db = FIREBASE_DB;
 
@@ -223,6 +224,8 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   };
 
   const activityTabContent = useCallback(() => 
+  <>
+    <View style={{marginTop: 10}}></View>
     <PostFeedWithModals
           posts={posts}
           loading={false}
@@ -233,7 +236,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
           handleLikes={handleLikes}
           setShowComments={setShowComments}
           setShowLikes={setShowLikes}
-          redirectLink='profile'
+          redirectLink={redirectLink}
           handleRefresh={handleRefresh}
           refreshing={refreshing}
           loadMorePosts={loadMorePosts}
@@ -241,6 +244,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
           incrementComment={incrementComment}
           handleIncrementComment={handleIncrementComment}
           />
+        </>
   , [refreshFlag, posts, refreshing, loading, showLikes, showComments, post, isLoadingMore]);
 
   const listsTabContent = useCallback(() => 
@@ -351,6 +355,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                 </View>
             </View>
           </View>
+          {profileData.bio && <ExpandableText text={profileData.bio} maxHeight={80} startExpanded={false} textStyle={{paddingHorizontal: 10}} isDesc={true} />}
           <SearchTabs browse={false} tabs={tabs} onTabChange={() => {}} index={0} />
         </>
       )}

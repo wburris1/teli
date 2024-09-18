@@ -18,6 +18,7 @@ import useModalState from '@/components/ModalState';
 import PostFeedWithModals from '@/components/PostFeedWithModals';
 import { useNavigation } from '@react-navigation/native';
 import { ScreenNavigationProp } from '@/constants/ImportTypes';
+import { ExpandableText } from '@/components/AnimatedViews.tsx/ExpandableText';
 
 const db = FIREBASE_DB;
 
@@ -117,7 +118,7 @@ const ProfilePage = () => {
   return (
     <SafeAreaView style={styles.container}>
       {userData && (
-        <>
+        <View style={{borderBottomWidth: 1, borderColor: Colors[colorScheme ?? 'light'].text}}>
           <View style={{width: '100%', alignItems: 'center'}}>
             <Text style={styles.username}>@{userData.username}</Text>
             <Image
@@ -128,8 +129,7 @@ const ProfilePage = () => {
               style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text,  }]}
             />
           </View>
-          <View style={{flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', padding: 10,
-            borderBottomWidth: 1, borderColor: Colors[colorScheme ?? 'light'].text}}>
+          <View style={{flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', padding: 10}}>
           <TouchableOpacity onPress={() => handleNavigate(0)}>
           <View style={styles.followContainer}>
             <View style={{flexDirection: 'column', alignItems: 'center'}}>
@@ -147,7 +147,8 @@ const ProfilePage = () => {
               </View>
               </TouchableOpacity>
           </View>
-        </>
+          {userData.bio && <ExpandableText text={userData.bio} maxHeight={80} startExpanded={false} textStyle={{paddingHorizontal: 10, paddingBottom: 5}} isDesc={true} />}
+        </View>
       )}
       {loading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -155,6 +156,7 @@ const ProfilePage = () => {
         </View>
       ) : (
         <>
+          <View style={{marginTop: 10}}></View>
           <PostFeedWithModals
           posts={posts}
           loading={loading}

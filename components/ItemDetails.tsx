@@ -289,7 +289,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                 {item.overview &&
                 <View style={styles.overviewContainer}>
                     {item.tagline != "" && <Text style={{fontSize: directorFontSize, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
-                    <ExpandableText text={item.overview} maxHeight={65} textStyle={styles.overview} startExpanded={false} />
+                    <ExpandableText text={item.overview} maxHeight={65} textStyle={styles.overview} startExpanded={false} isDesc={true}/>
                 </View>}
                 {(director || item.genres) &&
                 <View style={[styles.castContainer, {justifyContent: 'space-between', alignItems: 'center'}]}>

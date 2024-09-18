@@ -112,7 +112,7 @@ export default function EditProfileScreen () {
                     </TouchableOpacity>
                 </View>
                 <TextInput multiline autoCapitalize="sentences" placeholder="About yourself..." value={bio} onChangeText={setBio}
-                    style={[styles.bioField, {borderColor: Colors[colorScheme ?? 'light'].gray}]} />
+                    style={[styles.bioField, {borderColor: Colors[colorScheme ?? 'light'].gray, color: Colors[colorScheme ?? 'light'].text}]} />
                 </SafeAreaView>
             </Modal>
         </View>

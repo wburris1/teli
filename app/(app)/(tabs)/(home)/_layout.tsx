@@ -41,6 +41,11 @@ export default function SearchLayout() {
                 backgroundColor: Colors[colorScheme ?? 'light'].background,
             }
         }} />
+        <Stack.Screen name="home_post" options={{ headerShown: false, headerBackTitle: "Back", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+            headerStyle: {
+                backgroundColor: Colors[colorScheme ?? 'light'].background,
+            }
+        }} />
     </Stack>
     );
 }

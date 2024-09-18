@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, Button, Modal, StyleSheet, Image, TextInput, TouchableOpacity, useColorScheme, ActivityIndicator } from 'react-native';
+import { View, Button, Modal, StyleSheet, Image, TextInput, TouchableOpacity, useColorScheme, ActivityIndicator, Pressable } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +18,6 @@ import { useLoading } from '@/contexts/loading';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { interpolate, runOnJS, useAnimatedStyle, useDerivedValue, useSharedValue, withDecay, withSpring } from 'react-native-reanimated';
 import Toast from 'react-native-toast-message';
-import { DefaultPost } from './LogoView';
 
 type Props = {
     item: Item,
@@ -347,11 +346,11 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
           <View style={styles.container}>
             <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
               <View>
-              {item.poster_path ? 
-                            <Image
-                                source={{ uri: imgUrl + item.poster_path }}
-                                style={[styles.movieImage, { borderColor: Colors[colorScheme ?? 'light'].background, overflow: 'hidden' }]}
-                                /> : <DefaultPost style={[styles.movieImage, { borderColor: Colors[colorScheme ?? 'light'].background, overflow: 'hidden' }]}/>}
+                <Image
+                  source={item.poster_path ? { uri: imgUrl + item.poster_path } :
+                  require('../assets/images/poster-placeholder.png')}
+                  style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].background}]}
+                />
                 <LinearGradient
                     colors={['transparent', 'black']}
                     style={styles.gradient}
@@ -383,42 +382,48 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
                       </View>
                     </TouchableOpacity>
                   </View>
-                  <Text style={styles.feedbackText}>Did you like it?</Text>
                 <View style={styles.feedback}>
-                  <TouchableOpacity onPress={() => {
+                  <Pressable onPress={() => {
                     if (loading) return;
                     setSelectedPref("like");
                     handleFeedback(initialLikeScore, 10.1, 10);
                   }}>
+                    {({ pressed }) => (
                     <Ionicons
                       name="checkmark-circle-outline"
                       size={60}
-                      color={selectedPref == "like" ? "#00ff00" : Colors[colorScheme ?? 'light'].text}
+                      color={pressed ? "#00ff00" : Colors[colorScheme ?? 'light'].text}
                     />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => {
+                    )}
+                  </Pressable>
+                  <Pressable onPress={() => {
                     if (loading) return;
                     setSelectedPref("mid");
                     handleFeedback(initialDislikeScore - smallAssNumber, initialLikeScore + smallAssNumber, initialMehScore);
                   }}>
+                    {({ pressed }) => (
                     <Ionicons
                       name="remove-circle-outline"
                       size={60}
-                      color={selectedPref == "mid" ? 'gray' : Colors[colorScheme ?? 'light'].text}
+                      color={pressed ? 'gray' : Colors[colorScheme ?? 'light'].text}
                     />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => {
+                    )}
+                  </Pressable>
+                  <Pressable onPress={() => {
                     if (loading) return;
                     setSelectedPref("dislike");
                     handleFeedback(0, initialDislikeScore, initialDislikeScore - 1);
                   }}>
+                    {({ pressed }) => (
                     <Ionicons
                       name="close-circle-outline"
                       size={60}
-                      color={selectedPref == "dislike" ? "#ff0000" : Colors[colorScheme ?? 'light'].text}
+                      color={pressed ? "#ff0000" : Colors[colorScheme ?? 'light'].text}
                     />
-                  </TouchableOpacity>
+                    )}
+                  </Pressable>
                 </View>
+                <Text style={styles.feedbackText}>Did you like it?</Text>
                   <Modal
                     animationType="slide"
                     transparent={true}
@@ -634,7 +639,7 @@ const styles = StyleSheet.create({
   feedbackText: {
     fontSize: 18,
     fontWeight: '200',
-    paddingTop: 10
+    paddingBottom: 10
   },
   rankTab: {
     flexDirection: 'row',

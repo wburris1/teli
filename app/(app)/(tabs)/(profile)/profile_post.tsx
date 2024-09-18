@@ -4,14 +4,13 @@ import { FeedPost, Post } from "@/constants/ImportTypes";
 import { FIREBASE_DB } from "@/firebaseConfig";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const db = FIREBASE_DB;
 
-export default function NavigationPost() {
+export default function HomePostScreen() {
     const { postID } = useLocalSearchParams();  
-    const [post, setPost] = useState<any>();  
-    const navigation = useNavigation();
+    const [post, setPost] = useState<any>();
     
     useEffect(() => {
         fetchPost(postID as string);
@@ -33,7 +32,7 @@ export default function NavigationPost() {
     const display = useCallback(() => {
         return (
             <>
-                {post && <PostScreen post={post as FeedPost} redirectLink="notification" />}
+                {post && <PostScreen post={post as FeedPost} redirectLink="home" />}
             </>
         )
     }, [post])
