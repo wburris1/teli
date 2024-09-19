@@ -1,5 +1,5 @@
 import { usePushNotifications } from '@/components/TemplateFiles/usePushNotifications';
-import { List, UserItem } from '@/constants/ImportTypes';
+import { List, UserItem, UserMovie, UserShow } from '@/constants/ImportTypes';
 import * as Notifications from "expo-notifications";
 import React, { createContext, useState, useContext, useEffect, useCallback, ReactNode } from 'react';
 import { useAuth } from './authContext';
@@ -8,10 +8,10 @@ import { FIREBASE_DB } from '@/firebaseConfig';
 import Values from '@/constants/Values';
 
 type DataContextType = {
-    movies: UserItem[] | null;
-    setMovies: (items: UserItem[]) => void;
-    shows: UserItem[] | null;
-    setShows: (items: UserItem[]) => void;
+    movies: UserMovie[] | null;
+    setMovies: (items: UserMovie[]) => void;
+    shows: UserShow[] | null;
+    setShows: (items: UserShow[]) => void;
     following: string[] | undefined;
     setFollowing: (users: string[] | undefined) => void;
     followers: string[];
@@ -40,8 +40,8 @@ const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<Props> = ({ children }: Props) => {
-    const [movies, setMovies] = useState<UserItem[] | null>(null);
-    const [shows, setShows] = useState<UserItem[] | null>(null);
+    const [movies, setMovies] = useState<UserMovie[] | null>(null);
+    const [shows, setShows] = useState<UserShow[] | null>(null);
     const [followers, setFollowers] = useState<string[]>([]);
     const [following, setFollowing] = useState<string[] | undefined>();
     const [tvLists, setTVLists] = useState<List[]>([]);
@@ -140,7 +140,7 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
           const itemQuery = query(userItemsRef, orderBy('score', 'desc'));
     
           const unsubscribe = onSnapshot(itemQuery, (snapshot) => {
-            const itemsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserItem }));
+            const itemsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserMovie }));
             setMovies(itemsData || []);
           }, (error) => {
             console.error("Error fetching users movies: ", error);
@@ -156,7 +156,7 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
           const itemQuery = query(userItemsRef, orderBy('score', 'desc'));
     
           const unsubscribe = onSnapshot(itemQuery, (snapshot) => {
-            const itemsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserItem }));
+            const itemsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserShow }));
             setShows(itemsData || []);
           }, (error) => {
             console.error("Error fetching users shows: ", error);

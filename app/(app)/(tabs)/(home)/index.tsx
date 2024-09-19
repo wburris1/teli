@@ -56,6 +56,7 @@ export default function TabOneScreen() {
           isLoadingMore={isLoadingMore}
           handleIncrementComment={handleIncrementComment}
           incrementComment={incrementComment}
+          isHome={true}
         />
       ) : (
         <GestureHandlerRootView>

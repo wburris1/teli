@@ -230,11 +230,11 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                     <Image source={item.backdrop_path ? { uri: imgUrl + item.backdrop_path } :
                       require('../assets/images/linear_gradient.png')} style={styles.backdropImage} />
                     <LinearGradient
-                        colors={['transparent', Colors[colorScheme ?? 'light'].background]}
+                        colors={[colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent', Colors[colorScheme ?? 'light'].background]}
                         style={styles.gradientBackdrop}
                     />
                 </View>
-          <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: (Dimensions.screenWidth / 1.5) - 120, backgroundColor: 'transparent'}}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: (Dimensions.screenWidth / 1.5) - 90, backgroundColor: 'transparent'}}>
             <Link href={{pathname: redirectLink + '_user' as any, params: { userID: item.user_id }}} style={{alignSelf: 'flex-end', paddingBottom: 5}} asChild>
               <TouchableOpacity>
                   <Image
@@ -422,7 +422,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
         bottom: 0,
         left: 0,
         right: 0,
-        height: Dimensions.screenWidth > 400 ? 100 : 80,
+        height: Dimensions.screenWidth > 400 ? 120 : 100,
     },
     backButton: {
       position: 'absolute',

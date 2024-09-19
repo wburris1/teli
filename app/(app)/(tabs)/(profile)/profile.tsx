@@ -10,7 +10,7 @@ import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { Link, useLocalSearchParams} from 'expo-router';
-import { Post, RootStackParamList } from '@/constants/ImportTypes';
+import { Post, RootStackParamList, UserMovie } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { makeFeed } from '@/data/feedData';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -56,6 +56,7 @@ const ProfilePage = () => {
   const [numMovies, setNumMovies] = useState(0);
   const [numShows, setNumShows] = useState(0);
   const {movies, shows} = useData();
+  const [totalMovieRuntime, setTotalMovieRuntime] = useState(0);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -68,6 +69,11 @@ const ProfilePage = () => {
   useEffect(() => {
     if (movies) {
       const watchedMovies = movies.filter(movie => movie.lists.includes(Values.seenListID));
+      const totalRuntime = movies.reduce((acc, movie) => {
+        const runtime = movie.runtime;
+        return acc + (typeof runtime === 'number' ? runtime : 0);
+      }, 0);
+      setTotalMovieRuntime(totalRuntime);
       setNumMovies(watchedMovies.length);
     }
     if (shows) {
@@ -129,10 +135,16 @@ const ProfilePage = () => {
     });
   };
 
+  const convertRunTime = (runTime: number) => {
+    return runTime < 60 ? 
+    `${runTime}m` : 
+    `${Math.floor(runTime / 60)}h ${runTime % 60}m`
+  }
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
       {userData && (
-        <View style={{borderBottomWidth: 1, borderColor: Colors[colorScheme ?? 'light'].text}}>
+      <View style={{borderBottomWidth: 1, borderColor: Colors[colorScheme ?? 'light'].text}}>
         <View
         style={{
           flexDirection: 'row',
@@ -165,10 +177,24 @@ const ProfilePage = () => {
                       {following && <Text style={styles.follow}>{following.length}</Text>}
                     </View>
                   </TouchableOpacity>
-                </View>
+            </View>
+          </View>
         </View>
-      </View>
-      {userData.bio && <ExpandableText text={userData.bio} maxHeight={80} startExpanded={false} textStyle={{paddingHorizontal: 15, paddingBottom: 5}} isDesc={true} />}
+        <View style={{flexDirection: 'row', paddingBottom: 10, justifyContent: 'space-between', paddingHorizontal: 10}}>
+          <View style={[styles.statContainer, {backgroundColor: Colors[colorScheme ?? 'light'].gray, borderRadius: 10}]}>
+            <Text style={styles.statText}>Movies Watched</Text>
+            <Text style={styles.statNum}>{numMovies}</Text>
+          </View>
+          <View style={[styles.statContainer, {backgroundColor: Colors[colorScheme ?? 'light'].gray, borderRadius: 10}]}>
+            <Text style={styles.statText}>Shows Watched</Text>
+            <Text style={styles.statNum}>{numShows}</Text>
+          </View>
+          <View style={[styles.statContainer, {backgroundColor: Colors[colorScheme ?? 'light'].gray, borderRadius: 10}]}>
+            <Text style={styles.statText}>Movie Watchtime</Text>
+            <Text style={styles.statNum}>{convertRunTime(totalMovieRuntime)}</Text>
+          </View>
+        </View>
+        {userData.bio && <ExpandableText text={userData.bio} maxHeight={80} startExpanded={false} textStyle={{paddingHorizontal: 10, paddingBottom: 10}} isDesc={true} />}
       </View>
       )}
       {loading ? (
@@ -177,7 +203,6 @@ const ProfilePage = () => {
         </View>
       ) : (
         <>
-          <View style={{marginTop: 10}}></View>
           <PostFeedWithModals
           posts={posts}
           loading={loading}
@@ -243,6 +268,20 @@ const styles = StyleSheet.create({
     padding: 0,
     margin: 0,
   },
+  statContainer: {
+    alignItems: 'center',
+    paddingHorizontal: 5,
+    paddingTop: 5,
+    paddingBottom: 3,
+  },
+  statText: {
+    fontSize: 14,
+    fontWeight: '400'
+  },
+  statNum: {
+    fontSize: 14,
+    fontWeight: '500'
+  }
 });
 
 export default ProfilePage;

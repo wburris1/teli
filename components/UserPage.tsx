@@ -225,7 +225,6 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
 
   const activityTabContent = useCallback(() => 
   <>
-    <View style={{marginTop: 10}}></View>
     <PostFeedWithModals
           posts={posts}
           loading={false}

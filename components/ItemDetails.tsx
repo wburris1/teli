@@ -295,12 +295,12 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                 <View style={[styles.castContainer, {justifyContent: 'space-between', alignItems: 'center'}]}>
                   <View>
                     {director &&
-                    <Text style={styles.directorText}>Directed by
+                    <Text style={[styles.directorText, {paddingBottom: checkRevBudget(item) ? 0 : 5}]}>Directed by
                       <Text style={{fontWeight: '600'}}> {director.name}</Text>
                     </Text>}
                     {item.genres && 
                     <ScrollView showsHorizontalScrollIndicator={false} horizontal style=
-                        {{width: item.budget && item.revenue ? screenWidth - 80 : screenWidth}}
+                        {{width: checkRevBudget(item) ? screenWidth - 80 : screenWidth}}
                     >
                         <View style={styles.genreContainer} >
                         {item.genres.map(genre => (
@@ -545,7 +545,6 @@ const styles = StyleSheet.create({
     fontSize: directorFontSize,
     fontWeight: '300', 
     paddingLeft: 10,
-    paddingBottom: 0
   }
 });
 

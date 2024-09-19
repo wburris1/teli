@@ -6,6 +6,7 @@ import { PostFeed } from '@/components/PostFeed';
 import LikesModal from '@/components/LikesModal';
 import CommentsModal from '@/components/CommentsModal';
 import Dimensions from '@/constants/Dimensions';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type PostListWithModalsProps = {
   posts: any[];
@@ -24,6 +25,7 @@ type PostListWithModalsProps = {
   isLoadingMore: boolean;
   handleIncrementComment: () => void;
   incrementComment: boolean;
+  isHome?: boolean,
 };
 
 const PostFeedWithModals = ({
@@ -43,6 +45,7 @@ const PostFeedWithModals = ({
   isLoadingMore,
   handleIncrementComment,
   incrementComment,
+  isHome = false,
 }: 
 PostListWithModalsProps) => {
   const colorScheme = useColorScheme();
@@ -55,6 +58,12 @@ PostListWithModalsProps) => {
   return (
     <GestureHandlerRootView style={{ width: Dimensions.screenWidth, flex: 1,
     backgroundColor: Colors[colorScheme ?? 'light'].background}}>
+      {isHome && (
+        <LinearGradient
+          colors={[Colors[colorScheme ?? 'light'].background, colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
+          style={{position: 'absolute', top: 0, left: 0, right: 0, height: 5, zIndex: 1}}
+        />
+      )}
       {!loading ? (
         <>
           <FlatList
@@ -66,6 +75,7 @@ PostListWithModalsProps) => {
             onEndReachedThreshold={0.75}
             ListFooterComponent={renderFooter}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+            style={{paddingTop: isHome ? 5 : 10}}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink={redirectLink} />
           <Modal
