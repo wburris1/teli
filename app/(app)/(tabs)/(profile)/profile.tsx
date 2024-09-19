@@ -53,6 +53,9 @@ const ProfilePage = () => {
   const { followers, following } = useData();
   const navigation = useNavigation<ScreenNavigationProp>();
   const colorScheme = useColorScheme();
+  const [numMovies, setNumMovies] = useState(0);
+  const [numShows, setNumShows] = useState(0);
+  const {movies, shows} = useData();
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -61,6 +64,17 @@ const ProfilePage = () => {
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
+
+  useEffect(() => {
+    if (movies) {
+      const watchedMovies = movies.filter(movie => movie.lists.includes(Values.seenListID));
+      setNumMovies(watchedMovies.length);
+    }
+    if (shows) {
+      const watchedShows = shows.filter(show => show.lists.includes(Values.seenListID));
+      setNumShows(watchedShows.length);
+    }
+  }, [movies, shows])
 
   // following use effect gets the total movie run time should we make this a context? 
   /* useEffect(() => {
@@ -86,7 +100,7 @@ const ProfilePage = () => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: userData ? userData.first_name + " " + userData.last_name : '',
+      title: userData ? userData.username: '',
       headerRight: () => <LogoutButton />,
       headerLeft: () => (
         <Link href={{ pathname: '/edit_profile' }} asChild>
@@ -96,8 +110,8 @@ const ProfilePage = () => {
         </Link>
       ),
       headerTitleStyle: {
-        fontSize: 22,
-        fontWeight: 'bold',
+        fontSize: 18,
+        fontWeight: '500',
       },
     })
   })  
@@ -119,36 +133,43 @@ const ProfilePage = () => {
     <SafeAreaView style={styles.container}>
       {userData && (
         <View style={{borderBottomWidth: 1, borderColor: Colors[colorScheme ?? 'light'].text}}>
-          <View style={{width: '100%', alignItems: 'center'}}>
-            <Text style={styles.username}>@{userData.username}</Text>
-            <Image
-              source={userData.profile_picture
-                ? { uri: userData.profile_picture }  // Remote image
-                : require('../../../../assets/images/emptyprofilepic.jpg') // Local image
-                }  
-              style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text,  }]}
-            />
-          </View>
-          <View style={{flexDirection: 'row', alignItems: 'center', width: '100%', justifyContent: 'center', padding: 10}}>
-          <TouchableOpacity onPress={() => handleNavigate(0)}>
-          <View style={styles.followContainer}>
-            <View style={{flexDirection: 'column', alignItems: 'center'}}>
-              <Text style={styles.follow}>Followers</Text>
-              <Text style={styles.follow}>{followers.length}</Text>
-              </View>
-              </View>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => handleNavigate(1)}>
-                <View style={styles.followContainer}>
-                  <View style={{flexDirection: 'column', alignItems: 'center'}}>
-                <Text style={styles.follow}>Following</Text>
-                {following && <Text style={styles.follow}>{following.length}</Text>}
+        <View
+        style={{
+          flexDirection: 'row',
+          width: '100%',
+          justifyContent: 'flex-start',
+          paddingHorizontal: 10,
+          paddingBottom: 10,
+          alignItems: 'flex-start',
+        }}
+      >
+        <Image
+          source={userData.profile_picture
+            ? { uri: userData.profile_picture }  // Remote image
+            : require('../../../../assets/images/emptyprofilepic.jpg') // Local image
+            }  
+          style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text,  }]}
+        />
+        <View>
+        <Text style={styles.headerText}>{userData.first_name + " " + userData.last_name}</Text>
+            <View style={{flexDirection: 'row', paddingTop: 3}}>
+                  <TouchableOpacity onPress={() => handleNavigate(0)}>
+                    <View style={styles.followContainer}>
+                      <Text style={styles.follow}>Followers</Text>
+                      <Text style={styles.follow}>{followers.length}</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleNavigate(1)}>
+                    <View style={styles.followContainer}>
+                      <Text style={styles.follow}>Following</Text>
+                      {following && <Text style={styles.follow}>{following.length}</Text>}
+                    </View>
+                  </TouchableOpacity>
                 </View>
-              </View>
-              </TouchableOpacity>
-          </View>
-          {userData.bio && <ExpandableText text={userData.bio} maxHeight={80} startExpanded={false} textStyle={{paddingHorizontal: 10, paddingBottom: 5}} isDesc={true} />}
         </View>
+      </View>
+      {userData.bio && <ExpandableText text={userData.bio} maxHeight={80} startExpanded={false} textStyle={{paddingHorizontal: 15, paddingBottom: 5}} isDesc={true} />}
+      </View>
       )}
       {loading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -194,25 +215,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   username: {
-    fontSize: 18,
+    fontSize: 16,
     color: 'gray',
+    paddingHorizontal: 10,
+    paddingBottom: 5
   },
   followContainer: {
     alignItems: 'center',
-    paddingHorizontal: 15,
+    paddingRight: 10
   },
   follow: {
     fontSize: 18,
     fontWeight: '300',
   },
   profilePic: {
-    width: 100,
-    height: 100,
+    width: 75,
     aspectRatio: 1,
     borderRadius: 50,
     borderWidth: 1,
-    marginVertical: 10,
     backgroundColor: 'gray',
+    marginRight: 10
   },
   linkStyle: {
     flex: 1,

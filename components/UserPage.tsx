@@ -315,7 +315,8 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
               flexDirection: 'row',
               width: '100%',
               justifyContent: 'flex-start',
-              padding: 10,
+              paddingHorizontal: 10,
+              paddingBottom: 10,
               alignItems: 'flex-start',
             }}
           >
