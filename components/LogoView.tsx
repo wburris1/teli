@@ -11,15 +11,16 @@ export const Logo = ({width, height}: { width: number, height: number }) => {
         />
     )
 }
+export const DefaultPost = ({style, text, fontSize}: { style: StyleProp<ImageStyle>, text?: string, fontSize?: number}) => {
+  const defaultFontSize = screenWidth > 400 ? 20 : 16;
 
-export const DefaultPost = ({style, text}: { style: StyleProp<ImageStyle>, text?: string}) => {
   return (
       text ? 
       (<ImageBackground
         source={require('../assets/images/plain_poster_background.jpg')} ////poster-placeholder.png'
         style={style}>
           <View style={styles.textContainer}>
-            <Text style={styles.movieName}>{text}</Text>
+            <Text style={[styles.movieName, {fontSize: fontSize? fontSize : defaultFontSize} ]}>{text}</Text>
           </View>
       </ImageBackground>)
       : (<ImageBackground

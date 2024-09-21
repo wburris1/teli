@@ -9,8 +9,10 @@ import { DefaultPost } from "./LogoView";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const itemWidth = (Dimensions.screenWidth / 3) - 20;
+const screenWidth = Dimensions.screenWidth;
 
-const OverlappingImages = ({ images, list }: { images: string[], list: List }) => {
+
+const OverlappingImages = ({ images, list, posterNames }: { images: string[], list: List, posterNames: string[] }) => {
     const colorScheme = useColorScheme();
   
     return (
@@ -19,6 +21,7 @@ const OverlappingImages = ({ images, list }: { images: string[], list: List }) =
           
           !image.endsWith('null') ? 
             (<Image
+                key={index}
                 source={{ uri: image }}
                 style={[styles.image,
                   { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
@@ -26,7 +29,7 @@ const OverlappingImages = ({ images, list }: { images: string[], list: List }) =
                    }]}
                 />
             ) 
-             : (<DefaultPost style={[styles.image,
+             : (<DefaultPost  key={index} fontSize={screenWidth > 400 ? 16 : 10.5} text={posterNames[index]} style={[styles.image,
                   { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
                     opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden'
                    }]}/>)
@@ -41,8 +44,9 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectL
   const posters = [
     list.top_poster_path != "" ? imgUrl + list.top_poster_path : "/",
     list.second_poster_path != "" ? imgUrl + list.second_poster_path : "/",
-    list.bottom_poster_path != "" ? imgUrl + list.bottom_poster_path : "/"
+    list.bottom_poster_path != "" ? imgUrl + list.bottom_poster_path : "/", 
   ];
+  const posterNames = [list.top_item_name, list.second_item_name, list.bottom_item_name];
   const isEmpty = posters[0] == "/";
   const listName = list.name;
 
@@ -59,7 +63,7 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectL
         <View style={styles.emptyList}>
 
         </View> : 
-        <OverlappingImages images={posters} list={list} />}
+        <OverlappingImages images={posters} list={list} posterNames={posterNames} />}
         <Text numberOfLines={2} style={!isEmpty ? styles.title : styles.emptyListTitle}>{listName}</Text>
       </TouchableOpacity>
     </Link>

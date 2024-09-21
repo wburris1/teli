@@ -102,6 +102,9 @@ export type List = {
     top_poster_path: string,
     second_poster_path: string,
     bottom_poster_path: string,
+    bottom_item_name: string,
+    second_item_name: string,
+    top_item_name: string,
     last_modified: Timestamp | FieldValue,
 }
 export type CastMember = {
