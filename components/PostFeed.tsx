@@ -72,6 +72,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
             likes: arrayRemove(user.uid)
           }); 
         } else {
+          setNumLikes(numLikes + 1);
           if (userData) {
             const sendNotification = await checkShouldSendNotification(NotificationType.LikedPostNotification, item.user_id, userData);
             if (sendNotification) {
@@ -79,7 +80,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
               sendPushNotification(item.user_id, "Liked Post", `${userData.first_name} liked your post`)
             }
           }
-          setNumLikes(numLikes + 1);
+          
           await updateDoc(postRef, {
             likes: arrayUnion(user.uid)
           }); 

@@ -560,7 +560,8 @@ const RankItemWrapper = ({item, items, isDupe, setDupe, onClose, dupePostID}: Wr
   return (
     <View style={styles.fullScreen}>
       <Image
-        source={{ uri: imgUrl + item.poster_path }}
+        source={item.poster_path ? { uri: imgUrl + item.poster_path } : 
+          require('../assets/images/poster-placeholder.png')}
         style={[styles.blurredImage, { opacity: 1}]}
         blurRadius={10} // Adjust the blur intensity here
       />
