@@ -16,20 +16,22 @@ const OverlappingImages = ({ images, list }: { images: string[], list: List }) =
     return (
       <View style={styles.imageContainer}>
         {images.map((image, index) => (
-          <View key={index}>
-          {!image.endsWith('null') ? 
+          
+          !image.endsWith('null') ? 
             (<Image
                 source={{ uri: image }}
                 style={[styles.image,
                   { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
                     opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden'
                    }]}
-                />) : (<DefaultPost style={[styles.image,
+                />
+            ) 
+             : (<DefaultPost style={[styles.image,
                   { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
                     opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden'
                    }]}/>)
-            }
-          </View>
+            
+          
         ))}
       </View>
     );

@@ -1,4 +1,4 @@
-import { List, UserItem } from "@/constants/ImportTypes";
+import { List, UserItem, UserMovie, UserShow } from "@/constants/ImportTypes";
 import Values from "@/constants/Values";
 import { useAuth } from "@/contexts/authContext";
 import { useData } from "@/contexts/dataContext";
@@ -9,10 +9,17 @@ const db = FIREBASE_DB;
 
 async function getListPosters(listID: string, listTypeID: string, userID: string) {
     var top_poster_path = "";
-    var second_poster_path = "";
-    var bottom_poster_path = "";
+    var top_item_name = "";
 
-    const listItemsRef = collection(db, "users", userID, listTypeID == Values.movieListsID ? "movies" : "shows");
+    var second_poster_path = "";
+    var second_item_name = "";
+
+    var bottom_poster_path = "";
+    var bottom_item_name = "";
+
+    const isMovie = listTypeID == Values.movieListsID;
+
+    const listItemsRef = collection(db, "users", userID, isMovie ? "movies" : "shows");
     const itemQuery = query(listItemsRef,
         orderBy('score', 'desc'),
         limit(3),
@@ -20,12 +27,18 @@ async function getListPosters(listID: string, listTypeID: string, userID: string
     );
     const itemsSnapshot = await getDocs(itemQuery);
     if (!itemsSnapshot.empty) {
-        const items = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserItem }));
+        const items = itemsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserItem })) as UserItem[];
         top_poster_path = items[0].poster_path;
+        top_item_name = isMovie ? (items[0] as UserMovie).title : (items[0] as UserShow).name;
+
         second_poster_path = items.length > 1 ? items[1].poster_path : "";
+        second_item_name = items.length > 1 ? (isMovie ? (items[1] as UserMovie).title : (items[1] as UserShow).name) : "";
+        
         bottom_poster_path = items.length > 2 ? items[2].poster_path : "";
+        bottom_item_name = items.length > 2 ? (isMovie ? (items[2] as UserMovie).title : (items[2] as UserShow).name) : "";
+
     }
-    return { top_poster_path, second_poster_path, bottom_poster_path };
+    return { top_poster_path, top_item_name, second_poster_path, second_item_name, bottom_poster_path, bottom_item_name };
 }
 
 export const updateSomeListPosters = () => {
@@ -41,6 +54,9 @@ export const updateSomeListPosters = () => {
                     top_poster_path: posters.top_poster_path,
                     second_poster_path: posters.second_poster_path,
                     bottom_poster_path: posters.bottom_poster_path, 
+                    top_item_name: posters.top_item_name,
+                    second_item_name: posters.second_item_name,
+                    bottom_item_name: posters.bottom_item_name,
                     last_modified: serverTimestamp(),
                 });
                 requestListRefresh();
@@ -75,7 +91,10 @@ export const UpdateListPosters = () => {
                     batch.update(listRef, {
                         top_poster_path: posters.top_poster_path,
                         second_poster_path: posters.second_poster_path,
-                        bottom_poster_path: posters.bottom_poster_path
+                        bottom_poster_path: posters.bottom_poster_path,
+                        top_item_name: posters.top_item_name,
+                        second_item_name: posters.second_item_name,
+                        bottom_item_name: posters.bottom_item_name,
                     });
                 });
     
