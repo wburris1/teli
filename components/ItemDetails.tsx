@@ -27,6 +27,8 @@ import { ItemPostList } from './ItemPostsList';
 import { WritePost } from './WritePost';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl780 = 'https://image.tmdb.org/t/p/w780';
+
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
 const overViewFontSize = screenWidth * 0.03255814; // fontsize 14
@@ -184,7 +186,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         <ScrollView showsVerticalScrollIndicator={false} style={{flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background}}>
             <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                 <View style={{position: 'absolute'}}>
-                    <Image source={item.backdrop_path ? { uri: imgUrl + item.backdrop_path } :
+                    <Image source={item.backdrop_path ? { uri: imgUrl780 + item.backdrop_path } :
                       require('../assets/images/download2.jpg')} style={styles.backdropImage} />
                     <LinearGradient
                         colors={['transparent', Colors[colorScheme ?? 'light'].background]}

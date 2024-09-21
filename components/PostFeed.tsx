@@ -21,6 +21,8 @@ import { getUserData } from "./Helpers/FetchFunctions";
 import { DefaultPost } from "./LogoView";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
+const imgUrl780 = 'https://image.tmdb.org/t/p/w780';
+
 const db = FIREBASE_DB;
 
 type PostFeedProps = {
@@ -228,7 +230,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
             <Ionicons name="arrow-back" size={35} color={Colors[colorScheme ?? 'light'].text}/>
         </TouchableOpacity>
         <View style={{position: 'absolute'}}>
-                    <Image source={item.backdrop_path ? { uri: imgUrl + item.backdrop_path } :
+                    <Image source={item.backdrop_path ? { uri: imgUrl780 + item.backdrop_path } :
                       require('../assets/images/linear_gradient.png')} style={styles.backdropImage} />
                     <LinearGradient
                         colors={[colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent', Colors[colorScheme ?? 'light'].background]}
