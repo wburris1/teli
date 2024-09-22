@@ -61,6 +61,9 @@ export const AddList = ({ watched }: { watched?: boolean }) => {
             top_poster_path: "",
             second_poster_path: "",
             bottom_poster_path: "",
+            top_item_name: "",
+            second_item_name: "",
+            bottom_item_name: "",
             last_modified: serverTimestamp(),
         }
         createListFunc(list, listTypeID, isRanked ? selectedItems : [], isRanked ? [] : selectedUnseen).then(complete => {
