@@ -6,12 +6,13 @@ import { useAuth } from './authContext';
 import { collection, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '@/firebaseConfig';
 import Values from '@/constants/Values';
+import { FetchFollowers, FetchFollowing, FetchItems, FetchMovieLists, FetchTVLists } from '@/components/Helpers/FetchFunctions';
 
 type DataContextType = {
-    movies: UserMovie[] | null;
-    setMovies: (items: UserMovie[]) => void;
-    shows: UserShow[] | null;
-    setShows: (items: UserShow[]) => void;
+    movies: UserItem[] | null;
+    setMovies: (items: UserItem[]) => void;
+    shows: UserItem[] | null;
+    setShows: (items: UserItem[]) => void;
     following: string[] | undefined;
     setFollowing: (users: string[] | undefined) => void;
     followers: string[];
@@ -28,6 +29,16 @@ type DataContextType = {
     requestReply: (id: string) => void;
     userPushToken: Notifications.ExpoPushToken | undefined;
     notification: Notifications.Notification | undefined;
+    currPostID: string,
+    setCurrPostID: (id: string) => void,
+    currNumComments: number,
+    setCurrNumComments: (num: number) => void,
+    currLikePostID: string,
+    setCurrLikePostID: (id: string) => void,
+    currNumLikes: number,
+    setCurrNumLikes: (num: number) => void,
+    currIsLiked: boolean,
+    setCurrIsLiked: (is: boolean) => void,
 };
 
 type Props = {
@@ -40,14 +51,19 @@ const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<Props> = ({ children }: Props) => {
-    const [movies, setMovies] = useState<UserMovie[] | null>(null);
-    const [shows, setShows] = useState<UserShow[] | null>(null);
+    const [movies, setMovies] = useState<UserItem[] | null>(null);
+    const [shows, setShows] = useState<UserItem[] | null>(null);
     const [followers, setFollowers] = useState<string[]>([]);
     const [following, setFollowing] = useState<string[] | undefined>();
     const [tvLists, setTVLists] = useState<List[]>([]);
     const [movieLists, setMovieLists] = useState<List[]>([]);
     const [refreshFlag, setRefreshFlag] = useState(false);
     const [refreshListFlag, setRefreshListFlag] = useState(false);
+    const [currPostID, setCurrPostID] = useState('');
+    const [currNumComments, setCurrNumComments] = useState(0);
+    const [currLikePostID, setCurrLikePostID] = useState('');
+    const [currNumLikes, setCurrNumLikes] = useState(0);
+    const [currIsLiked, setCurrIsLiked] = useState(false);
     const [replyID, setReplyFlag] = useState('');
     const { userPushToken, notification} = usePushNotifications();
     const { user, userData } = useAuth();
@@ -89,108 +105,67 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
     }, []);
 
     useEffect(() => {
-        if (user) {
-          const userListsRef = collection(db, "users", user.uid, Values.movieListsID);
-    
-          const unsubscribe = onSnapshot(userListsRef, (snapshot) => {
-            let userLists = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));
-            userLists = [...userLists.map(list => {
-              const items = movies ? movies.filter(movie => movie.lists.includes(list.list_id)) : [];
-              let newList = list;
-              newList.top_poster_path = items.length > 0 ? imgUrl + items[0].poster_path : '';
-              newList.second_poster_path= items.length > 1 ? imgUrl + items[1].poster_path : '';
-              newList.bottom_poster_path = items.length > 2 ? imgUrl + items[2].poster_path: '';
-              return newList;
-            })];
-            setMovieLists(userLists);
-          }, (error: any) => {
-            console.error("Error fetching movie lists: ", error);
-          });
-    
-          return () => unsubscribe();
-        }
-    }, [refreshFlag, refreshListFlag, user, movies]);
+      if (user) {
+        let updatedMovieLists: List[] = [];
+        movieLists.forEach(list => {
+          const items = movies ? movies.filter(movie => movie.lists.includes(list.list_id)) : [];
+          let newList = list;
+          newList.top_poster_path = items.length > 0 ? imgUrl + items[0].poster_path : '';
+          newList.second_poster_path= items.length > 1 ? imgUrl + items[1].poster_path : '';
+          newList.bottom_poster_path = items.length > 2 ? imgUrl + items[2].poster_path: '';
+          updatedMovieLists.push(newList);
+        })
+        setMovieLists(updatedMovieLists);
+      }
+    }, [movies, refreshListFlag]);
 
     useEffect(() => {
         if (user) {
-          const userListsRef = collection(db, "users", user.uid, Values.tvListsID);
-    
-          const unsubscribe = onSnapshot(userListsRef, (snapshot) => {
-            let userLists = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as List }));
-            userLists = [...userLists.map(list => {
-              const items = shows ? shows.filter(show => show.lists.includes(list.list_id)) : [];
-              let newList = list;
-              newList.top_poster_path = items.length > 0 ? imgUrl + items[0].poster_path : '';
-              newList.second_poster_path= items.length > 1 ? imgUrl + items[1].poster_path : '';
-              newList.bottom_poster_path = items.length > 2 ? imgUrl + items[2].poster_path: '';
-              return newList;
-            })];
-            setTVLists(userLists);
-          }, (error: any) => {
-            console.error("Error fetching tv lists: ", error);
-          });
-    
-          return () => unsubscribe();
+          let updatedTVLists: List[] = [];
+          tvLists.forEach(list => {
+            const items = shows ? shows.filter(show => show.lists.includes(list.list_id)) : [];
+            let newList = list;
+            newList.top_poster_path = items.length > 0 ? imgUrl + items[0].poster_path : '';
+            newList.second_poster_path= items.length > 1 ? imgUrl + items[1].poster_path : '';
+            newList.bottom_poster_path = items.length > 2 ? imgUrl + items[2].poster_path: '';
+            updatedTVLists.push(newList);
+          })
+          setTVLists(updatedTVLists);
         }
-    }, [refreshFlag, refreshListFlag, user, shows]);
-
-    useEffect(() => {
-        if (user) {
-          const userItemsRef = collection(db, "users", user.uid, "movies");
-          const itemQuery = query(userItemsRef, orderBy('score', 'desc'));
-    
-          const unsubscribe = onSnapshot(itemQuery, (snapshot) => {
-            const itemsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserMovie }));
-            setMovies(itemsData || []);
-          }, (error) => {
-            console.error("Error fetching users movies: ", error);
-          });
-    
-          return () => unsubscribe();
-        }
-    }, [refreshFlag, user]);
-
-    useEffect(() => {
-        if (user) {
-          const userItemsRef = collection(db, "users", user.uid, "shows");
-          const itemQuery = query(userItemsRef, orderBy('score', 'desc'));
-    
-          const unsubscribe = onSnapshot(itemQuery, (snapshot) => {
-            const itemsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserShow }));
-            setShows(itemsData || []);
-          }, (error) => {
-            console.error("Error fetching users shows: ", error);
-          });
-    
-          return () => unsubscribe();
-        }
-    }, [refreshFlag, user]);
+    }, [shows, refreshListFlag]);
 
     useEffect(() => {
       if (user) {
-        const followRef = collection(db, "users", user.uid, "followers");
-        
-        const unsubscribe = onSnapshot(followRef, (snapshot) => {
-          setFollowers(snapshot.docs.map(doc => doc.id));
-        }, (error) => {
-          console.error("Error fetching users followers: ", error);
+        FetchMovieLists(user.uid).then(list => {
+          setMovieLists(list);
         })
-
-        return () => unsubscribe();
+        FetchTVLists(user.uid).then(list => {
+          setTVLists(list);
+        })
       }
     }, [refreshFlag, user])
 
     useEffect(() => {
-      if (user) {
-        const followRef = collection(db, "users", user.uid, "following");
-        
-        const unsubscribe = onSnapshot(followRef, (snapshot) => {
-          setFollowing(snapshot.docs.map(doc => doc.id));
-        }, (error) => {
-          console.error("Error fetching users following: ", error);
-        })
+        if (user) {
+          FetchItems(true, user.uid).then(items => {
+            setMovies(items);
+          })
+          FetchItems(false, user.uid).then(items => {
+            setShows(items);
+          })
+        }
+    }, [refreshFlag, user]);
 
-        return () => unsubscribe();
+    useEffect(() => {
+      if (user) {
+        if (user) {
+          FetchFollowing(user.uid).then(ids => {
+            setFollowing(ids);
+          })
+          FetchFollowers(user.uid).then(ids => {
+            setFollowers(ids);
+          })
+        }
       }
     }, [refreshFlag, user])
 
@@ -199,7 +174,9 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
             value={{ movies, setMovies, shows, setShows, followers, setFollowers, following,
                 setFollowing, tvLists, setTVLists, movieLists, setMovieLists,
                 refreshFlag, requestRefresh, refreshListFlag, requestListRefresh,
-                replyID, requestReply, userPushToken, notification
+                replyID, requestReply, userPushToken, notification, currPostID, setCurrPostID,
+                currNumComments, setCurrNumComments, currLikePostID, setCurrLikePostID, currNumLikes, setCurrNumLikes,
+                currIsLiked, setCurrIsLiked
             }}
         >
             {children}

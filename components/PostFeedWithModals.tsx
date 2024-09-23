@@ -70,7 +70,7 @@ PostListWithModalsProps) => {
             data={posts}
             keyExtractor={(item) => item.post_id}
             renderItem={({ item, index }) => <PostFeed item={item} index={index} handleComments={handleComments}
-              handleLikes={handleLikes} redirectLink={redirectLink} incrementComment={incrementComment} />}
+              handleLikes={handleLikes} redirectLink={redirectLink} incrementComment={incrementComment} modalPostID={post.post_id} />}
             onEndReached={loadMorePosts}
             onEndReachedThreshold={0.75}
             ListFooterComponent={renderFooter}

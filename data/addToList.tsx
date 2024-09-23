@@ -20,6 +20,7 @@ export const useGetItemLists = (item_id: string, listTypeID: string, isWatched: 
 
     function checkLists() {
         // get all valid lists (exclude seen, bookmarked)
+
         let listsIn: List[] = [];
         let listsOut: List[] = [];
         if (!movies || !shows || !user) return;        ;
@@ -59,6 +60,7 @@ export const addAndRemoveItemFromLists = () => {
     const { user } = useAuth();
     const updateListFunc = UpdateListPosters();
     const {setSelectedLists, setRemoveLists} = useTab();
+    const {movies, shows, setMovies, setShows} = useData();
 
     async function addAndRemove(item_id: string, item_name: string, newItem: Item | null, addLists: List[], removeLists: List[], listTypeID: string) {
         // Add item to addLists, remove item from removeLists:
@@ -90,6 +92,8 @@ export const addAndRemoveItemFromLists = () => {
 
                     const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);
                     await setDoc(itemRef, itemData);
+                    const newItems = [itemData, ...(isMovie ? (movies || []) : (shows || []))].sort((a, b) => b.score - a.score)
+                    isMovie ? setMovies(newItems) : setShows(newItems);
                 } else {
                   const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);
                   if (addLists.length > 0 || removeLists.length > 0) {
@@ -111,6 +115,11 @@ export const addAndRemoveItemFromLists = () => {
                       if (existingLists.sort().join(',') !== newLists.sort().join(',')) {
                           try {
                               await updateDoc(itemRef, { lists: newLists });
+                              let updatedItems = (isMovie ? movies : shows) || [];
+                              updatedItems.forEach((item, index) => {
+                                if (item.item_id == item_id) updatedItems[index].lists = newLists;
+                              })
+                              isMovie ? setMovies(updatedItems) : setShows(updatedItems);
                               console.log('Document successfully updated.');
                           } catch (error) {
                               console.error('Error updating document: ', error);

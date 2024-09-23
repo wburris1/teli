@@ -26,7 +26,8 @@ type ScreenProps = {
     onClose: () => void;
     onSelectedListsChange: (items: List[], removedItems: List[]) => void;
     isWatched: boolean,
-    items ?: UserItem[]
+    items ?: UserItem[],
+    filtered?: UserItem[],
 }
 
 type RowProps = {
@@ -37,7 +38,7 @@ type RowProps = {
   isSelected: boolean;
 };
 
-export default function AddToListsScreen({item_id, item_name, newItem, listTypeID, isRanking, onClose, onSelectedListsChange, isWatched, items}: ScreenProps) {
+export default function AddToListsScreen({item_id, item_name, newItem, listTypeID, isRanking, onClose, onSelectedListsChange, isWatched, items, filtered = []}: ScreenProps) {
     const { inLists, outLists } = useGetItemLists(item_id, listTypeID, isWatched);
     const { activeTab, selectedLists, setSelectedLists, removeLists, setRemoveLists, item, setAddModalVisible } = useTab();
     const [initialSelectedLists, setInitialSelectedLists] = useState<List[]>(selectedLists);
@@ -129,7 +130,7 @@ export default function AddToListsScreen({item_id, item_name, newItem, listTypeI
                         // Single item processing
                         addToListsFunc(item_id, item_name, newItem, selectedLists, removeLists,
                           activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
-                            requestRefresh();
+                            //requestRefresh();
                             setLoading(false);
                             handleYes();
                             onClose();
@@ -142,7 +143,7 @@ export default function AddToListsScreen({item_id, item_name, newItem, listTypeI
                         });
                   
                         Promise.all(promises).then(() => {
-                          requestRefresh();
+                          //requestRefresh();
                           setLoading(false);
                           handleYes();
                           onClose();

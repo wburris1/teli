@@ -44,6 +44,7 @@ setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = n
   const { requestReply } = useData();
   const [loading, setLoading] = useState(true);
   const [reply, setReply] = useState<any>(null);
+  const { setCurrNumComments, setCurrPostID } = useData();
 
   const animateComment = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -169,7 +170,9 @@ setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = n
         updateNumReplies(parentID, 1);
       }
 
-      requestRefresh();
+      updateComments();
+
+      //requestRefresh();
       if (replyCommentID != "") {
         requestReply(resp.id);
       }
@@ -180,6 +183,15 @@ setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = n
       setReply(null);
     }
   }
+
+  const updateComments = useCallback(() => {
+    let totalComments = 0;
+    displayComments.forEach(cmt => {
+      totalComments += cmt.num_replies + 1;
+    })
+    setCurrPostID(post.post_id);
+    setCurrNumComments(totalComments + 1);
+  }, [displayComments, post])
 
   const gestureHandler = (event: PanGestureHandlerGestureEvent) => {
     setDragging(true);

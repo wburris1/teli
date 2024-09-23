@@ -51,7 +51,7 @@ export default function ReorderScreen() {
         <Pressable onPress={() => {
             if (loading) return;
             reorderFunc(listItems, Values.seenListID, listTypeID).then(() => {
-                requestRefresh();
+                //requestRefresh();
                 router.back();
             })
         }}>

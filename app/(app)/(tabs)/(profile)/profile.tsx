@@ -70,7 +70,8 @@ const ProfilePage = () => {
     if (movies) {
       const watchedMovies = movies.filter(movie => movie.lists.includes(Values.seenListID));
       const totalRuntime = movies.reduce((acc, movie) => {
-        const runtime = movie.runtime;
+        const movieItem = movie as UserMovie;
+        const runtime = movieItem.runtime;
         return acc + (typeof runtime === 'number' ? runtime : 0);
       }, 0);
       setTotalMovieRuntime(totalRuntime);

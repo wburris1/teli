@@ -8,6 +8,7 @@ import { removeFromList } from "./deleteItem";
 import { useTab } from "@/contexts/listContext";
 import { Post, UserItem, UserMovie, UserShow } from "@/constants/ImportTypes";
 import { useLoading } from "@/contexts/loading";
+import { useData } from "@/contexts/dataContext";
 
 const db = FIREBASE_DB;
 
@@ -15,9 +16,9 @@ export const AddToDatabase = () => {
     const { user } = useAuth();
     const updateListFunc = UpdateListPosters();
     const adjustScoreFunc = useUserAdjustScores();
-    const removeFunc = removeFromList();
     const {selectedLists, removeLists} = useTab();
     const { setLoading } = useLoading();
+    const {movies, shows, setMovies, setShows} = useData();
 
     async function addToDB(newScore: number, item: Item, listID: string, isMovie: boolean, isDupe: boolean, items: UserItem[], caption: string, hasSpoilers: boolean, dupePostID: string) {
       setLoading(true);
@@ -144,9 +145,10 @@ export const addToBookmarked = () => {
   const { user } = useAuth();
   const updatePosters = updateSomeListPosters();
   const listID = Values.bookmarkListID;
+  const {movies, shows, setMovies, setShows} = useData();
 
   const bookmark = async (item: Item, isMovie: boolean) => {
-    var newItem: UserItem;
+    let newItem: UserItem;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
 
     if (isMovie) {
@@ -195,6 +197,19 @@ export const addToBookmarked = () => {
       const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item.id.toString());
       try {
         await setDoc(itemRef, newItem);
+        if (isMovie && movies && movies.find(movie => movie.item_id == item.item_id && movie.score != -1) || 
+        (!isMovie && shows && shows.find(show => show.item_id == item.item_id && show.score != -1))) {
+          // Exists not as a post
+          let updatedItems = (isMovie ? movies : shows) || [];
+          updatedItems.forEach((updated, index) => {
+            if (item.item_id == updated.item_id && updated.score != -1) {
+              updatedItems[index] = newItem;
+            }
+          })
+          isMovie ? setMovies(updatedItems) : setShows(updatedItems);
+        } else {
+          isMovie ? setMovies([...(movies || []), newItem]) : setShows([...(shows || []), newItem]);
+        }
         updatePosters(listID, listTypeID);
       } catch (err: any) {
         console.error("Error bookmarking item: ", err);

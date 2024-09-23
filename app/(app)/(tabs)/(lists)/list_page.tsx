@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Modal, Pressable, ActivityIndicator, TouchableWithoutFeedback } from 'react-native';
+import { SafeAreaView, StyleSheet, TouchableOpacity, FlatList, useColorScheme, Image, View, Alert, Modal, Pressable, ActivityIndicator, TouchableWithoutFeedback, Platform, UIManager, LayoutAnimation } from 'react-native';
 import { Text } from '@/components/Themed';
 import React, { ContextType, forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
@@ -29,6 +29,7 @@ type RowProps = {
     selectionMode: boolean;
     selectedItems: UserItem[];
     setselectedItems: (lists: UserItem[]) => void;
+    setFiltered: (item_id: string) => void,
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
@@ -36,7 +37,8 @@ const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
 const itemWidth = (screenWidth - 12) / 3;
 
-const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex, selectionMode, selectedItems, setselectedItems}, ref) => {
+const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex,
+  selectionMode, selectedItems, setselectedItems, setFiltered}, ref) => {
     const { setItem } = useTab();
     const score = item.score.toFixed(1);
     const isMovie = 'title' in item;
@@ -76,6 +78,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
               } else {
                 console.log("Remove Pressed, removing item with ID:", item_id);
                 removeItem(listID, listTypeID, item.item_id);
+                setFiltered(item_id);
               }
             }
           }
@@ -216,9 +219,9 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
     );
 });
 
-const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, selectedItems, setselectedItems }:
+const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, selectedItems, setselectedItems, setFiltered }:
   {listID: string, listTypeID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[], selectionMode: boolean,
-  selectedItems: UserItem[], setselectedItems: (lists: UserItem[]) => void }) => {
+  selectedItems: UserItem[], setselectedItems: (lists: UserItem[]) => void, setFiltered: (item_id: string) => void }) => {
     const colorScheme = useColorScheme();
     const [popUpIndex, setPopUpIndex] = useState(-1);
     const topPadding = useSharedValue(0);
@@ -250,7 +253,7 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
                 data={items}
                 renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} 
                 selectionMode={selectionMode} selectedItems={selectedItems} setselectedItems={setselectedItems}
-                  popUpIndex={popUpIndex} setPopUpIndex={setPopUpIndex} />}
+                  popUpIndex={popUpIndex} setPopUpIndex={setPopUpIndex} setFiltered={setFiltered}/>}
                 keyExtractor={item => item.item_id}
                 numColumns={3}
                 removeClippedSubviews={true}
@@ -355,6 +358,7 @@ const handleClose = () => {
         onSelectedListsChange={() => {}}
         newItem={null}
         items={selectedItems}
+        filtered={filteredItems}
       />
     </Modal>
   ), [listsModalVisible, selectedItems, setselectedItems]);
@@ -387,9 +391,15 @@ const handleClose = () => {
                   await deleteItem(newList.filter(filterItem => filterItem.item_id !== item.item_id), item.post_id, item.item_id, item.score, Values.seenListID, listTypeID as string);
                 }));
               } else {
+                let remainingItems = items;
+                let remainingFiltered = filteredItems;
                 await Promise.all(selectedItems.map(async (item) => {
                   await removeItem(listID as string, listTypeID as string, item.item_id);
-                })); 
+                  remainingItems = remainingItems.filter(remaining => remaining.item_id != item.item_id);
+                  remainingFiltered = remainingFiltered.filter(remaining => remaining.item_id != item.item_id);
+                }));
+                setFilteredItems(remainingFiltered);
+                setItems(remainingItems);
               }
               setselectedItems([]); 
               setSelectionMode(false);
@@ -469,10 +479,13 @@ const handleClose = () => {
 
   var ItemList = useCallback(() => (
     <MakeList listID={listID as string} listTypeID={listTypeID as string} onItemsUpdate={onItemsUpdate} items={filteredItems} 
-      selectionMode={selectionMode} selectedItems={selectedItems} setselectedItems={setselectedItems} />
-  ), [currDescription, filteredItems, selectionMode, selectedItems]);
+      selectionMode={selectionMode} selectedItems={selectedItems} setselectedItems={setselectedItems} setFiltered={(removedItemID: string) => {
+        setFilteredItems(prev => prev.filter(item => item.item_id != removedItemID));
+        setItems(prev => prev.filter(item => item.item_id != removedItemID));
+      }} />
+  ), [currDescription, filteredItems, selectionMode, selectedItems, items]);
 
-  const slideAnim = useSharedValue(200); 
+  const slideAnim = useSharedValue(200);
 
   useEffect(() => {
     if (selectedItems.length > 0) {

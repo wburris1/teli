@@ -105,7 +105,7 @@ export type List = {
     bottom_item_name: string,
     second_item_name: string,
     top_item_name: string,
-    last_modified: Timestamp | FieldValue,
+    last_modified: Timestamp | FieldValue | Date,
 }
 export type CastMember = {
   name: string,

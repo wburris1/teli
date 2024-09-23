@@ -85,7 +85,7 @@ export default function AddToListsScreen() {
               setLoading(true);
               addToListsFunc(item_id as string, item_name as string, null, selectedLists, removeLists,
                 activeTab == 0 ? Values.movieListsID : Values.tvListsID).then(() => {
-                    requestRefresh();
+                    //requestRefresh();
                     setLoading(false);
                     resetAddLists();
                     router.back();

@@ -19,6 +19,7 @@ import Dimensions from "@/constants/Dimensions";
 import { LinearGradient } from "expo-linear-gradient";
 import { getUserData } from "./Helpers/FetchFunctions";
 import { DefaultPost } from "./LogoView";
+import useModalState from "./ModalState";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const imgUrl780 = 'https://image.tmdb.org/t/p/w780';
@@ -32,10 +33,11 @@ type PostFeedProps = {
   handleLikes: (show: boolean, post: FeedPost) => void;
   redirectLink?: string; // Optional parameter with default value
   incrementComment: boolean,
+  modalPostID: string,
   isPostPage?: boolean,
 };
 
-export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home', incrementComment, isPostPage = false,}: PostFeedProps) => {
+export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink = '/home', incrementComment, isPostPage = false, modalPostID}: PostFeedProps) => {  
     const colorScheme = useColorScheme();
     const screenwidth = Dimensions.screenWidth;
     const { user, userData } = useAuth();
@@ -46,18 +48,24 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
     const id = item.user_id + "/" + (item.score >= 0 ? item.item_id : item.post_id);
     const feedFontSize = screenwidth > 400 ? 18 : 14.5
     const [hideSpoilers, setHideSpoilers] = useState(user && item.has_spoilers && item.user_id != user.uid && item.caption);
-    const isInitialRender = useRef(true);
     const [expanded, setExpanded] = useState(false);
     const [numComments, setNumComments] = useState<number>(item.num_comments);
     const isMovie = item.score == -1 ? item.isMovie : 'title' in item;
     const router = useRouter();
+    const { currNumComments, currPostID, currLikePostID, currNumLikes, currIsLiked } = useData();
 
     useEffect(() => {
-      if (isInitialRender.current) {
-        // If this is the initial render, skip the effect
-        isInitialRender.current = false;
-      } else { setNumComments((prevNumComments) => prevNumComments + 1) }
-    }, [incrementComment]) 
+      if (currPostID == item.post_id) {
+        setNumComments(currNumComments);
+      }
+    }, [currNumComments, currPostID])
+
+    useEffect(() => {
+      if (currLikePostID == item.post_id) {
+        setNumLikes(currNumLikes);
+        setIsLiked(currIsLiked);
+      }
+    }, [currNumLikes, currLikePostID, currIsLiked])
 
     const handleHeart = async () => {
       if (!user) return;

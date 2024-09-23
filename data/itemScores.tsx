@@ -5,11 +5,13 @@ import { collection, doc, getDocs, writeBatch } from "firebase/firestore";
 import { UpdateListPosters } from "./posterUpdates";
 import { List, UserItem } from "@/constants/ImportTypes";
 import { useLoading } from "@/contexts/loading";
+import { useData } from "@/contexts/dataContext";
 
 const db = FIREBASE_DB;
 
 export const useUserAdjustScores = () => {
     const { user, userData } = useAuth();
+    const {movies, shows, setMovies, setShows} = useData();
 
     async function adjustScores(items: UserItem[], minScore: number, maxScore: number, range: number, listID: string, listTypeID: string) {
         // Distribute scores evenly between minScore and maxScore
@@ -28,6 +30,7 @@ export const useUserAdjustScores = () => {
             filteredItems = items.filter(item => item.score > minScore && item.score <= maxScore)
         }
         filteredItems.sort((a: UserItem, b: UserItem) => a.score - b.score);
+        let updatedItems = filteredItems;
         const scores = new Set();
         filteredItems.forEach(item => scores.add(item.score));
 
@@ -51,10 +54,16 @@ export const useUserAdjustScores = () => {
             const globalPostRef = doc(db, 'globalPosts', filteredItems[i].post_id)
             batch.update(itemRef, { score: newScore });
             batch.update(globalPostRef, { score: newScore });
+            updatedItems[i].score = newScore;
         }
 
         try {
+            const allItems = (listTypeID == Values.movieListsID ? movies : shows) || [];
+            const otherItems = allItems.filter(item => item.score < 0);
+            listTypeID == Values.movieListsID ? setMovies([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score)) : 
+                setShows([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score));
             await batch.commit();
+
             console.log('Score update successful');
         } catch (error) {
             console.error('Score update failed: ', error);
@@ -86,12 +95,14 @@ export const AdjustReorderedScores = () => {
     const { user, userData } = useAuth();
     const updateListFunc = UpdateListPosters();
     const { setLoading } = useLoading();
+    const {movies, shows, setMovies, setShows} = useData();
 
     async function reorderScores(items: UserItem[], listID: string, listTypeID: string) {
         // Count number of good/mid/bad items:
         if (!user || !userData) {
             return;
         }
+        let updatedItems = items;
         setLoading(true);
         var numGood = 0;
         var numMid = 0;
@@ -158,12 +169,17 @@ export const AdjustReorderedScores = () => {
             const globalPostRef = doc(db, 'globalPosts', items[i].post_id)
             batch.update(itemRef, { score: newScore });
             batch.update(globalPostRef, { score: newScore});
+            updatedItems[i].score = newScore;
         }
 
         try {
             await batch.commit();
             setLoading(false);
             updateListFunc(listTypeID);
+            const allItems = (listTypeID == Values.movieListsID ? movies : shows) || [];
+            const otherItems = allItems.filter(item => item.score < 0);
+            listTypeID == Values.movieListsID ? setMovies([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score)) : 
+                setShows([...updatedItems, ...otherItems]);
             console.log('Score update successful');
         } catch (error) {
             setLoading(false);

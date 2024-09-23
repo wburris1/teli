@@ -22,8 +22,8 @@ export default function TabOneScreen() {
 
   var moviesTabContent = useCallback(() => {
     movieLists.sort((a, b) => {
-      const dateA = (a.last_modified as Timestamp | undefined)?.toDate();
-      const dateB = (b.last_modified as Timestamp | undefined)?.toDate();
+      const dateA = (a.last_modified instanceof Date) ? a.last_modified as Date : (a.last_modified as Timestamp | undefined)?.toDate();
+      const dateB = (b.last_modified instanceof Date) ? b.last_modified as Date : (b.last_modified as Timestamp | undefined)?.toDate();
       // Handle cases where dateA or dateB might be undefined
       if (!dateA) return 1; // If dateA is undefined, consider it "less than" dateB
       if (!dateB) return -1; // If dateB is undefined, consider it "greater than" dateA
@@ -35,8 +35,8 @@ export default function TabOneScreen() {
 
   var showsTabContent = useCallback(() => {
     tvLists.sort((a, b) => {
-      const dateA = (a.last_modified as Timestamp | undefined)?.toDate();
-      const dateB = (b.last_modified as Timestamp | undefined)?.toDate();
+      const dateA = (a.last_modified instanceof Date) ? a.last_modified as Date : (a.last_modified as Timestamp | undefined)?.toDate();
+      const dateB = (b.last_modified instanceof Date) ? b.last_modified as Date : (b.last_modified as Timestamp | undefined)?.toDate();
       // Handle cases where dateA or dateB might be undefined
       if (!dateA) return 1; // If dateA is undefined, consider it "less than" dateB
       if (!dateB) return -1; // If dateB is undefined, consider it "greater than" dateA

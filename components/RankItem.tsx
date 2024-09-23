@@ -128,7 +128,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
       addToDB(newScore, item, listID, isMovie, isDupe, items || [], comment, hasSpoilers, dupePostID).then(() => {
         setDupe(true);
         onClose();
-        requestRefresh();
+        //requestRefresh();
         console.log("Item added!");
         setSelectedLists([]);
         Toast.show({
@@ -153,7 +153,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
       addToDB(minScore, item, listID, isMovie, isDupe, items, comment, hasSpoilers, dupePostID).then(() => {
         setDupe(true);
         onClose();
-        requestRefresh();
+        //requestRefresh();
         setSwipingAway(false);
         console.log("Item added! No score adjust necessary");
         setSelectedLists([]);
@@ -189,7 +189,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
           if (addItem) {
             setDupe(true);
             onClose();
-            requestRefresh();
+            //requestRefresh();
             setSwipingAway(false);
             console.log("Item added!");
             setSelectedLists([]);

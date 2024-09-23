@@ -71,7 +71,7 @@ export const WritePost = ({id, poster, backdrop, runtime, name, isHome, groupKey
                   setLoading(true);
                   postFunc(caption, id, poster, name, hasSpoilers,
                     groupKey == "movies" ? Values.movieListsID : Values.tvListsID, groupKey == "movies", backdrop, runtime,).then(() => {
-                    requestRefresh();
+                    //requestRefresh();
                     setLoading(false);
                     setCaption('');
                     if (isHome) router.push('/');

@@ -38,12 +38,13 @@ export const PostScreen = ({post, redirectLink}: { post: any, redirectLink: stri
     const [reply, setReply] = useState<any>(null);
     const [displayComments, setDisplayComments] = useState<any[]>([]);
     const { user, userData } = useAuth();
-    const { requestRefresh, requestReply } = useData();
+    const { requestReply, setCurrPostID, setCurrNumComments, setCurrLikePostID, setCurrNumLikes, setCurrIsLiked } = useData();
     const [topLikers, setTopLikers] = useState<UserData[]>([]);
     const [isLiked, setIsLiked] = useState(post.likes.includes(user?.uid || ""));
     const [numLikes, setNumLikes] = useState(post.likes.length);
     const [focus, setFocus] = useState(0);
     const [numComments, setNumComments] = useState(post.num_comments);
+    const [likers, setLikers] = useState(post.likes);
 
     useEffect(() => {
         if (displayComments) {
@@ -56,14 +57,9 @@ export const PostScreen = ({post, redirectLink}: { post: any, redirectLink: stri
     }, [displayComments])
 
     const getTopLikers = async () => {
-        if (post.likes.length == 0) return;
-        let likers: string[];
-        let currLikers = !isLiked ? post.likes.filter((id: string) => id != user?.uid) : post.likes
-        if (isLiked && !post.likes.find((id: string) => id == user?.uid)) {
-            currLikers = [currLikers, user?.uid];
-        }
-        likers = currLikers.length > 1 ? [currLikers[0], currLikers[1]] : (currLikers.length == 0 ? [] : [currLikers[0]]);
-        const getLikers = await Promise.all(likers.map(async (userID: string) => {
+        //let likers: string[];
+        const someLikers = likers.length > 1 ? [likers[0], likers[1]] : (likers.length == 0 ? [] : [likers[0]]);
+        const getLikers = await Promise.all(someLikers.map(async (userID: string) => {
           const userData = await getUserData(userID);
           return userData;
         })); 
@@ -72,7 +68,7 @@ export const PostScreen = ({post, redirectLink}: { post: any, redirectLink: stri
   
     useEffect(() => {
         getTopLikers();
-    }, [isLiked])
+    }, [likers])
 
     const handleIncrementComment = () => {
         setIncrementComment((prev) => !prev);
@@ -152,8 +148,10 @@ export const PostScreen = ({post, redirectLink}: { post: any, redirectLink: stri
             setReply(updatedReplyData);
             updateNumReplies(parentID, 1);
           }
+
+          updateComments();
     
-          requestRefresh();
+          //requestRefresh();
           if (replyCommentID != "") {
             requestReply(resp.id);
           }
@@ -165,6 +163,15 @@ export const PostScreen = ({post, redirectLink}: { post: any, redirectLink: stri
         }
     }
 
+    const updateComments = useCallback(() => {
+      let totalComments = 0;
+      displayComments.forEach(cmt => {
+        totalComments += cmt.num_replies + 1;
+      })
+      setCurrPostID(post.post_id);
+      setCurrNumComments(totalComments + 1);
+    }, [displayComments, post])
+
     // Should abstract this with params
     const handleHeart = async () => {
         if (!user) return;
@@ -174,13 +181,22 @@ export const PostScreen = ({post, redirectLink}: { post: any, redirectLink: stri
         : doc(db, "globalPosts", post.post_id);
         
         setIsLiked(!isLiked);
+        
         try {
           if (isLiked) {
+            setCurrLikePostID(post.post_id);
+            setCurrIsLiked(false);
+            setCurrNumLikes(numLikes - 1);
+            setLikers(likers.filter((id: string) => id != user.uid));
             setNumLikes(numLikes - 1);
             await updateDoc(postRef, {
               likes: arrayRemove(user.uid)
             }); 
           } else {
+            setCurrLikePostID(post.post_id);
+            setCurrIsLiked(true);
+            setCurrNumLikes(numLikes + 1);
+            setLikers([...likers, user.uid]);
             if (userData) {
               const sendNotification = await checkShouldSendNotification(NotificationType.LikedPostNotification, post.user_id, userData);
               if (sendNotification) {
@@ -200,8 +216,8 @@ export const PostScreen = ({post, redirectLink}: { post: any, redirectLink: stri
 
     const postPageLikes = useCallback(() => {
           return (
-            <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-            <View style={{flexDirection: 'row', paddingHorizontal: 10, paddingBottom: 5}}>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between', width: Dimensions.screenWidth}}>
+            <View style={{flexDirection: 'row', paddingHorizontal: 10, paddingBottom: 5, flex: 1}}>
               <TouchableOpacity style={{alignItems: 'center', paddingTop: 5,}} onPress={handleHeart}>
                 <Ionicons
                   name={isLiked ? "heart" :"heart-outline"} size={25}
@@ -211,8 +227,8 @@ export const PostScreen = ({post, redirectLink}: { post: any, redirectLink: stri
               </TouchableOpacity>
               <TouchableOpacity style={{alignItems: 'center', paddingTop: 5, paddingRight: 7, flexDirection: 'row'}} onPress={() => handleLikes(true)}>
                 <Text style={{fontSize: 14}}>Liked by {topLikers.length == 0 ? "nobody" : (topLikers.length == 1 ? topLikers[0].first_name : (
-                  topLikers.length == 2 ? topLikers[0].first_name + ", " + topLikers[1].first_name : topLikers[0].first_name + 
-                  ", " + topLikers[1].first_name + ", and " + (numLikes - topLikers.length) + " others"
+                  likers.length == 2 ? topLikers[0].first_name + ", " + topLikers[1].first_name : topLikers[0].first_name + 
+                  ", " + topLikers[1].first_name + ", and " + (likers.length - topLikers.length) + (likers.length - topLikers.length == 1 ? " other" : " others")
                 ))}</Text>
               </TouchableOpacity>
             </View>
@@ -232,7 +248,7 @@ export const PostScreen = ({post, redirectLink}: { post: any, redirectLink: stri
         <GestureHandlerRootView>
         <ScrollView style={{height: Dimensions.screenHeight}} showsVerticalScrollIndicator={false}>
             <PostFeed item={post} index={0} handleComments={() => {}} handleLikes={handleLikes} incrementComment={incrementComment}
-                redirectLink={redirectLink} isPostPage={true} />
+                redirectLink={redirectLink} isPostPage={true} modalPostID={post.post_id} />
             {postPageLikes()}
             <LikesModal post={post} onClose={() => handleLikes(false)} visible={showLikes} redirectLink={redirectLink} />
             <CommentsModal post={post} onClose={() => {}} visible={true} handleIncrementComment={handleIncrementComment} redirectLink={redirectLink} isPostPage={true}

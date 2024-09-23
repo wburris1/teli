@@ -50,7 +50,7 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
     const [replies, setReplies] = useState<any[]>([]);
     const [lastReply, setLastReply] = useState<any>(null);
     const [loadingReplies, setLoadingReplies] = useState(false);
-    const { replyID, requestRefresh } = useData();
+    const { replyID, requestRefresh, setCurrNumComments, setCurrPostID } = useData();
     const [repliesOpen, setRepliesOpen] = useState(false);
     const formattedDate = isDate(comment.created_at) ? getDate(comment.created_at) : 
         formatDate(comment.created_at as Timestamp);
@@ -234,7 +234,13 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
                 } else {
                     await updateDoc(postRef, { num_comments: increment(-1) });
                 }
-                requestRefresh();
+                let totalComments = 0;
+                comments.forEach(cmt => {
+                    totalComments += cmt.num_replies + 1;
+                })
+                setCurrPostID(post.post_id);
+                setCurrNumComments(totalComments > 0 ? totalComments - comment.num_replies - 1 : 0);
+                //requestRefresh();
             } catch (err: any) {
                 console.error("Error deleting comment: ", err);
             }

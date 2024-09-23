@@ -1,12 +1,17 @@
-import { FeedPost, List, Post } from "@/constants/ImportTypes";
+import { FeedPost, List, Post, UserItem } from "@/constants/ImportTypes";
 import Values from "@/constants/Values";
-import { fetchUserData } from "@/data/getComments";
 import { FIREBASE_DB } from "@/firebaseConfig"
 import { collection, doc, getDoc, getDocs, orderBy, query, where } from "firebase/firestore";
 const db = FIREBASE_DB;
 
 const userCache = new Map<string, UserData>(); // Cache to locally store many ppl's userData
-
+export async function FetchItems (isMovies: boolean, userID: string): Promise<UserItem[]> {
+  if (!userID) return [];
+  const userItemsRef = collection(db, "users", userID, isMovies ? "movies" : "shows");
+  const itemQuery = query(userItemsRef, orderBy('score', 'desc'));
+  const snapshot = await getDocs(itemQuery);
+  return snapshot.docs.map((doc) => doc.data() as UserItem);
+}
 // returns all users that are following
 export async function FetchFollowing (userID: string): Promise<string[]> {
   // cache our users following list. 
@@ -72,6 +77,15 @@ export async function FetchFollowedUsersRankings (ItemID: string, userID: string
 
   return feedPosts as FeedPost[];
 };
+
+const fetchUserData = async (userID: string) => {
+  const userDoc = await getDoc(doc(db, "users", userID));
+  if (userDoc.exists()) {
+    return userDoc.data() as UserData;
+  } else {
+    throw new Error(`User with ID ${userID} does not exist`);
+  }
+}
 
 export const getUserData = async (userId: string): Promise<UserData> => {
   if (userCache.has(userId)) {

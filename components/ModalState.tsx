@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { FeedPost } from '@/constants/ImportTypes';
 import { serverTimestamp } from 'firebase/firestore';
+import { useData } from '@/contexts/dataContext';
 
 const useModalState = () => {
   const [showComments, setShowComments] = useState(false);

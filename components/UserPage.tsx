@@ -49,11 +49,11 @@ const emptyUser = {
 const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string}) => {
   const { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment } = useModalState();
   const { user } = useAuth();
-  const { following } = useData();
+  const { following, setFollowing } = useData();
   const [isFollowing, setIsFollowing] = useState(false);
   const [profileData, setProfileData] = useState<UserData>(emptyUser);
   const [followers, setFollowers] = useState<string[]>([]);
-  const [followingUsers, setFollowing] = useState<string[]>([])
+  const [followingUsers, setFollowingUsers] = useState<string[]>([])
   const [refreshing, setRefreshing] = useState(false);
 
   const { posts, loadMorePosts, isLoadingMore } = makeFeed(userID, refreshing, setRefreshing);
@@ -94,7 +94,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
         // Trigger full reload when userID changes
         setProfileData(emptyUser);
         setFollowers([]);
-        setFollowing([]);
+        setFollowingUsers([]);
         setMovieLists([]);
         setTVLists([]);
         setLoading(true);
@@ -154,7 +154,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
           const reorderedMovieLists = reorderData(movieListsData, Values.seenListID, Values.bookmarkListID);
           setProfileData(userData);
           setFollowers(followersData);
-          setFollowing(followingData);
+          setFollowingUsers(followingData);
           setMovieLists(reorderedMovieLists);
           setTVLists(reorderedTVLists);
 
@@ -184,13 +184,15 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   })
 
   const handleFollow = () => {
-    setLoading(true);
+    //setLoading(true);
+    if (!user) return;
     if (isFollowing) {
         setIsFollowing(false);
+        const newFollowers = followers.filter(id => id !== (user.uid || ''));
+        setFollowers(newFollowers);
         unfollowFunc(userID).then(() => {
-          const newFollowers = followers.filter(id => id !== (user?.uid || ''));
-          setFollowers(newFollowers);
-          requestRefresh();
+          //requestRefresh();
+          setFollowing((following || []).filter(id => id !== (userID || '')));
           setLoading(false);
           Toast.show({
             type: 'info',
@@ -203,10 +205,11 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
         })
       } else {
         setIsFollowing(true);
+        const newFollowers = [...followers, user?.uid || ''];
+        setFollowers(newFollowers);
         followFunc(userID).then(() => {
-          const newFollowers = [...followers, user?.uid || ''];
-          setFollowers(newFollowers);
-            requestRefresh();
+            //requestRefresh();
+            setFollowing([...(following || []), userID]);
             setLoading(false);
             Toast.show({
               type: 'info',

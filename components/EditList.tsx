@@ -46,12 +46,12 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
   const { tvLists, movieLists } = useData();
 
   // Moved validation logic outside the render method
-  const isDuplicateListName = (listName: string, currLists: List[]): boolean => {
-    return currLists.some(item => item.name === listName);
+  const isDuplicateListName = (listName: string, currLists: List[], listID: string): boolean => {
+    return currLists.some(item => item.name == listName && listID != item.list_id);
   };
   const isValidListName = (name: string, listTypeID: string): boolean => {
     const currLists = listTypeID === Values.movieListsID ? movieLists : tvLists;
-    if (isDuplicateListName(name, currLists)) {
+    if (isDuplicateListName(name, currLists, listID)) {
       Alert.alert("List name already exists, please choose a different one");
       return false;
     }

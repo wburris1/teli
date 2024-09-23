@@ -9,7 +9,8 @@ import { Alert } from "react-native";
 const db = FIREBASE_DB;
 
 export const CreateListDB = () => {
-    const { tvLists, movieLists, requestListRefresh, requestRefresh, movies, shows } = useData();
+    const { tvLists, movieLists, requestListRefresh, requestRefresh, movies, shows, setMovies, setShows,
+    setMovieLists, setTVLists } = useData();
     const { user } = useAuth();
 
     const isDuplicateListName = (listName: string, currLists: List[]): boolean => {
@@ -63,25 +64,34 @@ export const CreateListDB = () => {
             const listRef = await addDoc(listsRef, list);
             listID = listRef.id;
             await updateDoc(listRef, { list_id: listRef.id, last_modified: serverTimestamp() });
+            let newList = list;
+            newList.list_id = listID;
+            newList.last_modified = new Date();
+            listTypeID == Values.movieListsID ? setMovieLists([...movieLists, newList]) : setTVLists([...tvLists, newList]);
             listAdded = true;
         } catch (err: any) {
             console.error("Error creating new list: ", err);
         }
         if (listAdded && !itemsAdded) {
+            const isMovie = listTypeID == Values.movieListsID;
             // Add selectedItems to new list and update poster paths?
             try {
                 if (selectedUnseenItems.length > 0 && movies && shows) {
-                    const isMovie = listTypeID == Values.movieListsID;
                     const itemsCollectionRef = collection(db, "users", user.uid, isMovie ? "movies" : "shows");
 
                     const newItems = selectedUnseenItems.filter(item => isMovie ? !movies.find(movie => movie.item_id == item.id) : !shows.find(show => show.item_id == item.id));
                     const existingItems = selectedUnseenItems.filter(item => !newItems.includes(item));
 
+                    let updatedAdd: UserItem[] = [];
+                    let count = 0;
                     const addPromises = existingItems.map(async (item) => {
                         const id = item.id.toString();
                         const newItem = listTypeID == Values.movieListsID ? movies.find(movie => movie.item_id == id) :
                             shows.find(show => show.item_id == id);
                         if (newItem && !newItem.lists.includes(listID)) {
+                            updatedAdd.push(newItem);
+                            updatedAdd[count].lists = [listID, ...newItem.lists];
+                            count++;
                             const itemRef = doc(itemsCollectionRef, newItem.item_id);
                             await updateDoc(itemRef, {
                                 lists: arrayUnion(listID)
@@ -90,6 +100,7 @@ export const CreateListDB = () => {
                     });
     
                     // Create new items
+                    let createdItems: UserItem[] = [];
                     const createPromises = newItems.map(async (item) => {
                         let itemData: any = {
                             item_id: item.id.toString(),
@@ -111,31 +122,43 @@ export const CreateListDB = () => {
                         } : {
                             ...itemData, name: item.name, first_air_date: item.first_air_date
                         }
-    
+                        createdItems.push(itemData);
+
                         const itemRef = doc(itemsCollectionRef, itemData.item_id);
                         await setDoc(itemRef, itemData);
                     });
     
                     await Promise.all([...createPromises, ...addPromises]);
+                    const allItems = (isMovie ? movies : shows) || [];
+                    const otherItems = allItems.filter(item => !existingItems.find(add => add.id == item.item_id));
+                    const updatedItems = [...updatedAdd, ...createdItems, ...otherItems].sort((a, b) => b.score - a.score);
+                    isMovie ? setMovies(updatedItems) : setShows(updatedItems);
                 } else if (selectedUnseenItems.length == 0) {
+                    let updatedItems = (isMovie ? movies : shows) || [];
                     const itemsCollectionRef = collection(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows");
                     const promises = selectedItems.map(async (item) => {
                         const itemRef = doc(itemsCollectionRef, item.item_id);
                         await updateDoc(itemRef, {
                             lists: arrayUnion(listID)
                         });
+                        updatedItems.forEach((updated, index) => {
+                            if (item.item_id == updated.item_id && updated.score != -1) {
+                                updatedItems[index].lists = [listID, ...updated.lists];
+                            }
+                        })
                     });
                     await Promise.all(promises);
+                    isMovie ? setMovies(updatedItems) : setShows(updatedItems);
                 }
                 
-                requestRefresh();
+                //requestRefresh();
                 itemsAdded = true;
             } catch (err: any) {
                 console.error("Error adding selected items to new list: ", err);
             }
         } else {
             //requestListRefresh();
-            requestRefresh();
+            //requestRefresh();
         }
         
         return listAdded && itemsAdded;
@@ -146,9 +169,11 @@ export const CreateListDB = () => {
 
 export const editList = () => {
     const { user } = useAuth();
+    const {movieLists, tvLists, setMovieLists, setTVLists} = useData();
     
     const handleEdit = async (listID: string, listTypeID: string, name: string, description: string) => {
         if (user) {
+            const isMovie = listTypeID == Values.movieListsID;
             const listRef = doc(db, "users", user.uid, listTypeID, listID);
             try {
                 await updateDoc(listRef, {
@@ -156,6 +181,15 @@ export const editList = () => {
                     description: description,
                     last_modified: serverTimestamp()
                 });
+                let lists = isMovie ? movieLists : tvLists;
+                lists.forEach((list, index) => {
+                    if (list.list_id == listID) {
+                        lists[index].name = name;
+                        lists[index].description = description;
+                        lists[index].last_modified = new Date();
+                    }
+                })
+                isMovie ? setMovieLists(lists) : setTVLists(lists);
             } catch (err: any) {
                 console.error("Error updating list details: ", err);
             }

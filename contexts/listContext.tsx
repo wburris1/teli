@@ -11,7 +11,7 @@ interface ListContextType {
   setSelectedLists: (lists: List[]) => void;
   removeLists: List[],
   setRemoveLists: (lists: List[]) => void;
-  item: UserItem,
+  item: UserItem | undefined,
   setItem: (item: UserItem) => void;
 }
 
@@ -22,28 +22,11 @@ type Props = {
 const ListContext = createContext<ListContextType | undefined>(undefined);
 
 export const ListProvider: React.FC<Props> = ({ children }: Props) => {
-  const placeholderItem: UserItem = {
-    item_id: "",
-    title: "",
-    release_date: "",
-    poster_path: "",
-    score: 0,
-    has_spoilers: false,
-    caption: "",
-    num_comments: 0,
-    likes: [],
-    created_at: serverTimestamp(),
-    item_name: "",
-    list_type_id: "",
-    lists: [],
-    user_id: '',
-    post_id: ''
-  };
   const [activeTab, setActiveTab] = useState(0);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [selectedLists, setSelectedLists] = useState<List[]>([]);
   const [removeLists, setRemoveLists] = useState<List[]>([]);
-  const [item, setItem] = useState<UserItem>(placeholderItem);
+  const [item, setItem] = useState<UserItem | undefined>();
 
   return (
     <ListContext.Provider value={{
