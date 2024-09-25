@@ -446,8 +446,9 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
                     onRequestClose={() => setCommentModalVisible(false)}
                   >
                     <CommentModalScreen onClose={() => setCommentModalVisible(false)}
-                      onSave={comment => {
+                      onSave={(comment, spoilers) => {
                           setComment(comment);
+                          setHasSpoilers(spoilers);
                           setCommentModalVisible(false);
                         }} />
                   </Modal>

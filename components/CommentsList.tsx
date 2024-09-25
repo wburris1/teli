@@ -232,7 +232,7 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
                 if (parentCommentID != "") {
                     await updateDoc(doc(postRef, "comments", parentCommentID), { num_replies: increment(-1) });
                 } else {
-                    await updateDoc(postRef, { num_comments: increment(-1) });
+                    await updateDoc(postRef, { num_comments: increment(-1 - comment.num_replies) });
                 }
                 let totalComments = 0;
                 comments.forEach(cmt => {
