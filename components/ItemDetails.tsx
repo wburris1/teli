@@ -93,7 +93,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         var exists = false;
         if (item && localItems) {
           localItems.forEach(seenItem => {
-            if (seenItem.item_id == item.id) {
+            if (seenItem.item_id == item.id.toString()) {
               exists = true;
               if (seenItem.score <= 10 && seenItem.score >= 0) {
                 setScore(seenItem.score.toFixed(1));
@@ -125,7 +125,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
         setSeenItems(items);
         setDupe(checkDupe(items));
         if (movies && shows) {
-            const itemData = isMovie ? movies.find(movie => movie.item_id == item.id) : shows.find(show => show.item_id == item.id);
+            const itemData = isMovie ? movies.find(movie => movie.item_id == item.id.toString() && movie.score != -1) : shows.find(show => show.item_id == item.id.toString() && show.score != -1);
             if (itemData) {
                 setBookmarked(itemData.lists.includes(Values.bookmarkListID));
             }
@@ -221,10 +221,11 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                             <TouchableOpacity onPress={() => setRankVisible(true)} style={{
                                 flexDirection: 'row', alignItems: 'center', height: 35, borderWidth: 1.5,
                                 backgroundColor: 'white', borderRadius: 20, paddingHorizontal: 5,
-                                borderColor: 'black',
+                                borderColor: Colors['theme'],
                             }}>
-                                <Logo width={logoWidthHeight} height={logoWidthHeight} />
-                                <Text style={[styles.buttonText, {color: 'black', paddingLeft: 3}]}>
+                                {<Logo width={logoWidthHeight} height={logoWidthHeight} />
+                                }
+                                <Text style={[styles.buttonText, {color: 'black', paddingLeft: 5}]}>
                                     {isDupe ? 'Rerank' : 'Rank'}
                                 </Text>
                             </TouchableOpacity>
@@ -242,8 +243,8 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                             <TouchableOpacity onPress={() => {
                                     if (!bookmarked) {
                                         setBookmarked(true);
-                                        bookmarkFunc(item, isMovie).then(() => {
-                                          Toast.show({
+                                        bookmarkFunc(item, isMovie);
+                                        Toast.show({
                                             type: 'info',
                                             text1: "Added to bookmarks",
                                             text2: (isMovie ? item.title : item.name) + " has been added to your bookmarks",
@@ -251,7 +252,6 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                                             visibilityTime: 3000,
                                             bottomOffset: 100
                                           });
-                                        });
                                     } else {
                                         setBookmarked(false);
                                         removeFunc(Values.bookmarkListID, listTypeID, item.id.toString()).then(() => {
@@ -270,7 +270,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                                 <Ionicons
                                 name={bookmarked ? "bookmark" : "bookmark-outline"}
                                 size={30}
-                                color={Colors[colorScheme ?? 'light'].text}
+                                color={bookmarked ? Colors['theme'] : Colors[colorScheme ?? 'light'].text}
                                 />
                             </TouchableOpacity>}
                             <TouchableOpacity onPress={() => setListsModalVisible(true)}>

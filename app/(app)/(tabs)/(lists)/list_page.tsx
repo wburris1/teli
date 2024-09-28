@@ -308,6 +308,7 @@ export default function TabOneScreen() {
   };
 
   useEffect(() => {
+    console.log("update");
     if (movies && listTypeID == Values.movieListsID) {
       const filtered = filterByList(movies);
       setItems(filtered);

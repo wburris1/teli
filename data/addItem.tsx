@@ -9,6 +9,7 @@ import { useTab } from "@/contexts/listContext";
 import { Post, UserItem, UserMovie, UserShow } from "@/constants/ImportTypes";
 import { useLoading } from "@/contexts/loading";
 import { useData } from "@/contexts/dataContext";
+import { useCallback } from "react";
 
 const db = FIREBASE_DB;
 
@@ -106,7 +107,7 @@ export const AddToDatabase = () => {
                 await updateDoc(gobalItemRef, updateData);
                 
                 items.forEach(seenItem => {
-                  if (seenItem.item_id == item.id) {
+                  if (seenItem.item_id == item.id.toString()) {
                       seenItem.score = newScore;
                   }
                 });
@@ -147,10 +148,10 @@ export const addToBookmarked = () => {
   const listID = Values.bookmarkListID;
   const {movies, shows, setMovies, setShows} = useData();
 
-  const bookmark = async (item: Item, isMovie: boolean) => {
+  const bookmark = async (item: Item, isMovie: boolean): Promise<UserItem[]> => {
     let newItem: UserItem;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
-
+    const currItem = isMovie ? (movies || []).find(movie => movie.item_id == item.id.toString()) : (shows || []).find(show => show.item_id == item.id.toString())
     if (isMovie) {
       newItem = {
         item_id: item.id.toString(),
@@ -165,7 +166,7 @@ export const addToBookmarked = () => {
         likes: [],
         created_at: serverTimestamp(),
         list_type_id: Values.movieListsID,
-        lists: [listID],
+        lists: currItem ? [...currItem.lists, listID] : [listID],
         user_id: user ? user.uid : '',
         post_id: '',
         backdrop_path: item.backdrop_path,
@@ -185,37 +186,45 @@ export const addToBookmarked = () => {
         likes: [],
         created_at: serverTimestamp(),
         list_type_id: Values.tvListsID,
-        lists: [listID],
+        lists: currItem ? [...currItem.lists, listID] : [listID],
         user_id: user ? user.uid : '',
         post_id: '',
         backdrop_path: item.backdrop_path,
         episode_run_time: item.episode_run_time ? item.episode_run_time : 0
       };
     }
+    let returnedItems: UserItem[] = [];
 
     if (user) {
       const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item.id.toString());
       try {
         await setDoc(itemRef, newItem);
-        if (isMovie && movies && movies.find(movie => movie.item_id == item.item_id && movie.score != -1) || 
-        (!isMovie && shows && shows.find(show => show.item_id == item.item_id && show.score != -1))) {
+        if (isMovie && movies && movies.find(movie => movie.item_id == item.id.toString() && movie.score != -1) || 
+        (!isMovie && shows && shows.find(show => show.item_id == item.id.toString() && show.score != -1))) {
           // Exists not as a post
-          let updatedItems = (isMovie ? movies : shows) || [];
+          let updatedItems = isMovie ? (movies || []).map((item) => ({ ...item })) : (shows || []).map((item) => ({ ...item }));
           updatedItems.forEach((updated, index) => {
-            if (item.item_id == updated.item_id && updated.score != -1) {
+            if (item.id.toString() == updated.item_id && updated.score != -1) {
               updatedItems[index] = newItem;
             }
           })
-          isMovie ? setMovies(updatedItems) : setShows(updatedItems);
+          returnedItems = updatedItems;
         } else {
-          isMovie ? setMovies([...(movies || []), newItem]) : setShows([...(shows || []), newItem]);
+          returnedItems = isMovie ? [...(movies || []), newItem] : [...(shows || []), newItem];
         }
         updatePosters(listID, listTypeID);
       } catch (err: any) {
         console.error("Error bookmarking item: ", err);
       }
     }
+    return returnedItems;
   }
 
-  return bookmark;
+  const bookmarkCallback = useCallback((item: Item, isMovie: boolean) => {
+    bookmark(item, isMovie).then((returnedItems: UserItem[]) => {
+      isMovie ? setMovies(returnedItems) : setShows(returnedItems);
+    });
+  }, [movies, shows])
+
+  return bookmarkCallback;
 }

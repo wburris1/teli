@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/authContext";
 import { useData } from "@/contexts/dataContext";
 import { FIREBASE_DB } from "@/firebaseConfig";
 import { addDoc, arrayUnion, collection, doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
-import { Alert } from "react-native";
+import { Alert, BackHandler } from "react-native";
 
 const db = FIREBASE_DB;
 
@@ -115,12 +115,13 @@ export const CreateListDB = () => {
                             list_type_id: listTypeID,
                             lists: [listID],
                             user_id: user.uid,
-                            post_id: ''
+                            post_id: '',
+                            backdrop_path: item.backdrop_path || "",
                         };
                         'title' in item ? itemData = {
-                            ...itemData, title: item.title, release_date: item.release_date
+                            ...itemData, title: item.title, release_date: item.release_date, runtime: item.runtime || 0,
                         } : {
-                            ...itemData, name: item.name, first_air_date: item.first_air_date
+                            ...itemData, name: item.name, first_air_date: item.first_air_date, episode_run_time: item.episode_run_time || 0,
                         }
                         createdItems.push(itemData);
 
@@ -134,7 +135,7 @@ export const CreateListDB = () => {
                     const updatedItems = [...updatedAdd, ...createdItems, ...otherItems].sort((a, b) => b.score - a.score);
                     isMovie ? setMovies(updatedItems) : setShows(updatedItems);
                 } else if (selectedUnseenItems.length == 0) {
-                    let updatedItems = (isMovie ? movies : shows) || [];
+                    let updatedItems = isMovie ? (movies || []).map((item) => ({ ...item })) : (shows || []).map((item) => ({ ...item }));
                     const itemsCollectionRef = collection(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows");
                     const promises = selectedItems.map(async (item) => {
                         const itemRef = doc(itemsCollectionRef, item.item_id);

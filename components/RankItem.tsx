@@ -109,7 +109,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
   const getNext = (minScore: number, maxScore: number) => {
     if (!items) return null;
     const newItems = items.filter(filterItem => filterItem.score > minScore && 
-      filterItem.score < maxScore && filterItem.item_id != item.id);
+      filterItem.score < maxScore && filterItem.item_id != item.id.toString());
     if (newItems.length === 0) return null;
     const midIndex = Math.floor(newItems.length / 2);
     

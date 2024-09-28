@@ -23,7 +23,7 @@ export default function SearchLayout() {
                   <Ionicons
                     name="add"
                     size={35}
-                    color={Colors[colorScheme ?? 'light'].text}
+                    color={Colors['theme']}
                     style={{ opacity: pressed ? 0.5 : 1 }}
                   />
                 )}

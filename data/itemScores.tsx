@@ -6,6 +6,7 @@ import { UpdateListPosters } from "./posterUpdates";
 import { List, UserItem } from "@/constants/ImportTypes";
 import { useLoading } from "@/contexts/loading";
 import { useData } from "@/contexts/dataContext";
+import { useCallback } from "react";
 
 const db = FIREBASE_DB;
 
@@ -30,7 +31,7 @@ export const useUserAdjustScores = () => {
             filteredItems = items.filter(item => item.score > minScore && item.score <= maxScore)
         }
         filteredItems.sort((a: UserItem, b: UserItem) => a.score - b.score);
-        let updatedItems = filteredItems;
+        let updatedItems = filteredItems.map((item) => ({ ...item }));
         const scores = new Set();
         filteredItems.forEach(item => scores.add(item.score));
 
@@ -55,11 +56,13 @@ export const useUserAdjustScores = () => {
             batch.update(itemRef, { score: newScore });
             batch.update(globalPostRef, { score: newScore });
             updatedItems[i].score = newScore;
+            console.log(newScore);
         }
 
         try {
+            updatedItems.forEach(newItem => console.log(newItem.score));
             const allItems = (listTypeID == Values.movieListsID ? movies : shows) || [];
-            const otherItems = allItems.filter(item => item.score < 0);
+            const otherItems = allItems.filter(item => item.score < 0 && !checkContained(item.item_id, updatedItems));
             listTypeID == Values.movieListsID ? setMovies([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score)) : 
                 setShows([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score));
             await batch.commit();
@@ -70,7 +73,15 @@ export const useUserAdjustScores = () => {
         }
     }
 
-    function reactToScoresAdjust(items: UserItem[], score: number, listID: string, listTypeID: string) {
+    function checkContained (itemID: string, currItems: UserItem[]) {
+        let contained = false;
+        currItems.forEach(curr => {
+            if (curr.item_id == itemID) contained = true;
+        })
+        return contained;
+    }
+
+    const reactToScoresAdjust = useCallback((items: UserItem[], score: number, listID: string, listTypeID: string) => {
         var minScore = Values.minBadScore;
         var maxScore = 10;
         var range = Values.minMidScore;
@@ -86,7 +97,7 @@ export const useUserAdjustScores = () => {
             maxScore = Values.minMidScore;
         }
         adjustScores(items, minScore, maxScore, range, listID, listTypeID);
-    }
+    }, [movies, shows, user])
 
     return reactToScoresAdjust;
 }
@@ -102,7 +113,7 @@ export const AdjustReorderedScores = () => {
         if (!user || !userData) {
             return;
         }
-        let updatedItems = items;
+        let updatedItems = items.map((item) => ({ ...item }));
         setLoading(true);
         var numGood = 0;
         var numMid = 0;

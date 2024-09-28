@@ -6,6 +6,7 @@ import { FIREBASE_DB } from "@/firebaseConfig";
 import { useData } from "@/contexts/dataContext";
 import { UserItem } from "@/constants/ImportTypes";
 import Values from "@/constants/Values";
+import { useCallback } from "react";
 
 const db = FIREBASE_DB;
 
@@ -52,15 +53,18 @@ export const removeFromList = () => {
     const updatePosterFunc = updateSomeListPosters();
     const {movies, shows, setMovies, setShows} = useData();
 
-    async function removeItem(listID: string, listTypeID: string, item_id: string) {
+    let updated: UserItem[] = [];
+
+    async function removeItem(listID: string, listTypeID: string, item_id: string): Promise<{items: UserItem[], isMovie: boolean}> {
         if (user) {
-            let updatedItems = (listTypeID == Values.movieListsID ? movies : shows) || [];
+            let updatedItems = listTypeID == Values.movieListsID ? (movies || []).map((item) => ({ ...item })) : (shows || []).map((item) => ({ ...item }));
             updatedItems.forEach((item, index) => {
                 if (item.item_id == item_id) {
                     updatedItems[index].lists = item.lists.filter(id => id != listID);
                 }
             })
-            listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems);
+            updated = updatedItems;
+            //listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems);
             const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);  
             try {
                 await updateDoc(itemRef, {
@@ -73,7 +77,20 @@ export const removeFromList = () => {
                 console.error("Error removing document: ", error);
             }
         }
+        return {items: updated, isMovie: listTypeID == Values.movieListsID};
     };
 
-    return removeItem;
+    const removeCallback = useCallback(
+        async (listID: string, listTypeID: string, item_id: string) => {
+          try {
+            const { items, isMovie } = await removeItem(listID, listTypeID, item_id);
+            isMovie ? setMovies(items) : setShows(items);
+          } catch (error) {
+            console.error('Error in removeCallback:', error);
+          }
+        },
+        [movies, shows, user]
+      );
+
+    return removeCallback;
 }

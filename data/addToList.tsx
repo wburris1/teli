@@ -115,7 +115,7 @@ export const addAndRemoveItemFromLists = () => {
                       if (existingLists.sort().join(',') !== newLists.sort().join(',')) {
                           try {
                               await updateDoc(itemRef, { lists: newLists });
-                              let updatedItems = (isMovie ? movies : shows) || [];
+                              let updatedItems = isMovie ? (movies || []).map((item) => ({ ...item })) : (shows || []).map((item) => ({ ...item }));
                               updatedItems.forEach((item, index) => {
                                 if (item.item_id == item_id) updatedItems[index].lists = newLists;
                               })

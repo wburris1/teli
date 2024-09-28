@@ -7,7 +7,7 @@ import Dimensions from "@/constants/Dimensions";
 import { List } from "@/constants/ImportTypes";
 import { DefaultPost } from "./LogoView";
 
-const imgUrl = 'https://image.tmdb.org/t/p/w342';
+const imgUrl = 'https://image.tmdb.org/t/p/w200';
 const itemWidth = (Dimensions.screenWidth / 3) - 20;
 const screenWidth = Dimensions.screenWidth;
 

@@ -50,7 +50,7 @@ const SearchTabs = ({ tabs, onTabChange, index, browse }: Props) => {
     return (
         <View style={styles.container}>
             <View style={styles.tabs}>
-                <Animated.View style={[styles.line, {left: indicatorPosition, backgroundColor: Colors[colorScheme ?? 'light'].text, width: screenWidth / tabs.length}]}/>
+                <Animated.View style={[styles.line, {left: indicatorPosition, width: screenWidth / tabs.length}]}/>
                 <View style={styles.separatorLine}/>
                 {tabs.map((tab, index) => {
                     const active = index === tabIndex;
@@ -112,6 +112,7 @@ const styles = StyleSheet.create({
         height: 3,
         borderRadius: 2,
         zIndex: 1,
+        backgroundColor: Colors['theme']
     },
     separatorLine: {
         position: 'absolute',

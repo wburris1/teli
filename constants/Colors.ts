@@ -1,6 +1,6 @@
 const tintColorLight = '#2f95dc';
 const tintColorDark = '#fff';
-const themeColor = '#00d5ff'; // Light blue, TBD
+const themeColor = '#800020'; // 
 
 export default {
   theme: themeColor,
