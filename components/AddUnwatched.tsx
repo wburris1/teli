@@ -33,11 +33,11 @@ export const AddUnwatchedScreen = ({listID, listTypeID, onClose, onSave}:
             <Spinner visible={loading} />
             <View style={{flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 10, alignItems: 'center'}}>
                 <TouchableOpacity onPress={onClose}>
-                    <Ionicons name="close-circle" size={35} color={'red'} />
+                    <Ionicons name="close-circle" size={35} color={Colors[colorScheme ?? 'light'].text} />
                 </TouchableOpacity>
                 <Text style={{fontSize: 18, fontWeight: '600'}}>Add To List</Text>
                 <TouchableOpacity onPress={() => onSave(addItems, outItems)}>
-                    <Ionicons name="checkmark-circle" size={35} color={'#32CD32'} />
+                    <Ionicons name="checkmark-circle" size={35} color={Colors['theme']} />
                 </TouchableOpacity>
             </View>
             <SearchInput search={search} setSearch={setSearch} isFocused={false} />

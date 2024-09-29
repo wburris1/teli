@@ -110,8 +110,9 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 0,
         height: 3,
-        borderRadius: 2,
         zIndex: 1,
+        borderTopLeftRadius: 2,
+        borderTopRightRadius: 2,
         backgroundColor: Colors['theme']
     },
     separatorLine: {

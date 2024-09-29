@@ -234,8 +234,8 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
       </Link> : 
       <View>
         <View style={{padding: 10}}>
-        <TouchableOpacity style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].background}]} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={35} color={Colors[colorScheme ?? 'light'].text}/>
+        <TouchableOpacity style={[styles.backButton, { backgroundColor: 'rgba(255, 255, 255, 0.7)'}]} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={35} color={'black'}/>
         </TouchableOpacity>
         <View style={{position: 'absolute'}}>
                     <Image source={item.backdrop_path ? { uri: imgUrl780 + item.backdrop_path } :

@@ -1,7 +1,7 @@
 import { CastMember } from '@/constants/ImportTypes';
 import React, { useEffect, useState } from 'react';
 
-interface StreamingService {
+export interface StreamingService {
   provider_name: string;
   logo_path: string;
   price?: number;
@@ -62,6 +62,7 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
     const [cast, setCast] = useState<CastMember[]>([]);
     const [director, setDirector] = useState<CastMember>();
     const [reccomendations, setReccomendations] = useState<Item[]>([]);
+    const [streaming, setStreaming] = useState<StreamingService[]>([]);
 
     const baseUrl = isMovie ? movieDetailsUrl : tvDetailsUrl;
     const fetchUrl = baseUrl + id + "?api_key=" + tmdbKey;
@@ -136,9 +137,7 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
           const uniqueResult = result.filter((service, index, self) =>
             index === self.findIndex((s) => s.provider_name === service.provider_name)
           );
-          uniqueResult.forEach((entry) => {
-            console.log(entry)
-          })
+          setStreaming(uniqueResult);
         })
         .catch(error => console.error('Error Fetching Streaming Availability: ' + error))
     }
@@ -154,8 +153,8 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
         getItem();
         getCast();
         getRecommendations();
-        //getStreamingAvailability();
+        getStreamingAvailability();
     }, [id]);
 
-    return {item: item as Item, director, cast, reccomendations: reccomendations as Item[]};
+    return {item: item as Item, director, cast, reccomendations: reccomendations as Item[], streaming};
 };

@@ -24,7 +24,7 @@ export default function AppEntry() {
                         <Ionicons
                         name="close-circle"
                         size={35}
-                        color={"red"}
+                        color={Colors[colorScheme ?? 'light'].text}
                         style={{ opacity: pressed ? 0.5 : 1 }}
                         />
                     )}

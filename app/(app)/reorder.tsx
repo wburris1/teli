@@ -59,7 +59,7 @@ export default function ReorderScreen() {
             <Ionicons
             name="checkmark-circle"
             size={35}
-            color={"#32CD32"}
+            color={Colors['theme']}
             style={{ opacity: pressed ? 0.5 : 1 }}
             />
         )}

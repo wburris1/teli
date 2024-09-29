@@ -28,7 +28,7 @@ export const CommentModalScreen = ({ onClose, onSave }: ScreenProps) => {
                     <Ionicons
                     name="close-circle"
                     size={35}
-                    color={"red"}
+                    color={Colors[colorScheme ?? 'light'].text}
                     style={{ opacity: pressed ? 0.5 : 1 }}
                     />
                 )}
@@ -42,7 +42,7 @@ export const CommentModalScreen = ({ onClose, onSave }: ScreenProps) => {
                     <Ionicons
                     name="checkmark-circle"
                     size={35}
-                    color={"#32CD32"}
+                    color={Colors['theme']}
                     style={{ opacity: pressed ? 0.5 : 1 }}
                     />
                 )}
@@ -50,7 +50,7 @@ export const CommentModalScreen = ({ onClose, onSave }: ScreenProps) => {
                 <Ionicons
                     name="checkmark-circle"
                     size={35}
-                    color={"#32CD32"}
+                    color={Colors['theme']}
                     style={{ opacity: 0.5 }}
                     />
                 </View>}
@@ -72,7 +72,7 @@ export const CommentModalScreen = ({ onClose, onSave }: ScreenProps) => {
             <View style={[styles.switchContainer, {borderTopWidth: 1, borderColor: Colors[colorScheme ?? 'light'].gray}]}>
                 <Text style={styles.spoilerText}>Spoiler Alert?</Text>
                 <Switch
-                trackColor={{ false: Colors[colorScheme ?? 'light'].text, true: "#32CD32" }}
+                trackColor={{ false: Colors[colorScheme ?? 'light'].text, true: Colors['theme'] }}
                 thumbColor={Colors[colorScheme ?? 'light'].background}
                 ios_backgroundColor="#3e3e3e"
                 onValueChange={() => setSpoilers(prev => !prev)}

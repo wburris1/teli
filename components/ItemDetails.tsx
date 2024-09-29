@@ -25,7 +25,9 @@ import { useAuth } from '@/contexts/authContext';
 import { FetchFollowedUsersRankings } from './Helpers/FetchFunctions';
 import { ItemPostList } from './ItemPostsList';
 import { WritePost } from './WritePost';
+import { StreamingService } from '@/data/itemData';
 
+const logoImgUrl = 'https://image.tmdb.org/t/p/w100';
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const imgUrl780 = 'https://image.tmdb.org/t/p/w780';
 
@@ -34,7 +36,7 @@ const screenHeight = Dimensions.screenHeight;
 const overViewFontSize = screenWidth * 0.03255814; // fontsize 14
 const titleFontSize = screenWidth > 400 ? 24 : 20 // screenWidth * 0.05581395; // fontsize 24
 const directorFontSize = screenWidth * 0.0372093; // fontsize 16
-const rerankButtonFontSize = screenWidth > 400 ? 22 : 18  // fontsize 22
+const rerankButtonFontSize = screenWidth > 400 ? 20 : 18  // fontsize 22
 const logoWidthHeight = screenWidth > 400 ? 20 : 18;
 const budgetNumFontSize = screenWidth * 0.02790698; // fontsize 12
 const budgetTextFontSize = screenWidth * 0.02325581 // fontsize 10
@@ -44,7 +46,8 @@ type Props = {
     item: Item
     director: CastMember | undefined
     cast: CastMember[]
-    reccomendations: Item[]
+    recomendations: Item[]
+    streamingServices: StreamingService[]
     redirectLink: string
 };
 
@@ -52,7 +55,7 @@ if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Props) => {
+const ItemDetails = ({item, director, cast, recomendations, streamingServices, redirectLink}: Props) => {
     const isMovie = 'title' in item ? true : false;
     const {user} = useAuth();
     const listID = Values.seenListID;
@@ -73,6 +76,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
     const [followedUsersPosts, setFollowedUsersPosts] = useState<FeedPost[] | undefined>();
     const runTime = 'title' in item ? item.runtime : item.episode_run_time;
     const [postModalVisible, setPostModalVisible] = useState(false);
+    const [detailModalVisible, setDetailModalVisible] = useState(false);
 
     var releaseYear = "";
     var title = "";
@@ -178,10 +182,73 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
       return !!(budget && revenue && budget > 0 && revenue > 0)
     }
 
+    const getPressableStyle = ({ pressed } : {pressed : boolean}) => ({
+        opacity: pressed ? 0.5 : 1.0,
+    });
+
+    const detailModalCallback = useCallback(() => {
+        return (
+        <Modal
+        animationType="slide"
+        transparent={true}
+        visible={detailModalVisible}
+        onRequestClose={() => setDetailModalVisible(false)}
+        >
+            <Pressable style={styles.overlay} onPress={() => setDetailModalVisible(false)}>
+                <Pressable style={[styles.tabContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text, borderBottomWidth: 0 }]} onPress={(e) => e.stopPropagation()}>
+                    <View style={{width: '100%'}}>
+                        <Pressable onPress={() => setPostModalVisible(true)}
+                        style={getPressableStyle}>
+                            <View style={[styles.tab, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
+                                <Ionicons name="pencil" size={30} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
+                                <Text style={styles.tabTitle}>Make Post</Text>
+                            </View>
+                        </Pressable>
+                    </View>
+                    <View style={{width: '100%'}}>
+                        <Pressable onPress={() => setListsModalVisible(true)}
+                        style={getPressableStyle}>
+                            <View style={[styles.tab, {borderBottomColor: Colors[colorScheme ?? 'light'].text}]}>
+                                <Ionicons name="add" size={35} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
+                                <Text style={styles.tabTitle}>Add To List</Text>
+                            </View>
+                        </Pressable>
+                    </View>
+                    <View style={{width: '100%'}}>
+                        <Pressable onPress={() => setDetailModalVisible(false)}
+                        style={getPressableStyle}>
+                            <View style={[styles.tab, {borderBottomWidth: 0,}]}>
+                                <Ionicons name="close" size={30} color={Colors[colorScheme ?? 'light'].text} style={styles.icon}/>
+                                <Text style={styles.tabTitle}>Close</Text>
+                            </View>
+                        </Pressable>
+                    </View>
+                </Pressable>
+            </Pressable>
+            {listsModal()}
+            <Modal
+            animationType="slide"
+            transparent={true}
+            visible={postModalVisible}
+            onRequestClose={() => setPostModalVisible(false)}
+            >
+            <WritePost id={item.id} name={isMovie ? item.title : item.name}
+                poster={item.poster_path} groupKey={isMovie ? "movies" : "shows"} isHome={false}
+                onClose={() => setPostModalVisible(false)} backdrop={item.backdrop_path}
+                runtime={isMovie ? item.runtime : item.episode_run_time} />
+            </Modal>
+        </Modal>
+        )
+    }, [detailModalVisible, listsModalVisible, postModalVisible, item, ])
+
     return (
         <View>
-        <TouchableOpacity style={[styles.backButton, { backgroundColor: Colors[colorScheme ?? 'light'].background}]} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={35} color={Colors[colorScheme ?? 'light'].text}/>
+        {detailModalCallback()}
+        <TouchableOpacity style={[styles.backButton, { backgroundColor: 'rgba(255, 255, 255, 0.7)', left: 10}]} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={35} color={'black'}/>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.backButton, { backgroundColor: 'rgba(255, 255, 255, 0.7)', right: 10}]} onPress={() => setDetailModalVisible(true)}>
+            <Ionicons name="ellipsis-horizontal" size={35} color={'black'}/>
         </TouchableOpacity>
         <ScrollView showsVerticalScrollIndicator={false} style={{flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background}}>
             <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
@@ -204,8 +271,8 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                     </View>
                     <View style={styles.rightInfo}>
                         <View>
-                            <Text style={styles.title}>{title}</Text>
-                            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end'}}>
+                            <Text style={[styles.title, {paddingBottom: (releaseYear || checkRunTime(runTime)) ? 0 : 5}]}>{title}</Text>
+                            {(releaseYear || checkRunTime(runTime)) && <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end'}}>
                                 <View style={{flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingBottom: 5}}>
                                 {checkRunTime(runTime) && (
                                 <>
@@ -215,7 +282,7 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                                 )}
                                 <Text style={styles.date}>{releaseYear}</Text>
                                 </View> 
-                            </View>
+                            </View>}
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
                             <TouchableOpacity onPress={() => setRankVisible(true)} style={{
@@ -229,18 +296,8 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                                     {isDupe ? 'Rerank' : 'Rank'}
                                 </Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={{ marginHorizontal: 5,
-                                alignItems: 'center', height: 30, aspectRatio: 1, borderWidth: 2, justifyContent: 'center',
-                                borderRadius: 20,
-                                borderColor: Colors[colorScheme ?? 'light'].text, }} onPress={() => setPostModalVisible(true)}>
-                              <Ionicons
-                                name={"pencil"}
-                                size={17}
-                                color={Colors[colorScheme ?? 'light'].text}
-                                />
-                            </TouchableOpacity>
                             {((isMovie && movies) || (!isMovie && shows)) && !isDupe &&
-                            <TouchableOpacity onPress={() => {
+                            <TouchableOpacity style={{paddingLeft: 5}} onPress={() => {
                                     if (!bookmarked) {
                                         setBookmarked(true);
                                         bookmarkFunc(item, isMovie);
@@ -273,13 +330,6 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                                 color={bookmarked ? Colors['theme'] : Colors[colorScheme ?? 'light'].text}
                                 />
                             </TouchableOpacity>}
-                            <TouchableOpacity onPress={() => setListsModalVisible(true)}>
-                                <Ionicons
-                                    name={"add-circle-outline"}
-                                    size={35}
-                                    color={Colors[colorScheme ?? 'light'].text}
-                                />
-                            </TouchableOpacity>
                             {isDupe && score &&
                             <View style={{borderWidth: 1, borderRadius: 50, borderColor: Colors[colorScheme ?? 'light'].text,
                                 height: 37, aspectRatio: 1, marginLeft: 5, alignItems: 'center', justifyContent: 'center'}}>
@@ -297,10 +347,10 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                 <View style={[styles.castContainer, {justifyContent: 'space-between', alignItems: 'center'}]}>
                   <View>
                     {director &&
-                    <Text style={[styles.directorText, {paddingBottom: checkRevBudget(item) ? 0 : 5}]}>Directed by
+                    <Text style={[styles.directorText, {paddingBottom: checkRevBudget(item) ? 0 : (item.genres.length == 0 ? 0 : 5), paddingTop: item.overview ? 0 : 10}]}>Directed by
                       <Text style={{fontWeight: '600'}}> {director.name}</Text>
                     </Text>}
-                    {item.genres && 
+                    {item.genres && item.genres.length > 0 &&
                     <ScrollView showsHorizontalScrollIndicator={false} horizontal style=
                         {{width: checkRevBudget(item) ? screenWidth - 80 : screenWidth}}
                     >
@@ -328,10 +378,11 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                     <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingVertical: 7,  alignItems: 'center'}}>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <Text style={styles.castText}>Reviews</Text>
+                            {item.vote_average > 0 && <>
                             <Ionicons name="ellipse" size={7} color={Colors[colorScheme ?? 'light'].text} style={{paddingLeft: 5}}/>
                             <Text style={[styles.castText, { fontWeight:  'bold', paddingLeft: 5}]}>
                                 {item.vote_average.toFixed(1)}
-                            </Text>
+                            </Text></>}
                         </View>
                         
                         <View style={{flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 10}}>
@@ -345,12 +396,26 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                 </TouchableOpacity>
                 {followedUsersPosts && followedUsersPosts.length > 0 &&
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{width: screenWidth, paddingHorizontal: 10, paddingBottom: 10}}>
-                    {followedUsersPosts.map(post => (
-                        <TouchableOpacity key={post.user_id}>
+                    {followedUsersPosts.map((post, index) => (
+                        <TouchableOpacity key={index}>
                             <ItemPostList itemPost={post} />
                         </TouchableOpacity>
                     ))}
                 </ScrollView>}
+                {streamingServices && streamingServices.length > 0 && (
+                    <>
+                    <View style={styles.castContainer}>
+                        <Text style={styles.castText}>Streaming</Text>
+                    </View>
+                    <ScrollView style={{width: screenWidth, marginHorizontal: 10}} horizontal showsHorizontalScrollIndicator={false}>
+                    {streamingServices.map((row, rowIndex) => (
+                      <View key={rowIndex} style={{marginLeft: 10, marginVertical: 10, alignItems: 'center'}}>
+                        <Image source={{uri: imgUrl + row.logo_path}} style={{height: 50, aspectRatio: 1, borderRadius: 10}} />
+                      </View>
+                    ))}
+                    </ScrollView>
+                    </>
+                )}
                 <View style={styles.castContainer}>
                   <Text style={styles.castText}>Cast</Text>
                 </View>
@@ -359,17 +424,19 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                     <CastList key={rowIndex} cast={row} />
                   ))}
                 </ScrollView>
+                {recomendations && recomendations.length > 0 && <>
                 <View style={styles.castContainer}>
                   <Text style={styles.castText}>More Like This</Text>
                 </View>
 
                 <ScrollView style={{width: screenWidth}} horizontal showsHorizontalScrollIndicator={false}>
                   <View style={{flexDirection: 'row'}}>
-                  {reccomendations.map((item, rowIndex) => (
+                  {recomendations.map((item, rowIndex) => (
                     <Reccomendation key={rowIndex} item={item} redirectLink={redirectLink} />
                   ))}
                   </View>
                 </ScrollView>
+                </>}
                 {Platform.OS !== 'android' &&
                   <Modal
                   animationType="fade"
@@ -381,7 +448,6 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
                 }
             </View>
         </ScrollView>
-        {listsModal()}
         {Platform.OS === 'android' && rankVisible && 
             <TouchableWithoutFeedback onPress={() => setRankVisible(false)}>
               <View style={[styles.fullScreen]}>
@@ -389,17 +455,6 @@ const ItemDetails = ({item, director, cast, reccomendations, redirectLink}: Prop
               </View>
           </TouchableWithoutFeedback >
         }
-        <Modal
-            animationType="slide"
-            transparent={true}
-            visible={postModalVisible}
-            onRequestClose={() => setPostModalVisible(false)}
-        >
-            <WritePost id={item.id} name={isMovie ? item.title : item.name}
-                poster={item.poster_path} groupKey={isMovie ? "movies" : "shows"} isHome={false}
-                onClose={() => setPostModalVisible(false)} backdrop={item.backdrop_path}
-                runtime={isMovie ? item.runtime : item.episode_run_time} />
-        </Modal>
         </View>
     )
 }; 
@@ -428,7 +483,6 @@ const styles = StyleSheet.create({
         position: 'absolute',
         zIndex: 1,
         top: 50,
-        left: 10,
         borderWidth: 2,
         borderRadius: 50,
         padding: 1,
@@ -547,7 +601,41 @@ const styles = StyleSheet.create({
     fontSize: directorFontSize,
     fontWeight: '300', 
     paddingLeft: 10,
-  }
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+    tabContainer: {
+        flex: 1,
+        alignSelf: 'center',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        width: '100%',
+        marginTop: (Dimensions.screenHeight * .6452) + (Dimensions.screenHeight / 12),
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        borderWidth: 0.5,
+        marginBottom: 0,
+    },
+    tab: {
+        flexDirection: 'row',
+        width: '100%',
+        borderBottomWidth: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: Dimensions.screenHeight / 12,
+    },
+    tabTitle: {
+        fontSize: 16,
+        fontWeight: '500',
+    },
+    icon: {
+        position: 'absolute',
+        left: 10,
+        top: Dimensions.screenHeight / 48,
+    },
 });
 
 export default ItemDetails;

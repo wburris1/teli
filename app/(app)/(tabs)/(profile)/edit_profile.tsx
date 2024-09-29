@@ -66,7 +66,7 @@ export default function EditProfileScreen () {
         navigation.setOptions({
             headerRight: () => (
                 <TouchableOpacity onPress={onSave}>
-                    <Ionicons name="checkmark-circle" size={35} color={'#32CD32'} />
+                    <Ionicons name="checkmark-circle" size={35} color={Colors['theme']} />
                 </TouchableOpacity>
             )
         })
@@ -101,14 +101,14 @@ export default function EditProfileScreen () {
                 <SafeAreaView style={[styles.bioContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                 <View style={styles.bioHeader}>
                     <TouchableOpacity onPress={() => setBioVisible(false)}>
-                    <Ionicons name="close-circle" size={35} color={'red'} />
+                    <Ionicons name="close-circle" size={35} color={Colors[colorScheme ?? 'light'].text} />
                     </TouchableOpacity>
                     <Text style={{fontSize: 16, fontWeight: '500'}}>Bio</Text>
                     <TouchableOpacity onPress={() => {
                         setBio(bio);
                         setBioVisible(false);
                     }}>
-                    <Ionicons name="checkmark-circle" size={35} color={'#32CD32'} />
+                    <Ionicons name="checkmark-circle" size={35} color={Colors['theme']} />
                     </TouchableOpacity>
                 </View>
                 <TextInput multiline autoCapitalize="sentences" placeholder="About yourself..." value={bio} onChangeText={setBio}

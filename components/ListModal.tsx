@@ -101,7 +101,7 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
             <Ionicons
                 name="close-circle"
                 size={45}
-                color='red'
+                color={Colors[colorScheme ?? 'light'].text}
             />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => {
@@ -111,7 +111,7 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
             <Ionicons
                 name="checkmark-circle"
                 size={45}
-                color='#32CD32'
+                color={Colors['theme']}
             />
         </TouchableOpacity>
         <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>

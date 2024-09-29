@@ -252,14 +252,14 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
   const listsTabContent = useCallback(() => 
     <>
         <View style={{flexDirection: 'row', marginBottom: 10, position: 'absolute', top: 47.5, right: 5, zIndex: 1, backgroundColor: 'transparent'}}>
-            <TouchableOpacity onPress={() => setIsMovies(true)} style={[styles.listButton, { borderColor: Colors[colorScheme ?? 'light'].text,
-                backgroundColor: isMovies ? Colors[colorScheme ?? 'light'].text : Colors[colorScheme ?? 'light'].background}]}>
+            <TouchableOpacity onPress={() => setIsMovies(true)} style={[styles.listButton, { borderColor: isMovies ? Colors['theme'] : Colors[colorScheme ?? 'light'].text,
+                backgroundColor: isMovies ? Colors['theme'] : Colors[colorScheme ?? 'light'].background}]}>
                 <Text style={[styles.listButtonText, { 
                     color: isMovies ? Colors[colorScheme ?? 'light'].background : Colors[colorScheme ?? 'light'].text, fontWeight: isMovies ? '500' : '300',
                 }]}>Movies</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setIsMovies(false)} style={[styles.listButton, { borderColor: Colors[colorScheme ?? 'light'].text,
-                backgroundColor: !isMovies ? Colors[colorScheme ?? 'light'].text : Colors[colorScheme ?? 'light'].background}]}>
+            <TouchableOpacity onPress={() => setIsMovies(false)} style={[styles.listButton, { borderColor: !isMovies ? Colors['theme'] : Colors[colorScheme ?? 'light'].text,
+                backgroundColor: !isMovies ? Colors['theme']: Colors[colorScheme ?? 'light'].background}]}>
                 <Text style={[styles.listButtonText, { 
                     color: !isMovies ? Colors[colorScheme ?? 'light'].background : Colors[colorScheme ?? 'light'].text, fontWeight: !isMovies ? '500' : '300',
                 }]}>Shows</Text>
@@ -333,7 +333,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                 <View style={{flexDirection: 'row', alignItems: 'center', paddingTop: 3, justifyContent: user && user.uid ==  userID ? 'flex-start' : 'space-between'}}>
                     { user && user.uid != userID && 
                     <TouchableOpacity onPress={handleFollow}
-                        style={[styles.followButton, {backgroundColor: isFollowing ? Colors[colorScheme ?? 'light'].text : 
+                        style={[styles.followButton, {backgroundColor: isFollowing ? Colors['theme'] : 
                         Colors[colorScheme ?? 'light'].background, borderColor: isFollowing ? Colors[colorScheme ?? 'light'].background : 
                         Colors[colorScheme ?? 'light'].text,}]}>
                         <Ionicons name={isFollowing ? "checkmark-circle-outline" : "person-add-outline"} size={25}

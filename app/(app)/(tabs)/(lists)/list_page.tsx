@@ -29,7 +29,6 @@ type RowProps = {
     selectionMode: boolean;
     selectedItems: UserItem[];
     setselectedItems: (lists: UserItem[]) => void;
-    setFiltered: (item_id: string) => void,
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
@@ -38,7 +37,7 @@ const screenHeight = Dimensions.screenHeight;
 const itemWidth = (screenWidth - 12) / 3;
 
 const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex,
-  selectionMode, selectedItems, setselectedItems, setFiltered}, ref) => {
+  selectionMode, selectedItems, setselectedItems}, ref) => {
     const { setItem } = useTab();
     const score = item.score.toFixed(1);
     const isMovie = 'title' in item;
@@ -78,7 +77,6 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
               } else {
                 console.log("Remove Pressed, removing item with ID:", item_id);
                 removeItem(listID, listTypeID, item.item_id);
-                setFiltered(item_id);
               }
             }
           }
@@ -219,9 +217,9 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
     );
 });
 
-const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, selectedItems, setselectedItems, setFiltered }:
+const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, selectedItems, setselectedItems }:
   {listID: string, listTypeID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[], selectionMode: boolean,
-  selectedItems: UserItem[], setselectedItems: (lists: UserItem[]) => void, setFiltered: (item_id: string) => void }) => {
+  selectedItems: UserItem[], setselectedItems: (lists: UserItem[]) => void }) => {
     const colorScheme = useColorScheme();
     const [popUpIndex, setPopUpIndex] = useState(-1);
     const topPadding = useSharedValue(0);
@@ -253,7 +251,7 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
                 data={items}
                 renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} 
                 selectionMode={selectionMode} selectedItems={selectedItems} setselectedItems={setselectedItems}
-                  popUpIndex={popUpIndex} setPopUpIndex={setPopUpIndex} setFiltered={setFiltered}/>}
+                  popUpIndex={popUpIndex} setPopUpIndex={setPopUpIndex} />}
                 keyExtractor={item => item.item_id}
                 numColumns={3}
                 removeClippedSubviews={true}
@@ -308,7 +306,6 @@ export default function TabOneScreen() {
   };
 
   useEffect(() => {
-    console.log("update");
     if (movies && listTypeID == Values.movieListsID) {
       const filtered = filterByList(movies);
       setItems(filtered);
@@ -392,15 +389,9 @@ const handleClose = () => {
                   await deleteItem(newList.filter(filterItem => filterItem.item_id !== item.item_id), item.post_id, item.item_id, item.score, Values.seenListID, listTypeID as string);
                 }));
               } else {
-                let remainingItems = items;
-                let remainingFiltered = filteredItems;
                 await Promise.all(selectedItems.map(async (item) => {
                   await removeItem(listID as string, listTypeID as string, item.item_id);
-                  remainingItems = remainingItems.filter(remaining => remaining.item_id != item.item_id);
-                  remainingFiltered = remainingFiltered.filter(remaining => remaining.item_id != item.item_id);
                 }));
-                setFilteredItems(remainingFiltered);
-                setItems(remainingItems);
               }
               setselectedItems([]); 
               setSelectionMode(false);
@@ -480,10 +471,7 @@ const handleClose = () => {
 
   var ItemList = useCallback(() => (
     <MakeList listID={listID as string} listTypeID={listTypeID as string} onItemsUpdate={onItemsUpdate} items={filteredItems} 
-      selectionMode={selectionMode} selectedItems={selectedItems} setselectedItems={setselectedItems} setFiltered={(removedItemID: string) => {
-        setFilteredItems(prev => prev.filter(item => item.item_id != removedItemID));
-        setItems(prev => prev.filter(item => item.item_id != removedItemID));
-      }} />
+      selectionMode={selectionMode} selectedItems={selectedItems} setselectedItems={setselectedItems} />
   ), [currDescription, filteredItems, selectionMode, selectedItems, items]);
 
   const slideAnim = useSharedValue(200);

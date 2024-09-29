@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     padding: 10,
     borderTopWidth: 3,
+    backgroundColor: Colors['theme']
   },
   separatorText: {
     fontSize: 18,

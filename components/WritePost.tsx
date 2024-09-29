@@ -52,13 +52,13 @@ export const WritePost = ({id, poster, backdrop, runtime, name, isHome, groupKey
                   });
                   })
               }}>
-              <View style={[styles.postButton, {backgroundColor: Colors[colorScheme ?? 'light'].text, flexDirection: 'row', alignSelf: 'center'}]}>
-                <Text style={{fontSize: 16, color: Colors[colorScheme ?? 'light'].background, fontWeight: '500'}}>Post</Text>
+              <View style={[styles.postButton, {backgroundColor: Colors['theme'], flexDirection: 'row', alignSelf: 'center'}]}>
+                <Text style={{fontSize: 16, color: 'white', fontWeight: '500'}}>Post</Text>
               </View>
             </TouchableOpacity> : 
-            <View style={[styles.postButton, {backgroundColor: Colors[colorScheme ?? 'light'].text, flexDirection: 'row', alignSelf: 'center',
+            <View style={[styles.postButton, {backgroundColor: Colors['theme'], flexDirection: 'row', alignSelf: 'center',
             opacity: 0.5}]}>
-              <Text style={{fontSize: 16, color: Colors[colorScheme ?? 'light'].background, fontWeight: '500'}}>Post</Text>
+              <Text style={{fontSize: 16, color: 'white', fontWeight: '500'}}>Post</Text>
             </View>
           )}
         })
@@ -126,7 +126,7 @@ export const WritePost = ({id, poster, backdrop, runtime, name, isHome, groupKey
                 <View style={[styles.switchContainer, {borderTopWidth: 1, borderColor: Colors[colorScheme ?? 'light'].gray}]}>
                   <Text style={styles.spoilerText}>Spoiler Alert?</Text>
                   <Switch
-                    trackColor={{ false: Colors[colorScheme ?? 'light'].text, true: "#32CD32" }}
+                    trackColor={{ false: Colors[colorScheme ?? 'light'].text, true: Colors['theme'] }}
                     thumbColor={Colors[colorScheme ?? 'light'].background}
                     ios_backgroundColor="#3e3e3e"
                     onValueChange={() => setHasSpoilers(prev => !prev)}

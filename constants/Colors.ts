@@ -1,6 +1,11 @@
 const tintColorLight = '#2f95dc';
 const tintColorDark = '#fff';
-const themeColor = '#800020'; // 
+const themeColor = '#9D00FF';
+// Theme color options:
+// Light blue: 
+// Purple: #9D00FF
+// Burgundy: #800020
+// Lime green:
 
 export default {
   theme: themeColor,

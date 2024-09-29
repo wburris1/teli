@@ -21,8 +21,8 @@ export default function SearchLayout() {
               <Pressable onPress={() => setAddModalVisible(true)}>
                 {({ pressed }) => (
                   <Ionicons
-                    name="add"
-                    size={35}
+                    name="add-circle"
+                    size={40}
                     color={Colors['theme']}
                     style={{ opacity: pressed ? 0.5 : 1 }}
                   />

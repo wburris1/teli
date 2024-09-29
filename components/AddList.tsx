@@ -144,7 +144,7 @@ export const AddList = ({ watched }: { watched?: boolean }) => {
                         />
                         <View style={styles.switchContainer}>
                             <TouchableOpacity
-                                style={[styles.button, listTypeID === Values.movieListsID ? {backgroundColor: Colors[colorScheme ?? 'light'].text} :
+                                style={[styles.button, listTypeID === Values.movieListsID ? {backgroundColor: Colors['theme']} :
                                     { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text }]}
                                 onPress={() => {
                                     if (listTypeID != Values.movieListsID) {
@@ -159,7 +159,7 @@ export const AddList = ({ watched }: { watched?: boolean }) => {
                                 </Text>
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={[styles.button, listTypeID == Values.tvListsID ? {backgroundColor: Colors[colorScheme ?? 'light'].text} :
+                                style={[styles.button, listTypeID == Values.tvListsID ? {backgroundColor: Colors['theme']} :
                                     { backgroundColor: Colors[colorScheme ?? 'light'].background, borderColor: Colors[colorScheme ?? 'light'].text }]}
                                 onPress={() => {
                                     if (listTypeID != Values.tvListsID) {
@@ -177,7 +177,7 @@ export const AddList = ({ watched }: { watched?: boolean }) => {
                         <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingHorizontal: 10,}}>
                             <Text style={{fontSize: 16, fontWeight: 'bold'}}>{isRanked ? "Watched" : "Unwatched"}</Text>
                             <Switch
-                                trackColor={{ false: Colors[colorScheme ?? 'light'].text, true: "#32CD32" }}
+                                trackColor={{ false: Colors[colorScheme ?? 'light'].text, true: Colors['theme'] }}
                                 thumbColor={Colors[colorScheme ?? 'light'].background}
                                 ios_backgroundColor="#3e3e3e"
                                 onValueChange={() => {
