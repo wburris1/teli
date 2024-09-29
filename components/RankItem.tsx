@@ -26,7 +26,8 @@ type Props = {
     setDupe: (dupe: boolean) => void,
     onClose: () => void,
     isIOS: boolean,
-    dupePostID: string
+    dupePostID: string,
+    poster: any
 };
 type WrapperProps = {
   item: Item,
@@ -34,7 +35,8 @@ type WrapperProps = {
   isDupe: boolean,
   setDupe: (dupe: boolean) => void,
   onClose: () => void,
-  dupePostID: string
+  dupePostID: string,
+  poster: any
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
@@ -46,13 +48,13 @@ const initialMehScore = 5;
 const initialDislikeScore = 4;
 const smallAssNumber = 0.0000001; // Used to make mid inclusive of 4 and 6 scores
 
-const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props) => {
+const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}: Props) => {
   const { user } = useAuth();
   const isMovie = 'title' in item ? true : false;
   const listID = Values.seenListID;
   const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
 
-  const { requestRefresh, movieLists, tvLists, movies, shows } = useData();
+  const { requestRefresh, movieLists, tvLists, movies, shows, storedMoviePosters, storedShowPosters } = useData();
   const [compItem, setCompItem] = useState<UserItem | null>(null);
   const [nextComp, setNextComp] = useState<UserItem | null>(null);
   const colorScheme = useColorScheme();
@@ -347,7 +349,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
             <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
               <View>
                 <Image
-                  source={item.poster_path ? { uri: imgUrl + item.poster_path } :
+                  source={poster ? { uri: poster } :
                   require('../assets/images/poster-placeholder.png')}
                   style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].background}]}
                 />
@@ -462,7 +464,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
                   {nextComp && (
                     <Animated.View style={[nextAnimatedCard, {zIndex: 1, position: 'absolute'}]}>
                       <Image
-                        source={{ uri: imgUrl + nextComp.poster_path }}
+                        source={{ uri: isMovie ? storedMoviePosters[nextComp.item_id] : storedShowPosters[nextComp.item_id] }}
                         style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].background}]}
                       />
                       <LinearGradient
@@ -477,7 +479,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
                   )}
                   <Animated.View style={[animatedCard, {zIndex: 1, position: 'absolute'}]}>
                     <Image
-                      source={{ uri: imgUrl + compItem.poster_path }}
+                      source={{ uri: isMovie ? storedMoviePosters[compItem.item_id] : storedShowPosters[compItem.item_id] }}
                       style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].background}]}
                     />
                     <LinearGradient
@@ -557,7 +559,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID}: Props)
 };
 
 // only use this for andoiord 
-const RankItemWrapper = ({item, items, isDupe, setDupe, onClose, dupePostID}: WrapperProps) => {
+const RankItemWrapper = ({item, items, isDupe, setDupe, onClose, dupePostID, poster}: WrapperProps) => {
   return (
     <View style={styles.fullScreen}>
       <Image
@@ -566,7 +568,7 @@ const RankItemWrapper = ({item, items, isDupe, setDupe, onClose, dupePostID}: Wr
         style={[styles.blurredImage, { opacity: 1}]}
         blurRadius={10} // Adjust the blur intensity here
       />
-      <Rank item={item} items={items} isDupe={isDupe} setDupe={setDupe} onClose={onClose} isIOS={false} dupePostID={dupePostID}/>
+      <Rank item={item} items={items} isDupe={isDupe} setDupe={setDupe} onClose={onClose} isIOS={false} dupePostID={dupePostID} poster={poster}/>
       </View>
   )
 }

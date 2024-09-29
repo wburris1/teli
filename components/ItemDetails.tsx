@@ -26,8 +26,10 @@ import { FetchFollowedUsersRankings } from './Helpers/FetchFunctions';
 import { ItemPostList } from './ItemPostsList';
 import { WritePost } from './WritePost';
 import { StreamingService } from '@/data/itemData';
+import Spinner from 'react-native-loading-spinner-overlay';
+import { Asset } from 'expo-asset';
 
-const logoImgUrl = 'https://image.tmdb.org/t/p/w100';
+const logoImgUrl = 'https://image.tmdb.org/t/p/w200';
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const imgUrl780 = 'https://image.tmdb.org/t/p/w780';
 
@@ -77,6 +79,8 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
     const runTime = 'title' in item ? item.runtime : item.episode_run_time;
     const [postModalVisible, setPostModalVisible] = useState(false);
     const [detailModalVisible, setDetailModalVisible] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [storedPoster, setStoredPoster] = useState<any>();
 
     var releaseYear = "";
     var title = "";
@@ -124,6 +128,15 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
     }
 
     useEffect(() => {
+        const prefetchPoster = async () => {
+            const imageAsset = await Asset.fromURI(imgUrl + item.poster_path).downloadAsync();
+            setStoredPoster(imageAsset.localUri);
+        }
+        
+        prefetchPoster();
+    }, [item])
+
+    useEffect(() => {
         const items = filterByList(movies && listTypeID == Values.movieListsID ? movies :
             (shows && listTypeID == Values.tvListsID ? shows : []))
         setSeenItems(items);
@@ -134,6 +147,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                 setBookmarked(itemData.lists.includes(Values.bookmarkListID));
             }
         }
+        setLoading(false);
     }, [movies, shows, refreshFlag])
 
     useEffect(() => {
@@ -243,6 +257,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
 
     return (
         <View>
+            <Spinner visible={loading} />
         {detailModalCallback()}
         <TouchableOpacity style={[styles.backButton, { backgroundColor: 'rgba(255, 255, 255, 0.7)', left: 10}]} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={35} color={'black'}/>
@@ -409,8 +424,8 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                     </View>
                     <ScrollView style={{width: screenWidth, marginHorizontal: 10}} horizontal showsHorizontalScrollIndicator={false}>
                     {streamingServices.map((row, rowIndex) => (
-                      <View key={rowIndex} style={{marginLeft: 10, marginVertical: 10, alignItems: 'center'}}>
-                        <Image source={{uri: imgUrl + row.logo_path}} style={{height: 50, aspectRatio: 1, borderRadius: 10}} />
+                      <View key={rowIndex} style={{marginLeft: 10, marginVertical: 10, alignItems: 'center', borderWidth: 0.5, borderColor: 'gray', borderRadius: 10, overflow: 'hidden'}}>
+                        <Image source={{uri: logoImgUrl + row.logo_path}} style={{height: 50, aspectRatio: 1, borderRadius: 10}} />
                       </View>
                     ))}
                     </ScrollView>
@@ -443,7 +458,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                   transparent={true}
                   visible={rankVisible}
                   onRequestClose={() => setRankVisible(false)}>
-                    <Rank item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} isIOS={true} dupePostID={dupePostID}  />
+                    <Rank item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} isIOS={true} dupePostID={dupePostID} poster={storedPoster} />
                 </Modal>
                 }
             </View>
@@ -451,7 +466,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
         {Platform.OS === 'android' && rankVisible && 
             <TouchableWithoutFeedback onPress={() => setRankVisible(false)}>
               <View style={[styles.fullScreen]}>
-                  <RankItemWrapper item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} dupePostID={dupePostID}/>
+                  <RankItemWrapper item={item} items={seenItems} isDupe={isDupe} setDupe={setDupe} onClose={() => setRankVisible(false)} dupePostID={dupePostID} poster={storedPoster} />
               </View>
           </TouchableWithoutFeedback >
         }

@@ -5,6 +5,7 @@ import { FIREBASE_DB } from "@/firebaseConfig";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
 import { useCallback, useEffect, useState } from "react";
+import Spinner from "react-native-loading-spinner-overlay";
 
 const db = FIREBASE_DB;
 

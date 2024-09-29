@@ -56,11 +56,9 @@ export const useUserAdjustScores = () => {
             batch.update(itemRef, { score: newScore });
             batch.update(globalPostRef, { score: newScore });
             updatedItems[i].score = newScore;
-            console.log(newScore);
         }
 
         try {
-            updatedItems.forEach(newItem => console.log(newItem.score));
             const allItems = (listTypeID == Values.movieListsID ? movies : shows) || [];
             const otherItems = allItems.filter(item => item.score < 0 && !checkContained(item.item_id, updatedItems));
             listTypeID == Values.movieListsID ? setMovies([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score)) : 

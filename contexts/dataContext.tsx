@@ -7,6 +7,7 @@ import { collection, doc, onSnapshot, orderBy, query, updateDoc } from 'firebase
 import { FIREBASE_DB } from '@/firebaseConfig';
 import Values from '@/constants/Values';
 import { FetchFollowers, FetchFollowing, FetchItems, FetchMovieLists, FetchTVLists } from '@/components/Helpers/FetchFunctions';
+import { Asset } from 'expo-asset';
 
 type DataContextType = {
     movies: UserItem[] | null;
@@ -39,6 +40,9 @@ type DataContextType = {
     setCurrNumLikes: (num: number) => void,
     currIsLiked: boolean,
     setCurrIsLiked: (is: boolean) => void,
+    storedMoviePosters: { [key: string]: any },
+    storedShowPosters: { [key: string]: any },
+    storedListPosters: { [key: string]: any },
 };
 
 type Props = {
@@ -47,6 +51,7 @@ type Props = {
 
 const db = FIREBASE_DB;
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
+const posterUrl = 'https://image.tmdb.org/t/p/w500';
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
@@ -64,6 +69,9 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
     const [currLikePostID, setCurrLikePostID] = useState('');
     const [currNumLikes, setCurrNumLikes] = useState(0);
     const [currIsLiked, setCurrIsLiked] = useState(false);
+    const [storedMoviePosters, setStoredMoviePosters] = useState<{ [key: string]: any }>({});
+    const [storedShowPosters, setStoredShowPosters] = useState<{ [key: string]: any }>({});
+    const [storedListPosters, setStoredListPosters] = useState<{ [key: string]: any }>({});
     const [replyID, setReplyFlag] = useState('');
     const { userPushToken, notification} = usePushNotifications();
     const { user, userData } = useAuth();
@@ -169,6 +177,60 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
       }
     }, [refreshFlag, user])
 
+    useEffect(() => {
+      const prefetchMoviePosters = async () => {
+        const prefetched = await Promise.all(
+          (movies || []).map(async (item) => {
+            const imageAsset = await Asset.fromURI(posterUrl + item.poster_path).downloadAsync();
+            return { [item.item_id]: imageAsset.localUri };
+          })
+        );
+  
+        const imageMap = prefetched.reduce((acc, cur) => ({ ...acc, ...cur }), {});
+        setStoredMoviePosters(imageMap);
+      };
+
+      const prefetchShowPosters = async () => {
+        const prefetched = await Promise.all(
+          (shows || []).map(async (item) => {
+            const imageAsset = await Asset.fromURI(posterUrl + item.poster_path).downloadAsync();
+            return { [item.item_id]: imageAsset.localUri };
+          })
+        );
+  
+        const imageMap = prefetched.reduce((acc, cur) => ({ ...acc, ...cur }), {});
+        setStoredShowPosters(imageMap);
+      };
+  
+      prefetchMoviePosters();
+      prefetchShowPosters();
+    }, [movies, shows]);
+
+    useEffect(() => {
+      const prefetchPosters = async () => {
+        const allLists = [...(movieLists || []), ...(tvLists || [])];
+        
+        const prefetched = await Promise.all(
+          allLists.map(async (list) => {
+            const topPoster = list.top_poster_path && await Asset.fromURI(imgUrl + list.top_poster_path).downloadAsync();
+            const secondPoster = list.second_poster_path && await Asset.fromURI(imgUrl + list.second_poster_path).downloadAsync();
+            const bottomPoster = list.bottom_poster_path && await Asset.fromURI(imgUrl + list.bottom_poster_path).downloadAsync();
+    
+            return {
+              [list.top_poster_path]: topPoster ? topPoster.localUri : '',
+              [list.second_poster_path]: secondPoster ? secondPoster.localUri : '',
+              [list.bottom_poster_path]: bottomPoster ? bottomPoster.localUri : '',
+            };
+          })
+        );
+    
+        const imageMap = prefetched.reduce((acc, cur) => ({ ...acc, ...cur }), {});
+        setStoredListPosters(imageMap);
+      };
+    
+      prefetchPosters();
+    }, [movieLists, tvLists]);
+
     return (
         <DataContext.Provider
             value={{ movies, setMovies, shows, setShows, followers, setFollowers, following,
@@ -176,7 +238,7 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
                 refreshFlag, requestRefresh, refreshListFlag, requestListRefresh,
                 replyID, requestReply, userPushToken, notification, currPostID, setCurrPostID,
                 currNumComments, setCurrNumComments, currLikePostID, setCurrLikePostID, currNumLikes, setCurrNumLikes,
-                currIsLiked, setCurrIsLiked
+                currIsLiked, setCurrIsLiked, storedMoviePosters, storedShowPosters, storedListPosters
             }}
         >
             {children}

@@ -39,6 +39,7 @@ const itemWidth = (screenWidth - 12) / 3;
 const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex,
   selectionMode, selectedItems, setselectedItems}, ref) => {
     const { setItem } = useTab();
+    const { storedMoviePosters, storedShowPosters } = useData();
     const score = item.score.toFixed(1);
     const isMovie = 'title' in item;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
@@ -162,17 +163,17 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
             <Animated.View style={[styles.innerContainer, animatedStyle, popUpIndex === index ? styles.shadow : {}]}>
               
               {item.poster_path ? 
-                            <Image
-                                source={{ uri: imgUrl + item.poster_path }}
-                                style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
-                                /> : <DefaultPost style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }, ]}
-                                text={isMovie ? item.title : item.name}/>}
+                <Image
+                    source={{ uri: isMovie ? storedMoviePosters[item.item_id] : storedShowPosters[item.item_id] }}
+                    style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
+                    /> : <DefaultPost style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }, ]}
+                    text={isMovie ? item.title : item.name}/>}
                {selectionMode && (
               <TouchableOpacity onPress={toggleSelect} style={styles.checkbox}>
                 <Ionicons
                   name={selectedItems.includes(item) ? "checkmark-circle" : "ellipse-outline"}
                   size={30}
-                  color=  "white" //{Colors['light'].text}
+                  color="white" //{Colors['light'].text}
                 />
               </TouchableOpacity>
             )}

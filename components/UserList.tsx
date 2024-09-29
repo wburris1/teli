@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Dimensions from "@/constants/Dimensions";
 import { List } from "@/constants/ImportTypes";
 import { DefaultPost } from "./LogoView";
+import { useData } from "@/contexts/dataContext";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w200';
 const itemWidth = (Dimensions.screenWidth / 3) - 20;
@@ -41,10 +42,11 @@ const OverlappingImages = ({ images, list, posterNames }: { images: string[], li
 };
 
 export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectLink = '' }: { list: List, listTypeID: string, isListTab: boolean, userID: string, index: number, redirectLink: string }) => {
+  const { storedListPosters } = useData();
   const posters = [
-    list.top_poster_path != "" ? imgUrl + list.top_poster_path : "/",
-    list.second_poster_path != "" ? imgUrl + list.second_poster_path : "/",
-    list.bottom_poster_path != "" ? imgUrl + list.bottom_poster_path : "/", 
+    storedListPosters[list.top_poster_path] ? storedListPosters[list.top_poster_path] : (list.top_poster_path ? imgUrl + list.top_poster_path : "/"),
+    storedListPosters[list.second_poster_path] ? storedListPosters[list.second_poster_path] : (list.second_poster_path ? imgUrl + list.second_poster_path : "/"),
+    storedListPosters[list.bottom_poster_path] ? storedListPosters[list.bottom_poster_path]: (list.bottom_poster_path ? imgUrl + list.bottom_poster_path : "/"),
   ];
   const posterNames = [list.top_item_name, list.second_item_name, list.bottom_item_name];
   const isEmpty = posters[0] == "/";
