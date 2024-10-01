@@ -7,6 +7,7 @@ import LikesModal from '@/components/LikesModal';
 import CommentsModal from '@/components/CommentsModal';
 import Dimensions from '@/constants/Dimensions';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Text } from './Themed';
 
 type PostListWithModalsProps = {
   posts: any[];
@@ -60,8 +61,8 @@ PostListWithModalsProps) => {
     backgroundColor: Colors[colorScheme ?? 'light'].background}}>
       {isHome && (
         <LinearGradient
-          colors={[Colors[colorScheme ?? 'light'].background, colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
-          style={{position: 'absolute', top: 0, left: 0, right: 0, height: 5, zIndex: 1}}
+          colors={[Colors[colorScheme ?? 'light'].gray, colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
+          style={{position: 'absolute', top: 0, left: 0, right: 0, height: 10, zIndex: 1}}
         />
       )}
       {!loading ? (
@@ -75,7 +76,7 @@ PostListWithModalsProps) => {
             onEndReachedThreshold={0.75}
             ListFooterComponent={renderFooter}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-            style={{paddingTop: isHome ? 5 : 10}}
+            style={{paddingTop: 10}}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink={redirectLink} />
           <Modal

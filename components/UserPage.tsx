@@ -337,9 +337,9 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                         Colors[colorScheme ?? 'light'].background, borderColor: isFollowing ? Colors[colorScheme ?? 'light'].background : 
                         Colors[colorScheme ?? 'light'].text,}]}>
                         <Ionicons name={isFollowing ? "checkmark-circle-outline" : "person-add-outline"} size={25}
-                        color={isFollowing ? Colors[colorScheme ?? 'light'].background : Colors[colorScheme ?? 'light'].text} />
+                        color={isFollowing ? 'white' : Colors[colorScheme ?? 'light'].text} />
                         <Text style={{fontSize: 18, textAlign: 'center', paddingLeft: 5, fontWeight: '500',
-                            color: isFollowing ? Colors[colorScheme ?? 'light'].background : Colors[colorScheme ?? 'light'].text}}>
+                            color: isFollowing ? 'white' : Colors[colorScheme ?? 'light'].text}}>
                             {isFollowing ? "Followed" : "Follow"}
                         </Text>
                     </TouchableOpacity>}

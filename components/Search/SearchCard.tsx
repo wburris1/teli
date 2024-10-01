@@ -12,6 +12,7 @@ import Values from '@/constants/Values';
 import { DefaultPost } from '../LogoView';
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl780 = 'https://image.tmdb.org/t/p/w780';
 const screenHeight = Dimensions.screenHeight;
 const screenWidth = Dimensions.screenWidth;
 
@@ -30,6 +31,29 @@ const ItemScreen = ({movieList, isAdding, addItems, outItems, setAddItems, setOu
     const colorScheme = useColorScheme();
     const {movies, shows} = useData();
     const isMovieList = movieList.length > 0 && 'title' in movieList[0];
+
+    const prefetchImages = async (items: Item[]) => {
+        return Promise.all(
+          items.map(item => Image.prefetch(imgUrl + item.poster_path)) // Prefetch all images
+        );
+      };
+      
+      const prefetchBackdrops = async (items: Item[]) => {
+        return Promise.all(
+          items.map(item => Image.prefetch(imgUrl780 + item.backdrop_path)) // Prefetch all backdrops
+        );
+      };
+    
+    //   useEffect(() => {
+    //     const prefetchImagesForGrid = async () => {
+    //         await prefetchImages(movieList); // Prefetch all images
+    //     };
+    //     const prefetchBackdropForGrid = async () => {
+    //         await prefetchBackdrops(movieList); // Prefetch all images
+    //     };
+    //     prefetchImagesForGrid();
+    //     prefetchBackdropForGrid();
+    //   }, [movieList]);
 
     const renderItem = ({ item, index }: { item: Item, index: number }) => {
         var title = "";

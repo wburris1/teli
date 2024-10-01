@@ -80,7 +80,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
     const [postModalVisible, setPostModalVisible] = useState(false);
     const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [storedPoster, setStoredPoster] = useState<any>();
+    const [storedPoster, setStoredPoster] = useState<any>('');
 
     var releaseYear = "";
     var title = "";
@@ -353,6 +353,10 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                         </View>
                     </View>
                 </View>
+                <LinearGradient
+                    colors={[Colors[colorScheme ?? 'light'].gray, colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
+                    style={{height: 10, zIndex: 1, width: Dimensions.screenWidth}}
+                />
                 {item.overview &&
                 <View style={styles.overviewContainer}>
                     {item.tagline != "" && <Text style={{fontSize: directorFontSize, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
@@ -412,9 +416,11 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                 {followedUsersPosts && followedUsersPosts.length > 0 &&
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{width: screenWidth, paddingHorizontal: 10, paddingBottom: 10}}>
                     {followedUsersPosts.map((post, index) => (
+                        <Link href={{pathname: redirectLink + '_post' as any, params: { postID: post.post_id }}} key={index} asChild>
                         <TouchableOpacity key={index}>
                             <ItemPostList itemPost={post} />
                         </TouchableOpacity>
+                        </Link>
                     ))}
                 </ScrollView>}
                 {streamingServices && streamingServices.length > 0 && (
@@ -512,7 +518,6 @@ const styles = StyleSheet.create({
         paddingRight: 0,
         paddingTop: 10,
         paddingBottom: 10,
-        borderBottomWidth: 1,
     },
     rightInfo: {
         flex: 1,
@@ -569,7 +574,7 @@ const styles = StyleSheet.create({
     },
     overviewContainer: {
         width: screenWidth,
-        paddingVertical: 5,
+        paddingBottom: 5,
         alignItems: 'center',
         //borderBottomWidth: 1,
     },

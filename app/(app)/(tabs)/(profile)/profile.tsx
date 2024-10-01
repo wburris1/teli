@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable, Alert, Modal, SafeAreaView } from 'react-native';
+import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable, Alert, SafeAreaView, ScrollView } from 'react-native';
+import Modal from 'react-native-modal';
 
 import { useAuth } from "@/contexts/authContext";
 import { FIREBASE_AUTH, FIREBASE_DB } from "@/firebaseConfig";
@@ -9,8 +10,8 @@ import { useData } from '@/contexts/dataContext';
 import { Text, View } from '@/components/Themed';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
-import { Link, useLocalSearchParams} from 'expo-router';
-import { Post, RootStackParamList, UserMovie } from '@/constants/ImportTypes';
+import { Link, useLocalSearchParams, useRouter} from 'expo-router';
+import { Post, RootStackParamList, UserMovie, UserShow } from '@/constants/ImportTypes';
 import Values from '@/constants/Values';
 import { makeFeed } from '@/data/feedData';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -19,44 +20,36 @@ import PostFeedWithModals from '@/components/PostFeedWithModals';
 import { useNavigation } from '@react-navigation/native';
 import { ScreenNavigationProp } from '@/constants/ImportTypes';
 import { ExpandableText } from '@/components/AnimatedViews.tsx/ExpandableText';
+import Dimensions from '@/constants/Dimensions';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const db = FIREBASE_DB;
 
-const LogoutButton = () => {
-  const colorScheme = useColorScheme();
-
-  const confirmLogout = () => {
-    Alert.alert('Log Out?', 'Are you sure you want to Log out?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {text: 'Log Out', onPress: () => FIREBASE_AUTH.signOut()},
-    ]);
-    
-  };
-  
-
-  return (
-    <TouchableOpacity onPress={confirmLogout}>
-      <Ionicons name="log-out-outline" size={30} color={Colors[colorScheme ?? 'light'].text} />
-    </TouchableOpacity>
-  );
+const confirmLogout = () => {
+  Alert.alert('Log Out?', 'Are you sure you want to Log out?', [
+    {
+      text: 'Cancel',
+      style: 'cancel',
+    },
+    {text: 'Log Out', onPress: () => FIREBASE_AUTH.signOut()},
+  ]);
 };
 
 const ProfilePage = () => {
   const { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment } = useModalState();
   const {user, userData } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
-  const { posts, loadMorePosts, isLoadingMore} = makeFeed(user ? user.uid : '', refreshing, setRefreshing);
-  const [loading, setLoading] = useState(true);
+  const { posts, loadMorePosts, isLoadingMore, loading} = makeFeed(user ? user.uid : '', refreshing, setRefreshing);
   const { followers, following } = useData();
+  const router = useRouter();
   const navigation = useNavigation<ScreenNavigationProp>();
   const colorScheme = useColorScheme();
   const [numMovies, setNumMovies] = useState(0);
   const [numShows, setNumShows] = useState(0);
   const {movies, shows} = useData();
   const [totalMovieRuntime, setTotalMovieRuntime] = useState(0);
+  const [totalShowWatchtime, setTotalShowWatchtime] = useState(0);
+  const [settingsModalVisible, setSettingsModalVisible] = useState(false);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -108,26 +101,16 @@ const ProfilePage = () => {
   useLayoutEffect(() => {
     navigation.setOptions({
       title: userData ? userData.username: '',
-      headerRight: () => <LogoutButton />,
-      headerLeft: () => (
-        <Link href={{ pathname: '/edit_profile' }} asChild>
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="pencil" size={25} color={Colors[colorScheme ?? 'light'].text} />
-          </TouchableOpacity>
-        </Link>
-      ),
+      headerRight: () =>
+      <TouchableOpacity onPress={() => setSettingsModalVisible(true)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Ionicons name="menu" size={30} color={Colors[colorScheme ?? 'light'].text} />
+      </TouchableOpacity>,
       headerTitleStyle: {
         fontSize: 18,
         fontWeight: '500',
       },
     })
-  })  
-  // Set loading to false once posts are loaded
-  useEffect(() => {
-    if (posts) {
-      setLoading(false);
-    }
-  }, [posts]);
+  }, [user, userData])
 
   const handleNavigate = (whichTab: number) => {
     navigation.push('profile_follower' as keyof RootStackParamList, {
@@ -144,8 +127,35 @@ const ProfilePage = () => {
 
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
+      <Modal
+        isVisible={settingsModalVisible}
+        onBackdropPress={() => setSettingsModalVisible(false)} // Close on backdrop press
+        animationIn="slideInRight"
+        animationOut="slideOutRight"
+        swipeDirection="right" // Enable swipe to close
+        onSwipeComplete={() => setSettingsModalVisible(false)}
+        style={{ margin: 0, justifyContent: 'flex-end', alignItems: 'flex-end' }}
+      >
+        <SafeAreaView style={{width: Dimensions.screenWidth * 0.75, height: Dimensions.screenHeight, backgroundColor: Colors[colorScheme ?? 'light'].background}}>
+          <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, justifyContent: 'flex-start', paddingBottom: 10}}>
+            <Text style={{alignSelf: 'center', fontSize: 22, fontWeight: '600'}}>Menu</Text>
+          </View>
+          <Link href={{ pathname: '/edit_profile' }} style={[styles.settingsButton, { borderTopColor: Colors[colorScheme ?? 'light'].gray }]} asChild>
+            <TouchableOpacity onPress={() => setSettingsModalVisible(false)}>
+              <Ionicons name="pencil" size={30} color={Colors[colorScheme ?? 'light'].text} />
+              <Text style={styles.settingsButtonText}>Edit Profile</Text>
+              <Text></Text>
+            </TouchableOpacity>
+          </Link>
+          <TouchableOpacity onPress={confirmLogout} style={[styles.settingsButton, { borderColor: Colors[colorScheme ?? 'light'].gray, borderBottomWidth: 1 }]}>
+            <Ionicons name="log-out-outline" size={30} color='red' />
+            <Text style={[styles.settingsButtonText, {color: 'red'}]}>Logout</Text>
+            <Text></Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      </Modal>
       {userData && (
-      <View style={{borderBottomWidth: 1, borderColor: Colors[colorScheme ?? 'light'].text}}>
+      <View>
         <View
         style={{
           flexDirection: 'row',
@@ -164,24 +174,33 @@ const ProfilePage = () => {
           style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text,  }]}
         />
         <View>
-        <Text style={styles.headerText}>{userData.first_name + " " + userData.last_name}</Text>
-            <View style={{flexDirection: 'row', paddingTop: 3}}>
-                  <TouchableOpacity onPress={() => handleNavigate(0)}>
-                    <View style={styles.followContainer}>
-                      <Text style={styles.follow}>Followers</Text>
-                      <Text style={styles.follow}>{followers.length}</Text>
-                    </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleNavigate(1)}>
-                    <View style={styles.followContainer}>
-                      <Text style={styles.follow}>Following</Text>
-                      {following && <Text style={styles.follow}>{following.length}</Text>}
-                    </View>
-                  </TouchableOpacity>
+          <Text style={styles.headerText}>{userData.first_name + " " + userData.last_name}</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center', paddingTop: 3, justifyContent: 'space-between'}}> 
+            <Link href={{ pathname: '/edit_profile' }} style={[styles.editButton, {backgroundColor: Colors['theme']}]} asChild>
+              <TouchableOpacity>
+                  <Text style={{fontSize: 18, textAlign: 'center', fontWeight: '500',
+                      color: 'white'}}>
+                        Edit Profile
+                  </Text>
+              </TouchableOpacity>
+            </Link>
+            {following && followers && <>
+            <TouchableOpacity onPress={() => handleNavigate(0)}>
+            <View style={[styles.followContainer, {marginLeft: 5}]}>
+                <Text style={styles.follow}>Followers</Text>
+                <Text style={styles.follow}>{followers.length}</Text>
             </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => handleNavigate(1)}>
+            <View style={styles.followContainer}>
+                <Text style={styles.follow}>Following</Text>
+                <Text style={styles.follow}>{following.length}</Text>
+            </View>
+            </TouchableOpacity></>}
           </View>
         </View>
-        <View style={{flexDirection: 'row', paddingBottom: 10, justifyContent: 'space-between', paddingHorizontal: 10}}>
+        </View>
+        <ScrollView horizontal style={{flexDirection: 'row', paddingBottom: 10, paddingHorizontal: 10}} showsHorizontalScrollIndicator={false}>
           <View style={[styles.statContainer, {backgroundColor: Colors[colorScheme ?? 'light'].gray, borderRadius: 10}]}>
             <Text style={styles.statText}>Movies Watched</Text>
             <Text style={styles.statNum}>{numMovies}</Text>
@@ -194,7 +213,7 @@ const ProfilePage = () => {
             <Text style={styles.statText}>Movie Watchtime</Text>
             <Text style={styles.statNum}>{convertRunTime(totalMovieRuntime)}</Text>
           </View>
-        </View>
+        </ScrollView>
         {userData.bio && <ExpandableText text={userData.bio} maxHeight={80} startExpanded={false} textStyle={{paddingHorizontal: 10, paddingBottom: 10}} isDesc={true} />}
       </View>
       )}
@@ -221,8 +240,18 @@ const ProfilePage = () => {
           isLoadingMore={isLoadingMore}
           incrementComment={incrementComment}
           handleIncrementComment={handleIncrementComment}
+          isHome={true}
           />
-        </>
+          {posts.length == 0 && (
+            <View style={{justifyContent: 'flex-start', alignItems: 'center', flex: 1}}>
+              <Text style={{fontSize: 20, color: 'gray'}}>You haven't ranked anything yet</Text>
+              <TouchableOpacity onPress={() => router.push('/search')} style={{padding: 10, borderRadius: 25, backgroundColor: Colors['theme'], margin: 10, flexDirection: 'row', alignItems: 'center'}}>
+                <Ionicons name="search" size={30} color='white' />
+                <Text style={{fontSize: 20, color: 'white', paddingLeft: 5}}>Search</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </> 
       )}
     </SafeAreaView>
   );
@@ -251,7 +280,7 @@ const styles = StyleSheet.create({
     paddingRight: 10
   },
   follow: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '300',
   },
   profilePic: {
@@ -274,6 +303,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingTop: 5,
     paddingBottom: 3,
+    marginRight: 10
   },
   statText: {
     fontSize: 14,
@@ -282,7 +312,27 @@ const styles = StyleSheet.create({
   statNum: {
     fontSize: 14,
     fontWeight: '500'
-  }
+  },
+  settingsButton: {
+    width: '100%',
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  settingsButtonText: {
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  editButton: {
+    flexDirection: 'row',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
 export default ProfilePage;

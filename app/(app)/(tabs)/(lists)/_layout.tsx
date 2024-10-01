@@ -45,6 +45,26 @@ export default function SearchLayout() {
             backgroundColor: Colors[colorScheme ?? 'light'].background,
           }
         }} />
+        <Stack.Screen name="list_user" options={{ headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+          headerStyle: {
+              backgroundColor: Colors[colorScheme ?? 'light'].background,
+          }
+        }}/>
+        <Stack.Screen name="list_follower" options={{ headerShown: true, headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+          headerStyle: {
+              backgroundColor: Colors[colorScheme ?? 'light'].background,
+          }
+        }}/>
+        <Stack.Screen name="list_post" options={{ headerShown: false, headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+          headerStyle: {
+              backgroundColor: Colors[colorScheme ?? 'light'].background,
+          }
+        }}/>
+        <Stack.Screen name="list_list_page" options={{ headerShown: true, headerBackTitle: "", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+          headerStyle: {
+              backgroundColor: Colors[colorScheme ?? 'light'].background,
+          }
+        }}/>
       </Stack>
   );
 }

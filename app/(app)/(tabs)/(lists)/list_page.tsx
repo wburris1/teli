@@ -247,6 +247,10 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
     if (items) {
       return (
         <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
+          <LinearGradient
+          colors={[Colors[colorScheme ?? 'light'].gray, colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
+          style={{position: 'absolute', top: 0, left: 0, right: 0, height: 5, zIndex: 1}}
+          />
           {items.length > 0 ?
               <Animated.FlatList
                 data={items}
@@ -257,7 +261,7 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
                 numColumns={3}
                 removeClippedSubviews={true}
                 showsVerticalScrollIndicator={false}
-                style={[animatedStyle, {flex: 1}]}
+                style={[animatedStyle, {flex: 1, paddingTop: 10}]}
               /> : (
             <Text>Rank something!</Text>
           )}

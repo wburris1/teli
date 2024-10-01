@@ -1,6 +1,6 @@
 const tintColorLight = '#2f95dc';
 const tintColorDark = '#fff';
-const themeColor = '#9D00FF';
+const themeColor = '#800020';
 // Theme color options:
 // Light blue: 
 // Purple: #9D00FF

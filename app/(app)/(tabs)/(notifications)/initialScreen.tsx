@@ -18,7 +18,6 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 export default function TabOneScreen() {
-  const { loading, setLoading } = useLoading();
   const [ loadingNoti, setLoadingNoti] = useState(false);
   const [hasMoreNoti, setHasMoreNoti] = useState(true);
   const db = FIREBASE_DB;
@@ -110,6 +109,11 @@ export default function TabOneScreen() {
               ListFooterComponent={renderFooter}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             />
+            {noti.length == 0 && (
+              <View style={{justifyContent: 'flex-start', alignItems: 'center', flex: 1}}>
+                <Text style={{fontSize: 20, color: 'gray'}}>You have no notifications</Text>
+              </View>
+            )}
           </>
         ) : (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -117,7 +121,7 @@ export default function TabOneScreen() {
           </View>
         )}
       </GestureHandlerRootView>
-      {loading &&
+      {loadingNoti &&
         <View style={styles.loading}>
           <ActivityIndicator size="large" />
         </View>

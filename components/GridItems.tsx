@@ -13,7 +13,8 @@ type RowProps = {
     item: Item;
     isPosting: boolean;
 };
-const imgUrl = 'https://image.tmdb.org/t/p/w300';
+const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl780 = 'https://image.tmdb.org/t/p/w780';
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
 const itemWidth = (screenWidth - 12) / 3;
@@ -22,6 +23,12 @@ const itemWidth = (screenWidth - 12) / 3;
 const prefetchImages = async (items: Item[]) => {
   return Promise.all(
     items.map(item => Image.prefetch(imgUrl + item.poster_path)) // Prefetch all images
+  );
+};
+
+const prefetchBackdrops = async (items: Item[]) => {
+  return Promise.all(
+    items.map(item => Image.prefetch(imgUrl780 + item.backdrop_path)) // Prefetch all backdrops
   );
 };
 
@@ -59,6 +66,7 @@ export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore, isPost
     const topPadding = useSharedValue(0);
     const [prefetchedItems, setPrefetchedItems] = useState<Item[]>([]);
     const hasPrefetched = useRef(false); // Add a flag to track whether images have been prefetched
+    const hasPrefetchedBackdrop = useRef(false); 
 
     // Prefetch images and then set prefetched items
     useEffect(() => {
@@ -69,7 +77,14 @@ export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore, isPost
         }
         setPrefetchedItems(items);
       };
+      const prefetchBackdropForGrid = async () => {
+        if (!hasPrefetchedBackdrop.current) {
+          hasPrefetchedBackdrop.current = true;
+          await prefetchBackdrops(items); // Prefetch all images
+        }
+      };
       prefetchImagesForGrid();
+      //prefetchBackdropForGrid();
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     }, [items]);
     
@@ -105,9 +120,6 @@ export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore, isPost
             onEndReachedThreshold={0.5}
             ListFooterComponent={renderFooter}
           />
-          <LinearGradient colors={[Colors[colorScheme ?? 'light'].background,
-            colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
-            style={{height: screenWidth > 400 ? 35 : 30, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1}} />
       </View>
     )
 }
