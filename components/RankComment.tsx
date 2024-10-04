@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Text, View } from "./Themed";
-import { KeyboardAvoidingView, Platform, Pressable, SafeAreaView, StyleSheet, Switch, TextInput, useColorScheme } from "react-native";
+import { KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, TextInput, useColorScheme } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Colors from "@/constants/Colors";
 import Dimensions from "@/constants/Dimensions";

@@ -263,7 +263,9 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
                 showsVerticalScrollIndicator={false}
                 style={[animatedStyle, {flex: 1, paddingTop: 10}]}
               /> : (
-            <Text>Rank something!</Text>
+              <View style={{justifyContent: 'center', alignItems: 'center', flex: 1,}}>
+                <Text style={{fontSize: 22, color: 'gray'}}>This list is empty</Text>
+              </View>
           )}
         </View>
       )

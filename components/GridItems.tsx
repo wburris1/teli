@@ -13,7 +13,7 @@ type RowProps = {
     item: Item;
     isPosting: boolean;
 };
-const imgUrl = 'https://image.tmdb.org/t/p/w500';
+const imgUrl = 'https://image.tmdb.org/t/p/w300';
 const imgUrl780 = 'https://image.tmdb.org/t/p/w780';
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;

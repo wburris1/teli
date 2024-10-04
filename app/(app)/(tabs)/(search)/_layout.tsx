@@ -13,7 +13,7 @@ export default function SearchLayout() {
                     backgroundColor: Colors[colorScheme ?? 'light'].background,
                 }
              }} />
-             <Stack.Screen name="search_user" options={{ headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+             <Stack.Screen name="search_user" options={{ headerBackTitle: "Back", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
                 headerStyle: {
                     backgroundColor: Colors[colorScheme ?? 'light'].background,
                 }
@@ -29,6 +29,18 @@ export default function SearchLayout() {
                   backgroundColor: Colors[colorScheme ?? 'light'].background,
               }
             }}/>
+            <Stack.Screen name="search_follower" options={{
+                headerShown: true, headerBackTitle: "", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+                headerStyle: {
+                    backgroundColor: Colors[colorScheme ?? 'light'].background,
+                }
+            }} />
+            <Stack.Screen name="search_discussion" options={{
+                headerShown: true, headerBackTitle: "", headerTitle: "Discussion", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+                headerStyle: {
+                    backgroundColor: Colors[colorScheme ?? 'light'].background,
+                }
+            }} />
         </Stack>
     );
 }

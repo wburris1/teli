@@ -349,7 +349,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
             <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
               <View>
                 <Image
-                  source={poster ? { uri: poster } :
+                  source={item.poster_path ? { uri: poster } :
                   require('../assets/images/poster-placeholder.png')}
                   style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].background}]}
                 />
@@ -563,7 +563,7 @@ const RankItemWrapper = ({item, items, isDupe, setDupe, onClose, dupePostID, pos
   return (
     <View style={styles.fullScreen}>
       <Image
-        source={item.poster_path ? { uri: imgUrl + item.poster_path } : 
+        source={item.poster_path ? { uri: poster } : 
           require('../assets/images/poster-placeholder.png')}
         style={[styles.blurredImage, { opacity: 1}]}
         blurRadius={10} // Adjust the blur intensity here

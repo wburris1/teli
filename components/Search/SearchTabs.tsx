@@ -63,7 +63,7 @@ const SearchTabs = ({ tabs, onTabChange, index, browse }: Props) => {
                 
             </View>
             {//browseText()
-            }
+        }
             <LoadingProvider>
                 {tabs[tabIndex].content()}
             </LoadingProvider>

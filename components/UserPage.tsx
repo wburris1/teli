@@ -246,6 +246,11 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
           incrementComment={incrementComment}
           handleIncrementComment={handleIncrementComment}
           />
+          {posts.length == 0 && (
+            <View style={{justifyContent: 'flex-start', alignItems: 'center', flex: 1}}>
+              <Text style={{fontSize: 20, color: 'gray'}}>{profileData.first_name} hasn't ranked anything yet</Text>
+            </View>
+          )}
         </>
   , [refreshFlag, posts, refreshing, loading, showLikes, showComments, post, isLoadingMore]);
 

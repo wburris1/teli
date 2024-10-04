@@ -63,7 +63,7 @@ export const ExpandableText = ({ text, maxHeight, textStyle, startExpanded, isDe
                     toggleExpanded();
                 }
                 }}>
-                <Animated.View style={animatedStyle}>
+                <Animated.View style={[animatedStyle, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
                 <Text style={textStyle} onLayout={onTextLayout}>
                     {text}
                 </Text>
@@ -75,12 +75,12 @@ export const ExpandableText = ({ text, maxHeight, textStyle, startExpanded, isDe
                 />
                 )}
             </Pressable> : !isDesc ?
-            <View style={{height: maxHeight}}>
+            <View style={{height: maxHeight, backgroundColor: Colors[colorScheme ?? 'light'].background}}>
               <Text style={textStyle} onLayout={onTextLayout}>
                 {text}
               </Text>
             </View> : 
-            <View>
+            <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background}}>
               <Text style={textStyle} onLayout={onTextLayout}>
                 {text}
               </Text>

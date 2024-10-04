@@ -74,6 +74,11 @@ const FollowersTabContent = ({ query, redirectLink, followersData, loading}: { u
               <Text>Load More</Text>
             </TouchableOpacity>
           )}
+          {followersData.length == 0 && (
+            <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+              <Text style={{fontSize: 22, color: 'gray'}}>No followers yet</Text>
+            </View>
+          )}
         </>
       )}
     </View>
@@ -117,6 +122,11 @@ const FollowingTabContent = ({ userID, query, redirectLink, followingData, loadi
             <TouchableOpacity onPress={loadMoreFollowing} disabled={loadingMore}>
               <Text>Load More</Text>
             </TouchableOpacity>
+          )}
+          {followingData.length == 0 && (
+            <View style={{justifyContent: 'center', alignItems: 'center', flex: 1}}>
+              <Text style={{fontSize: 22, color: 'gray'}}>Not following anyone</Text>
+            </View>
           )}
         </>
       )}

@@ -41,11 +41,11 @@ const ChangePasswordScreen = () => {
             keyboardType="email-address"
             autoCapitalize="none"
         />
-        <TouchableOpacity onPress={handlePasswordReset} style={[styles.button, { backgroundColor: Colors[colorScheme ?? 'light'].text }]} disabled={loading}>
+        <TouchableOpacity onPress={handlePasswordReset} style={[styles.button, { backgroundColor: Colors['theme'] }]} disabled={loading}>
             {loading ? (
             <ActivityIndicator size="small" color="#fff" />
             ) : (
-            <Text style={[styles.buttonText, { color: Colors[colorScheme ?? 'light'].background }]}>Request Reset</Text>
+            <Text style={[styles.buttonText, { color: 'white' }]}>Request Reset</Text>
             )}
         </TouchableOpacity>    
     </View>

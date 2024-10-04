@@ -140,10 +140,17 @@ const ProfilePage = () => {
           <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, justifyContent: 'flex-start', paddingBottom: 10}}>
             <Text style={{alignSelf: 'center', fontSize: 22, fontWeight: '600'}}>Menu</Text>
           </View>
-          <Link href={{ pathname: '/edit_profile' }} style={[styles.settingsButton, { borderTopColor: Colors[colorScheme ?? 'light'].gray }]} asChild>
+          <Link href={{ pathname: '/edit_profile' }} style={[styles.settingsButton, { borderColor: Colors[colorScheme ?? 'light'].gray }]} asChild>
             <TouchableOpacity onPress={() => setSettingsModalVisible(false)}>
               <Ionicons name="pencil" size={30} color={Colors[colorScheme ?? 'light'].text} />
               <Text style={styles.settingsButtonText}>Edit Profile</Text>
+              <Text></Text>
+            </TouchableOpacity>
+          </Link>
+          <Link href={{ pathname: '/credits' }} style={[styles.settingsButton, { borderColor: Colors[colorScheme ?? 'light'].gray }]} asChild>
+            <TouchableOpacity onPress={() => setSettingsModalVisible(false)}>
+              <Ionicons name="information-circle" size={30} color={Colors[colorScheme ?? 'light'].text} />
+              <Text style={styles.settingsButtonText}>Credits</Text>
               <Text></Text>
             </TouchableOpacity>
           </Link>
@@ -154,6 +161,7 @@ const ProfilePage = () => {
           </TouchableOpacity>
         </SafeAreaView>
       </Modal>
+
       {userData && (
       <View>
         <View

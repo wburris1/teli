@@ -54,15 +54,15 @@ const Login = () => {
         }]} />
 
         <TouchableOpacity onPress={onSignInPress}>
-            <View style={[styles.button, { backgroundColor: "#add8e6", borderColor: Colors[colorScheme ?? 'light'].gray }]}>
-              <Text style={[styles.buttonText, { color: emailAddress ? 'black' : 'gray' }]}>Login</Text>
+            <View style={[styles.button, { backgroundColor: Colors['theme'], borderColor: Colors[colorScheme ?? 'light'].gray }]}>
+              <Text style={[styles.buttonText, { color: emailAddress && password ? 'white' : 'gray' }]}>Login</Text>
             </View>
         </TouchableOpacity>
 
         <Link href="/signup" asChild>
           <TouchableOpacity>
-            <View style={[styles.button, { backgroundColor: '#90ee90', borderColor: Colors[colorScheme ?? 'light'].gray }]}>
-              <Text style={[styles.buttonText, { color: 'gray' }]}>Sign up</Text>
+            <View style={[styles.button, { backgroundColor: '#32CD32', borderColor: Colors[colorScheme ?? 'light'].gray }]}>
+              <Text style={[styles.buttonText, { color: 'white' }]}>Sign up</Text>
             </View>
           </TouchableOpacity>
         </Link>
@@ -74,7 +74,7 @@ const Login = () => {
           </TouchableOpacity>
         </Link>
       </KeyboardAvoidingView>
-      <View style={{flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].gray }}>
+      <View style={{flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background }}>
       </View>
     </View>
   );

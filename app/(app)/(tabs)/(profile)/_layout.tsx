@@ -43,6 +43,17 @@ export default function ProfileLayout() {
                   backgroundColor: Colors[colorScheme ?? 'light'].background,
               }
             }}/>
+            <Stack.Screen name="credits" options={{ headerShown: true, headerBackTitle: "Back", headerTitle: "Credits", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+                headerStyle: {
+                    backgroundColor: Colors[colorScheme ?? 'light'].background,
+                }
+             }} />
+             <Stack.Screen name="profile_discussion" options={{
+                headerShown: true, headerBackTitle: "", headerTitle: "Discussion", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+                headerStyle: {
+                    backgroundColor: Colors[colorScheme ?? 'light'].background,
+                }
+            }} />
         </Stack>
     );
 }

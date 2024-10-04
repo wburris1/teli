@@ -1,4 +1,4 @@
-import { StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, View, ScrollView, PixelRatio, Platform, TouchableWithoutFeedback, UIManager, LayoutAnimation } from 'react-native'
+import { View, StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, ScrollView, PixelRatio, Platform, TouchableWithoutFeedback, UIManager, LayoutAnimation } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
@@ -80,7 +80,9 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
     const [postModalVisible, setPostModalVisible] = useState(false);
     const [detailModalVisible, setDetailModalVisible] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [storedPoster, setStoredPoster] = useState<any>('');
+    const [storedPoster, setStoredPoster] = useState<any>();
+    const [storedBackdrop, setStoredBackdrop] = useState<any>();
+    const [imagesReady, setImagesReady] = useState(false);
 
     var releaseYear = "";
     var title = "";
@@ -132,9 +134,18 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
             const imageAsset = await Asset.fromURI(imgUrl + item.poster_path).downloadAsync();
             setStoredPoster(imageAsset.localUri);
         }
+        const prefetchBackdrop = async () => {
+            const imageAsset = await Asset.fromURI(imgUrl780 + item.backdrop_path).downloadAsync();
+            setStoredBackdrop(imageAsset.localUri);
+        }
         
         prefetchPoster();
+        prefetchBackdrop();
     }, [item])
+
+    useEffect(() => {
+        if (storedPoster != undefined && storedBackdrop != undefined) setImagesReady(true);
+    }, [storedPoster, storedBackdrop])
 
     useEffect(() => {
         const items = filterByList(movies && listTypeID == Values.movieListsID ? movies :
@@ -255,6 +266,14 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
         )
     }, [detailModalVisible, listsModalVisible, postModalVisible, item, ])
 
+    if (!imagesReady) {
+        return (
+            <View style={{width: screenWidth, height: screenHeight, justifyContent: 'center', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
+                <ActivityIndicator size="large" />
+            </View>
+        )
+    }
+
     return (
         <View>
             <Spinner visible={loading} />
@@ -268,7 +287,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
         <ScrollView showsVerticalScrollIndicator={false} style={{flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background}}>
             <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                 <View style={{position: 'absolute'}}>
-                    <Image source={item.backdrop_path ? { uri: imgUrl780 + item.backdrop_path } :
+                    <Image source={item.backdrop_path ? { uri: storedBackdrop } :
                       require('../assets/images/download2.jpg')} style={styles.backdropImage} />
                     <LinearGradient
                         colors={['transparent', Colors[colorScheme ?? 'light'].background]}
@@ -279,7 +298,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                     <View style={styles.posterContainer}>
                     {item.poster_path ? 
                             <Image
-                                source={{ uri: imgUrl + item.poster_path }}
+                                source={{ uri: storedPoster }}
                                 style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
                                 /> : <DefaultPost style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }]}/>}
                         
@@ -393,26 +412,20 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                     </View>
                   )}
                 </View>}
-                <TouchableOpacity style={{flex: 1}}>
-                    <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingVertical: 7,  alignItems: 'center'}}>
-                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                            <Text style={styles.castText}>Reviews</Text>
-                            {item.vote_average > 0 && <>
-                            <Ionicons name="ellipse" size={7} color={Colors[colorScheme ?? 'light'].text} style={{paddingLeft: 5}}/>
-                            <Text style={[styles.castText, { fontWeight:  'bold', paddingLeft: 5}]}>
-                                {item.vote_average.toFixed(1)}
-                            </Text></>}
+                <Link href={{pathname: redirectLink + '_discussion' as any, params: { itemID: item.id }}} asChild>
+                    <TouchableOpacity style={{flex: 1, justifyContent: 'flex-start', width: '100%'}}>
+                        <View style={{flexDirection: 'row', justifyContent: 'flex-start', width: '100%', paddingVertical: 7,  alignItems: 'center'}}>
+                            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                <Text style={styles.castText}>Reviews</Text>
+                                {item.vote_average > 0 && <>
+                                <Ionicons name="ellipse" size={7} color={Colors[colorScheme ?? 'light'].text} style={{paddingLeft: 5}}/>
+                                <Text style={[styles.castText, { fontWeight:  'bold', paddingLeft: 5}]}>
+                                    {item.vote_average.toFixed(1)}
+                                </Text></>}
+                            </View>
                         </View>
-                        
-                        <View style={{flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 10}}>
-                            <Text style={{fontSize: directorFontSize,fontWeight: '300', paddingRight: 3}}> 
-                            {item.vote_count > 500 ? `${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+` :
-                            item.vote_count.toLocaleString()}
-                            </Text>
-                            <Ionicons name='people' size={20} color={Colors[colorScheme ??  'light'].text} />
-                        </View>
-                    </View>
-                </TouchableOpacity>
+                    </TouchableOpacity>
+                </Link>
                 {followedUsersPosts && followedUsersPosts.length > 0 &&
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{width: screenWidth, paddingHorizontal: 10, paddingBottom: 10}}>
                     {followedUsersPosts.map((post, index) => (
@@ -423,6 +436,24 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                         </Link>
                     ))}
                 </ScrollView>}
+                <Link href={{pathname: redirectLink + '_discussion' as any, params: { itemID: item.id }}} asChild>
+                    <TouchableOpacity style={{flex: 1, borderColor: Colors[colorScheme ?? 'light'].gray, borderTopWidth: 1, borderBottomWidth: 1, marginVertical: 10}}>
+                        <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingVertical: 10,  alignItems: 'center'}}>
+                            <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10}}>
+                                <Ionicons name="chatbubbles-outline" size={30} color={Colors[colorScheme ?? 'light'].text} />
+                                <Text style={{fontSize: 20, fontWeight: '600', paddingLeft: 5}}>Discussion</Text>
+                            </View>
+                            
+                            <View style={{flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 5}}>
+                                <Text style={{fontSize: directorFontSize,fontWeight: '300', paddingRight: 3}}> 
+                                {item.vote_count > 500 ? `${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+` :
+                                item.vote_count.toLocaleString()}
+                                </Text>
+                                <Ionicons name='chevron-forward' size={20} color={Colors[colorScheme ??  'light'].text} style={{paddingLeft: 0}} />
+                            </View>
+                        </View>
+                    </TouchableOpacity>
+                </Link>
                 {streamingServices && streamingServices.length > 0 && (
                     <>
                     <View style={styles.castContainer}>

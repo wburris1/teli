@@ -19,7 +19,7 @@ const db = FIREBASE_DB;
 const userCache = new Map<string, UserData>(); // Cache to locally store many ppl's userData
 
 // input userID should be 'Home' if used for home feed.
-export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (refreshing: boolean) => void) => {
+export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (refreshing: boolean) => void, discussionItemID?: string) => {
   const { user } = useAuth();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,10 +37,16 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   };
 
   const fetchPosts = async (followedUsers: string[]): Promise<any[]> => {
-      if (followedUsers.length == 0) return [];
+      if (followedUsers.length == 0 && !discussionItemID) return [];
       const userPostsCollectionRef = collection(db, 'globalPosts');
       const shouldStartAfter = lastFetchedPost.current && !refreshing; // Combined condition
-      const userPostsQuery = query(
+      const userPostsQuery = discussionItemID ? query(
+        userPostsCollectionRef,
+        orderBy('created_at', 'desc'),
+        where('item_id', '==', discussionItemID),
+        limit(limitPosts),
+        ...(shouldStartAfter ? [startAfter(lastFetchedPost.current)] : [])
+      ) : query(
         userPostsCollectionRef,
         orderBy('created_at', 'desc'),
         where('user_id', 'in', followedUsers),
@@ -80,9 +86,15 @@ export const makeFeed = (userID: string, refreshing: boolean, setRefreshing: (re
   const fetchFeed = async () => {
     if (user) {
       try {
+        let newPosts = [];
         const followedUsers = userID === 'Home' ? following : [userID];
-        if (!followedUsers) return;
-        const newPosts = await fetchPosts(followedUsers);
+        if (discussionItemID) {
+          newPosts = await fetchPosts(followedUsers ? followedUsers : []);
+        } else if (followedUsers) {
+          newPosts = await fetchPosts(followedUsers);
+        } else {
+          return;
+        }
 
         if (refreshing) {
           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);

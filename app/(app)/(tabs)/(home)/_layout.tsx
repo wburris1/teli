@@ -46,6 +46,22 @@ export default function SearchLayout() {
                 backgroundColor: Colors[colorScheme ?? 'light'].background,
             }
         }} />
+        <Stack.Screen name="home_follower" options={{ headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+                headerStyle: {
+                    backgroundColor: Colors[colorScheme ?? 'light'].background,
+                }
+             }} />
+        <Stack.Screen name="home_list_page" options={{ headerShown: true, headerBackTitle: "", headerTitle: "", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+          headerStyle: {
+              backgroundColor: Colors[colorScheme ?? 'light'].background,
+          }
+        }}/>
+        <Stack.Screen name="home_discussion" options={{
+            headerShown: true, headerBackTitle: "", headerTitle: "Discussion", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+            headerStyle: {
+                backgroundColor: Colors[colorScheme ?? 'light'].background,
+            }
+        }} />
     </Stack>
     );
 }

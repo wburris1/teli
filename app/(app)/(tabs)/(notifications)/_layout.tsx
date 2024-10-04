@@ -46,6 +46,12 @@ export default function SearchLayout() {
                 backgroundColor: Colors[colorScheme ?? 'light'].background,
             }
           }}/>
+          <Stack.Screen name="notification_discussion" options={{
+            headerShown: true, headerBackTitle: "", headerTitle: "Discussion", headerTintColor: Colors[colorScheme ?? 'light'].text, headerShadowVisible: false,
+            headerStyle: {
+                backgroundColor: Colors[colorScheme ?? 'light'].background,
+            }
+          }} />
       </Stack>
     );
 }

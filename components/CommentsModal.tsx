@@ -237,7 +237,13 @@ setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = n
                 <Animated.View style={[styles.container, animatedStyle, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                     <View style={styles.handle} />
                     <Text style={styles.text}>Comments</Text>
-                    {!loading ? commentsList() : (
+                    {(!loading && (isPostPage && cmts.length == 0) || (!isPostPage && displayComments.length == 0)) ? (
+                      <View style={{justifyContent: 'flex-start', width: '100%', alignItems: 'center', flex: 1, marginTop: 100}}>
+                        <Text style={{fontSize: 22, color: 'gray'}}>Noone has commented yet</Text>
+                        <Text style={{fontSize: 22, color: 'gray', paddingTop: 5}}>Be the first!</Text>
+                      </View>
+                    ) :
+                    !loading ? commentsList() : (
                       <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
                         <ActivityIndicator size="large" />
                       </View>
