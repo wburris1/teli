@@ -4,6 +4,7 @@ import { fetchUserData } from "@/data/getComments";
 import {  NotificationType } from "@/constants/ImportTypes";
 import { collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
 import { FIREBASE_DB } from "@/firebaseConfig";
+import { useAuth } from "@/contexts/authContext";
 
 const db = FIREBASE_DB;
 
@@ -13,7 +14,8 @@ export async function sendPushNotification(
   title: string,
   body: string,
 ) : Promise<void> {
-  if(userID) {
+  const { user } = useAuth();
+  if(userID && userID !== user?.uid) {
     try {
       const receiverData = await fetchUserData(userID);
       const userPushToken = receiverData.userPushToken 

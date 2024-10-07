@@ -11,7 +11,6 @@ export const createNotification = async (
   comment_id?: string,
   post_id?: string
 ) => {
-  console.log(post_id);
   const db = FIREBASE_DB;
   const newNotification: AppNotification = {
     noti_id: "",
@@ -25,13 +24,14 @@ export const createNotification = async (
     notification_type: notificationType,
     post_id: post_id ?? '',
   };
-
-  try {
-    const userNotiRef = collection(db, 'users', newNotification.receiver_id, 'notifications');
-    const NotiRef = await addDoc(userNotiRef, newNotification);
-    await updateDoc(NotiRef, { noti_id: NotiRef.id });
-    console.log(notificationType + " successfully added!");
-  } catch (error) {
-    console.error("Error adding notification: ", error);
+  if (newNotification.receiver_id !== newNotification.sender_id) {
+    try {
+      const userNotiRef = collection(db, 'users', newNotification.receiver_id, 'notifications');
+      const NotiRef = await addDoc(userNotiRef, newNotification);
+      await updateDoc(NotiRef, { noti_id: NotiRef.id });
+      console.log(notificationType + " successfully added!");
+    } catch (error) {
+      console.error("Error adding notification: ", error);
+    }
   }
 };
