@@ -147,12 +147,12 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectL
         style={[styles.itemContainer, {zIndex: 3, height: (itemWidth - 20) * (3 / 2) + 45, marginTop: 5, }, ]}
         onPress={() => {
           if (isEmpty) {
-            if (movies && movies.length === 0 && listTypeID == Values.movieListsID) {
+            if (list.is_ranked && movies && movies.filter(movie => movie.lists.includes(Values.seenListID)).length === 0 && listTypeID == Values.movieListsID) {
               router.push({
                 pathname: '/search',
                 params: { initialIndex: 0, triggerNumber: Math.random(),},
               });
-            } else if (shows && shows.length === 0 && listTypeID == Values.tvListsID) {
+            } else if (list.is_ranked && shows && shows.filter(shows => shows.lists.includes(Values.seenListID)).length === 0 && listTypeID == Values.tvListsID) {
               router.push({
                 pathname: '/search',
                 params: { initialIndex: 1, triggerNumber: Math.random(),},

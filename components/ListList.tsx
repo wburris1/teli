@@ -62,7 +62,6 @@ export const HorizontalListWithRows = ({lists, listTypeID, userID, isListTab, nu
                   if (!list.top_poster_path && !displayEmptyLists) {
                     return null;
                   } else {
-                    console.log('returninglist', list.name)
                     return (<UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={isListTab} userID={userID} index={0} redirectLink={redirectLink} />)
                   }
                 })}
