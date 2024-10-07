@@ -9,7 +9,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-g
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withClamp, withSpring, withTiming } from 'react-native-reanimated';
 import Values from '@/constants/Values';
 import { useTab } from '@/contexts/listContext';
-import { removeFromList, useUserItemDelete } from '@/data/deleteItem';
+import { removeFromList, removeSelected, useUserItemDelete } from '@/data/deleteItem';
 import { EditListScreen } from '@/components/EditList';
 import SearchInput from '@/components/Search/SearchInput';
 import { AnimatedSearch } from '@/components/AnimatedSearch';
@@ -223,13 +223,13 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
   selectedItems: UserItem[], setselectedItems: (lists: UserItem[]) => void }) => {
     const colorScheme = useColorScheme();
     const [popUpIndex, setPopUpIndex] = useState(-1);
-    const topPadding = useSharedValue(0);
+    const topPadding = useSharedValue(10);
 
     useEffect(() => {
       if (popUpIndex >= 0 && popUpIndex < 3) {
         topPadding.value = withSpring((itemWidth * 1.5) * 0.2);
       } else {
-        topPadding.value = withSpring(0);
+        topPadding.value = withSpring(10);
       }
     }, [popUpIndex])
 
@@ -294,7 +294,8 @@ export default function TabOneScreen() {
   const isAll = listID == Values.seenListID ? true : false;
   const [listsModalVisible, setListsModalVisible] = useState(false);
   const deleteItem = useUserItemDelete();
-  const removeItem = removeFromList();
+  const removeItems = removeSelected();
+
   useEffect(() => {
     if (description) {
       setCurrDescription(description as string);
@@ -396,9 +397,7 @@ const handleClose = () => {
                   await deleteItem(newList.filter(filterItem => filterItem.item_id !== item.item_id), item.post_id, item.item_id, item.score, Values.seenListID, listTypeID as string);
                 }));
               } else {
-                await Promise.all(selectedItems.map(async (item) => {
-                  await removeItem(listID as string, listTypeID as string, item.item_id);
-                }));
+                removeItems(listID as string, listTypeID as string, selectedItems.map(itm => itm.item_id));
               }
               setselectedItems([]); 
               setSelectionMode(false);

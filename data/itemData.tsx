@@ -108,7 +108,7 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
           }
           // const options: { provider: string; price: number }[] = [];
           const result: StreamingService[] = [];
-          console.log(data);
+          //console.log(data);
           if (data.buy && data.buy.length > 0) {
               result.push(...data.buy.map((service: StreamingService) => ({
                   provider_name: service.provider_name,

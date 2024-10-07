@@ -56,7 +56,7 @@ const SearchTabs = ({ tabs, onTabChange, index, browse }: Props) => {
                     const active = index === tabIndex;
                     return (
                         <TouchableOpacity key={index} onPress={()=>handleTabPress(index)} style={[active ? styles.activeTab : styles.tab, {width: screenWidth / tabs.length}]}>
-                            <Text style={active ? [styles.activeTabText, { color: Colors[colorScheme ?? 'light'].text}] : styles.tabText}>{tab.title}</Text>
+                            <Text style={active ? [styles.activeTabText, { color: Colors['theme'] }] : styles.tabText}>{tab.title}</Text>
                         </TouchableOpacity>
                     );
                 })}
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     },
     activeTabText: {
         fontSize: 16,
-        color: '#000'
+        fontWeight: '600'
     },
     line: {
         position: 'absolute',

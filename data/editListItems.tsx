@@ -52,8 +52,8 @@ export const editListItems = () => {
 
                 await Promise.all([...addPromises, ...removePromises]);
                 const allItems = (isMovie ? movies : shows) || [];
-                const otherItems = allItems.filter(item => !addItems.find(add => add.item_id == item.item_id) &&
-                    !removeItems.find(add => add.item_id == item.item_id));
+                const otherItems = allItems.filter(item => !updatedAdd.find(add => add.item_id == item.item_id) &&
+                    !updatedRemove.find(add => add.item_id == item.item_id));
                 const updatedItems = [...updatedAdd, ...updatedRemove, ...otherItems].sort((a, b) => b.score - a.score);
                 isMovie ? setMovies(updatedItems) : setShows(updatedItems);
                 updatePosters(listID, listTypeID);

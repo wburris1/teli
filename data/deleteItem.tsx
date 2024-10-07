@@ -53,9 +53,7 @@ export const removeFromList = () => {
     const updatePosterFunc = updateSomeListPosters();
     const {movies, shows, setMovies, setShows} = useData();
 
-    let updated: UserItem[] = [];
-
-    async function removeItem(listID: string, listTypeID: string, item_id: string): Promise<{items: UserItem[], isMovie: boolean}> {
+    async function removeItem(listID: string, listTypeID: string, item_id: string) {
         if (user) {
             let updatedItems = listTypeID == Values.movieListsID ? (movies || []).map((item) => ({ ...item })) : (shows || []).map((item) => ({ ...item }));
             updatedItems.forEach((item, index) => {
@@ -63,7 +61,7 @@ export const removeFromList = () => {
                     updatedItems[index].lists = item.lists.filter(id => id != listID);
                 }
             })
-            updated = updatedItems;
+            listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems); 
             //listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems);
             const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);  
             try {
@@ -77,20 +75,43 @@ export const removeFromList = () => {
                 console.error("Error removing document: ", error);
             }
         }
-        return {items: updated, isMovie: listTypeID == Values.movieListsID};
     };
 
-    const removeCallback = useCallback(
-        async (listID: string, listTypeID: string, item_id: string) => {
-          try {
-            const { items, isMovie } = await removeItem(listID, listTypeID, item_id);
-            isMovie ? setMovies(items) : setShows(items);
-          } catch (error) {
-            console.error('Error in removeCallback:', error);
-          }
-        },
-        [movies, shows, user]
-      );
+    return removeItem;
+}
 
-    return removeCallback;
+export const removeSelected = () => {
+    const { user } = useAuth();
+    const updatePosterFunc = updateSomeListPosters();
+    const {movies, shows, setMovies, setShows} = useData();
+
+    async function removeItems(listID: string, listTypeID: string, item_ids: string[]) {
+        if (user) {
+            let updatedItems = listTypeID == Values.movieListsID ? (movies || []).map((item) => ({ ...item })) : (shows || []).map((item) => ({ ...item }));
+            updatedItems.forEach((item, index) => {
+                if (item_ids.includes(item.item_id)) {
+                    updatedItems[index].lists = item.lists.filter(id => id != listID);
+                }
+            })
+            listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems); 
+            //listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems);
+            await Promise.all(item_ids.map(async (id) => {
+                const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", id);
+                try {
+                    await updateDoc(itemRef, {
+                        lists: arrayRemove(listID)
+                    });
+                } catch (error) {
+                    console.error("Error removing document: ", error);
+                }
+            }));
+            try {
+                updatePosterFunc(listID, listTypeID);
+            } catch (error) {
+                console.error("Error updating posters: ", error);
+            }
+        }
+    };
+
+    return removeItems;
 }
