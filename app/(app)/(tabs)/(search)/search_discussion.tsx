@@ -28,7 +28,7 @@ export default function DiscussionScreen() {
     }}>
       {/* Show loading indicator while posts are being fetched */}
       {loading ? (
-        <ActivityIndicator size="large" color={Colors[colorScheme ?? 'light'].tint} />
+        <ActivityIndicator size="large" color={Colors['loading']} />
       ) : (
         <PostFeedWithModals
           posts={posts}

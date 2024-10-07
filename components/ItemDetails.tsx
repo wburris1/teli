@@ -269,7 +269,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
     if (!imagesReady) {
         return (
             <View style={{width: screenWidth, height: screenHeight, justifyContent: 'center', backgroundColor: Colors[colorScheme ?? 'light'].background}}>
-                <ActivityIndicator size="large" />
+                <ActivityIndicator size="large" color={Colors['loading']}/>
             </View>
         )
     }

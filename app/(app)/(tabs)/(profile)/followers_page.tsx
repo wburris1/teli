@@ -64,7 +64,7 @@ const FollowersTabContent = ({ query, redirectLink, followersData, loading}: { u
     <View style={{ flex: 1 }}>
       {loading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={Colors['loading']}/>
         </View>
       ) : (
         <>
@@ -113,7 +113,7 @@ const FollowingTabContent = ({ userID, query, redirectLink, followingData, loadi
     <View style={{ flex: 1 }}>
       {loading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={Colors['loading']}/>
         </View>
       ) : (
         <>

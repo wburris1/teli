@@ -325,7 +325,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
             <View style={[styles.spinnerOverlay, {backgroundColor: Colors[colorScheme ?? 'light'].background,
               borderColor: Colors[colorScheme ?? 'light'].gray}]}>
               <Text style={{paddingBottom: 10, fontSize: 16, fontWeight: '500'}}>Finishing Ranking...</Text>
-              <ActivityIndicator size="large" />
+              <ActivityIndicator size="large" color={Colors['loading']}/>
             </View>
           )}
           {isIOS && (

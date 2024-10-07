@@ -182,7 +182,7 @@ export default function AddToListsScreen({item_id, item_name, newItem, listTypeI
             </View>
             {loading && (
               <View style={styles.spinnerOverlay}>
-                <ActivityIndicator size="large" />
+                <ActivityIndicator size="large" color={Colors['loading']} />
               </View>
             )}
             <FlatList

@@ -104,7 +104,7 @@ export const RenderGrid = ({ listID, items, loadMoreItems, isLoadingMore, isPost
     }, [topPadding.value]);
     const renderFooter = () => {
       if (!isLoadingMore) return null;
-      return <ActivityIndicator style={{ margin: 20 }} />;
+      return <ActivityIndicator style={{ margin: 20 }} color={Colors['loading']}/>;
     };
 
     return (

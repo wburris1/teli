@@ -245,7 +245,7 @@ setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = n
                     ) :
                     !loading ? commentsList() : (
                       <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-                        <ActivityIndicator size="large" />
+                        <ActivityIndicator size="large" color={Colors['loading']}/>
                       </View>
                     )}
                 </Animated.View>
@@ -299,7 +299,7 @@ setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = n
                 <View style={[styles.postPageContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                     {!loading ? commentsList() : (
                       <View style={{flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 30}}>
-                        <ActivityIndicator size="large" />
+                        <ActivityIndicator size="large" color={Colors['loading']}/>
                       </View>
                     )}
                 </View>

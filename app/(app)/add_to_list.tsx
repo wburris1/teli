@@ -125,7 +125,7 @@ export default function AddToListsScreen() {
           <View style={styles.centeredView}>
             {loading && (
               <View style={styles.spinnerOverlay}>
-                <ActivityIndicator size="large" />
+                <ActivityIndicator size="large" color={Colors['loading']} />
               </View>
             )}
             <FlatList

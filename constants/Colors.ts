@@ -9,6 +9,7 @@ const themeColor = '#800020';
 
 export default {
   theme: themeColor,
+  loading: themeColor,
   light: {
     text: '#000',
     background: '#fff',

@@ -119,7 +119,7 @@ const LikesModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, onC
                     </TouchableOpacity>}
                   </View> : (
                     <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-                      <ActivityIndicator size="large" />
+                      <ActivityIndicator size="large" color={Colors['loading']}/>
                     </View>
                   )}
                 </Animated.View>

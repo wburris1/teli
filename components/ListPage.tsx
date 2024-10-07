@@ -194,7 +194,7 @@ export const ListPage = ({listTypeID, listID, description, name, userID, redirec
         {loaded ? 
         <ItemList /> : (
           <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large" color={Colors['loading']}/>
           </View>
         )}
         </View>

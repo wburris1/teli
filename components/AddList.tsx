@@ -103,7 +103,7 @@ export const AddList = ({ watched }: { watched?: boolean }) => {
             <BlurView intensity={100} style={styles.blurContainer}>
                 {loading && (
                     <View style={styles.spinnerOverlay}>
-                        <ActivityIndicator size="large" />
+                        <ActivityIndicator size="large" color={Colors['loading']}/>
                     </View>
                 )}
                 <KeyboardAvoidingView behavior="padding">

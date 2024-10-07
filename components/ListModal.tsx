@@ -120,7 +120,7 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
             </View>
             {loading && (
               <View style={styles.spinnerOverlay}>
-                <ActivityIndicator size="large" />
+                <ActivityIndicator size="large" color={Colors['loading']}/>
               </View>
             )}
             <SearchInput search={search} setSearch={setSearch} isFocused={false}  />

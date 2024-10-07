@@ -296,7 +296,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
     <SafeAreaView style={styles.container}>
       {completeReRender ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={Colors['loading']}/>
         </View>
       ) : (
         <>
@@ -314,7 +314,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                 zIndex: 2,
               }}
             >
-              <ActivityIndicator size="large" />
+              <ActivityIndicator size="large" color={Colors['loading']}/>
             </View>
           )}
           <View

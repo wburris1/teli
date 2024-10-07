@@ -43,7 +43,7 @@ const ChangePasswordScreen = () => {
         />
         <TouchableOpacity onPress={handlePasswordReset} style={[styles.button, { backgroundColor: Colors['theme'] }]} disabled={loading}>
             {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={Colors['loading']} />
             ) : (
             <Text style={[styles.buttonText, { color: 'white' }]}>Request Reset</Text>
             )}

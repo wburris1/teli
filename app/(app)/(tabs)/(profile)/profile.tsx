@@ -227,7 +227,7 @@ const ProfilePage = () => {
       )}
       {loading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={Colors['loading']}/>
         </View>
       ) : (
         <>

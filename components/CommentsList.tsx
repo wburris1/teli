@@ -295,7 +295,7 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
                                     </TouchableOpacity>
                                 </> : <>
                                     <Text style={{ fontSize: 13, fontWeight: '300', marginTop: 3, }}>Posting...</Text>
-                                    <ActivityIndicator size={10} style={{marginTop: 5, marginLeft: 10}} />
+                                    <ActivityIndicator size={10} style={{marginTop: 5, marginLeft: 10}} color={Colors['loading']}/>
                                 </>}
                             </View>
                         </View>
@@ -333,7 +333,7 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
                 ))}
                 </View>}
             {comment.num_replies > 0 && parentCommentID == "" && (
-                loadingReplies ? <ActivityIndicator size={20} style={{alignSelf: 'flex-start', paddingLeft: 100}}/> :
+                loadingReplies ? <ActivityIndicator size={20} color={Colors['loading']} style={{alignSelf: 'flex-start', paddingLeft: 100}}/> :
                 <View style={{flexDirection: 'row', alignItems: 'center', paddingLeft: 70, height: 20}}>
                     {!(repliesOpen && comment.num_replies <= replies.length) &&
                     <TouchableOpacity onPress={() => {

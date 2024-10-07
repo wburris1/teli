@@ -92,7 +92,7 @@ export default function TabOneScreen() {
   };
   const renderFooter = () => {
     if (!isLoadingMore) return null;
-    return <ActivityIndicator style={{ margin: 20 }} />;
+    return <ActivityIndicator style={{ margin: 20 }} color={Colors['loading']}/>;
   };
 
   return (
@@ -117,13 +117,13 @@ export default function TabOneScreen() {
           </>
         ) : (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large" color={Colors['loading']}/>
           </View>
         )}
       </GestureHandlerRootView>
       {loadingNoti &&
         <View style={styles.loading}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={Colors['loading']}/>
         </View>
       }
     </View>

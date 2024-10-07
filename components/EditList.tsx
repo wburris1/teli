@@ -167,7 +167,7 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
                 <BlurView intensity={100} style={styles.overlay}>
                     {loading && (
                         <View style={styles.spinnerOverlay}>
-                            <ActivityIndicator size="large" color={Colors['theme']}/>
+                            <ActivityIndicator size="large" color={Colors['loading']}/>
                         </View>
                     )}
                     <KeyboardAvoidingView behavior="padding">

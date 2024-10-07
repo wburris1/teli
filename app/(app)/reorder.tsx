@@ -98,7 +98,7 @@ export default function ReorderScreen() {
       <View style={styles.centeredView}>
         {loading && (
           <View style={styles.spinnerOverlay}>
-            <ActivityIndicator size="large" />
+            <ActivityIndicator size="large" color={Colors['loading']}/>
           </View>
         )}
         {(movies && shows) ?
@@ -112,7 +112,7 @@ export default function ReorderScreen() {
           }}
         /> : 
         <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={Colors['loading']}/>
         </View>}
       </View>
     </GestureHandlerRootView>

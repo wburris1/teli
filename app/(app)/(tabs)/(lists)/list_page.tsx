@@ -512,7 +512,7 @@ const handleClose = () => {
         {((listTypeID == Values.movieListsID && movies) || (listTypeID == Values.tvListsID && shows)) ? 
           <ItemList /> : (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors[colorScheme ?? 'light'].background }}>
-              <ActivityIndicator size="large" />
+              <ActivityIndicator size="large" color={Colors['loading']}/>
             </View>
         )}
       </View>
