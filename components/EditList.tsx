@@ -1,4 +1,3 @@
-import { set } from "lodash";
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Pressable, StyleSheet, TextInput, View, useColorScheme } from "react-native";
 import { Text } from "./Themed";
 import { TouchableOpacity } from "react-native-gesture-handler";
@@ -168,7 +167,7 @@ export const EditListScreen = ({ listID, listTypeID, name, description, items, v
                 <BlurView intensity={100} style={styles.overlay}>
                     {loading && (
                         <View style={styles.spinnerOverlay}>
-                            <ActivityIndicator size="large" />
+                            <ActivityIndicator size="large" color={Colors['theme']}/>
                         </View>
                     )}
                     <KeyboardAvoidingView behavior="padding">

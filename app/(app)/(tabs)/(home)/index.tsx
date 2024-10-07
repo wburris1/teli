@@ -78,7 +78,7 @@ export default function TabOneScreen() {
                 onPress={() => {
                   router.push({
                     pathname: '/search',
-                    params: { initialIndex: 2 },
+                    params: { initialIndex: 2, triggerNumber: Math.random()},
                   });
                 }}
               >
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     marginTop: 20,
-    backgroundColor: Colors.light.tint, // Customize based on theme
+    backgroundColor: Colors['theme'], // Customize based on theme
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,

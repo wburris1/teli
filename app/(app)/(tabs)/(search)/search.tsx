@@ -79,11 +79,17 @@ const UsersTabContent = ({ query }: { query: string }) => {
 }
 
 export default function SearchScreen() {
-    const { initialIndex } = useLocalSearchParams();
+    const { initialIndex, triggerNumber } = useLocalSearchParams();
     const colorScheme = useColorScheme();
+    const [forceRerender, setForceRerender] = useState(0); // State to trigger re-render
     const [search, setSearch] = useState('');
+    const [whichTab, setWhichTab] = useState(initialIndex ? parseInt(initialIndex as string) : 0);
 
-    const whichTab = initialIndex ? parseInt(initialIndex as string) : 0;
+    useEffect(() => {
+      const tabIndex = initialIndex ? parseInt(initialIndex as string) : 0;
+      setWhichTab(tabIndex);
+      setForceRerender(prev => prev + 1);
+  }, [initialIndex, triggerNumber]);
 
     const moviesTabContent = useCallback(() => 
         <MoviesTabContent
@@ -117,7 +123,7 @@ export default function SearchScreen() {
         <SafeAreaView style={{ backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1 }}>
             <View style={styles.container}>
                 <SearchInput search={search} setSearch={setSearch} isFocused={false} />
-                <SearchTabs browse={true} tabs={searchTabs} onTabChange={() => {}} index={whichTab}/>
+                <SearchTabs key={forceRerender} browse={true} tabs={searchTabs} onTabChange={(index) => {}} index={whichTab}/>
             </View>
         </SafeAreaView>
     );

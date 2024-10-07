@@ -1,12 +1,18 @@
-import { Image, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
+import { ActivityIndicator, Animated, Easing, Image, Modal, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Text, View } from "./Themed"
 import Colors from "@/constants/Colors";
-import { Link } from "expo-router";
+import {  Link, router, useNavigation } from 'expo-router';
 import { Ionicons } from "@expo/vector-icons";
 import Dimensions from "@/constants/Dimensions";
-import { List } from "@/constants/ImportTypes";
+import { List, UserItem } from "@/constants/ImportTypes";
 import { DefaultPost } from "./LogoView";
 import { useData } from "@/contexts/dataContext";
+import { useEffect, useRef, useState } from "react";
+import { ListModalScreen } from "./ListModal";
+import { editListItems, editUnwatchedItems } from "@/data/editListItems";
+import Values from "@/constants/Values";
+import { AddUnwatchedScreen } from "./AddUnwatched";
+import { useLoading } from "@/contexts/loading";
 
 const imgUrl = 'https://image.tmdb.org/t/p/w200';
 const itemWidth = (Dimensions.screenWidth / 3) - 20;
@@ -19,11 +25,8 @@ const OverlappingImages = ({ images, list, posterNames }: { images: string[], li
     return (
       <View style={styles.imageContainer}>
         {images.map((image, index) => (
-          
           !image.endsWith('null') ? 
-            (<Image
-                key={index}
-                source={{ uri: image }}
+            (<Image key={index} source={{ uri: image }}
                 style={[styles.image,
                   { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
                     opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden'
@@ -34,15 +37,17 @@ const OverlappingImages = ({ images, list, posterNames }: { images: string[], li
                   { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,
                     opacity: image == "/" ? 0 : 100, borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden'
                    }]}/>)
-            
-          
         ))}
       </View>
     );
 };
 
 export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectLink = '' }: { list: List, listTypeID: string, isListTab: boolean, userID: string, index: number, redirectLink: string }) => {
-  const { storedListPosters } = useData();
+  const { movies, shows, storedListPosters } = useData();
+  const editItemsFunc = editListItems();
+  const { setLoading } = useLoading();
+  const editItemsFuncUnseen = editUnwatchedItems();
+
   const posters = [
     storedListPosters[list.top_poster_path] ? storedListPosters[list.top_poster_path] : (list.top_poster_path ? imgUrl + list.top_poster_path : "/"),
     storedListPosters[list.second_poster_path] ? storedListPosters[list.second_poster_path] : (list.second_poster_path ? imgUrl + list.second_poster_path : "/"),
@@ -50,26 +55,131 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectL
   ];
   const posterNames = [list.top_item_name, list.second_item_name, list.bottom_item_name];
   const isEmpty = posters[0] == "/";
+  const [addModalVisible, setAddModalVisible] = useState(false);
   const listName = list.name;
 
-  return (
-    <Link
-      href={{pathname: isListTab ? '/list_page' : `${redirectLink}_list_page` as any, params: { 
-        listTypeID: listTypeID, listID: list.list_id, description: list.description,
-        name: list.name, userID: userID, isRanked: list.is_ranked ? 'true' : 'false',
-      }}}
-      style={[styles.itemContainer, {height: (itemWidth - 20) * (3/2) + 45, marginTop: 5}]} asChild
-    >
-      <TouchableOpacity>
-        {isEmpty ? 
-        <View style={styles.emptyList}>
+  const AnimatedPlaceholder = () => {
+    const pulseAnim = useRef(new Animated.Value(1)).current;
+  
+    // Pulsating animation
+    useEffect(() => {
+      const animatePulse = Animated.sequence([
+        // Step 1: Grow large (2 times the size)
+        Animated.timing(pulseAnim, {
+          toValue: 2,
+          duration: 1000,
+          useNativeDriver: true,
+          easing: Easing.inOut(Easing.ease),
+        }),
+        // Step 2: Shrink to medium size (1.5 times the size)
+        Animated.timing(pulseAnim, {
+          toValue: 1.5, // Medium size
+          duration: 1000,
+          useNativeDriver: true,
+          easing: Easing.inOut(Easing.ease),
+        }),
+      ]);
+      // Start animation
+      const animation = Animated.loop(animatePulse, { iterations: 1 }); // Run only once
+      animation.start();
+  
+      // Stop the animation after 3 seconds (it finishes with a medium size)
+      const timer = setTimeout(() => {
+        animation.stop(); // Stop the animation
+      }, 3000);
+      // Cleanup the timer if the component unmounts
+      return () => clearTimeout(timer);
+    }, [pulseAnim]);
 
-        </View> : 
-        <OverlappingImages images={posters} list={list} posterNames={posterNames} />}
+    return (
+      <View style={styles.emptyList}>
+        <Animated.View style={[styles.plusIcon, { transform: [{ scale: pulseAnim }] }]}>
+          <Ionicons name="add-circle-outline" size={50} color="#aaa" />
+        </Animated.View>
+        <Text style={styles.addText}>Start your list!</Text>
+      </View>
+    )
+  }
+
+  const handleAddRemove = (addItems: UserItem[], removedItems: UserItem[]) => {
+    setLoading(true);
+    editItemsFunc(addItems, removedItems, list.list_id, listTypeID).then(() => {
+        setLoading(false);
+        setAddModalVisible(false);
+    })
+  }
+  const handleAddRemoveUnseen = (addItems: Item[], removedItems: Item[]) => {
+    setLoading(true);
+    editItemsFuncUnseen(addItems, removedItems, list.list_id, listTypeID).then(() => {
+      setLoading(false);
+      setAddModalVisible(false);
+    })
+  }
+
+  return (
+    <>
+      <ListModalScreen
+        listTypeID={listTypeID}
+        visible={addModalVisible && list.is_ranked}
+        containedItems={[]} 
+        onClose={() => {
+          setAddModalVisible(false);
+        }} 
+        onSelectedItemsChange={handleAddRemove}
+      />
+      
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={addModalVisible && !list.is_ranked}
+        onRequestClose={() => setAddModalVisible(false)}>
+        <AddUnwatchedScreen 
+          listID={list.list_id} 
+          listTypeID={listTypeID}
+          onClose={() => setAddModalVisible(false)} 
+          onSave={(addItems, removeItems) => {
+            handleAddRemoveUnseen(addItems, removeItems);
+          }}
+          />
+      </Modal>
+  
+      <TouchableOpacity
+        style={[styles.itemContainer, {zIndex: 3, height: (itemWidth - 20) * (3 / 2) + 45, marginTop: 5, }, ]}
+        onPress={() => {
+          if (isEmpty) {
+            if (movies && movies.length === 0 && listTypeID == Values.movieListsID) {
+              router.push({
+                pathname: '/search',
+                params: { initialIndex: 0, triggerNumber: Math.random(),},
+              });
+            } else if (shows && shows.length === 0 && listTypeID == Values.tvListsID) {
+              router.push({
+                pathname: '/search',
+                params: { initialIndex: 1, triggerNumber: Math.random(),},
+              });
+            } else {
+              setAddModalVisible(true);
+            }            
+          } else {
+            // Redirect to list_page when the list is not empty
+            router.push({pathname: '/list_page', params: {
+              listTypeID: listTypeID,
+              listID: list.list_id,
+              description: list.description,
+              name: list.name,
+              userID: userID,
+              isRanked: list.is_ranked ? 'true' : 'false',
+              isEmpty: isEmpty ? 'true' : 'false',
+              }
+            });
+          }
+        }}
+      >
+        {isEmpty ? <AnimatedPlaceholder/> : <OverlappingImages images={posters} list={list} posterNames={posterNames} />}
         <Text numberOfLines={2} style={!isEmpty ? styles.title : styles.emptyListTitle}>{listName}</Text>
       </TouchableOpacity>
-    </Link>
-  )
+    </>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -79,6 +189,34 @@ const styles = StyleSheet.create({
         width: itemWidth,
         marginLeft: 15,
         marginTop: 5,
+      },
+      spinnerOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+        zIndex: 1,
+    },
+      plusIcon: {
+        position: 'absolute',
+        alignSelf: 'center',
+        top: '40%',
+      },
+      addText2: {
+        marginTop: '60%', // Position the text below the plus sign
+        fontSize: 16,
+        color: '#aaa',
+      },
+      addText: {
+        position: 'absolute',
+        alignSelf: 'center',
+        top: '80%',
+        fontSize: 16,
+        color: '#aaa',
       },
       imageContainer: {
         flexDirection: 'row',
