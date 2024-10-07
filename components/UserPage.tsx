@@ -270,7 +270,7 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
                 }]}>Shows</Text>
             </TouchableOpacity>
         </View>
-        <HorizontalListWithRows lists={isMovies ? movieLists : tvLists} listTypeID={isMovies ? Values.movieListsID : Values.tvListsID} isListTab={false} userID={userID} numRows={1} redirectLink={redirectLink}/>
+        <HorizontalListWithRows lists={isMovies ? movieLists : tvLists} listTypeID={isMovies ? Values.movieListsID : Values.tvListsID} isListTab={false} userID={userID} numRows={1} redirectLink={redirectLink} displayEmptyLists={false}/>
     </>
   , [refreshFlag, movieLists, isMovies]);
 

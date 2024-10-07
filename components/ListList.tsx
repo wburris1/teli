@@ -35,7 +35,7 @@ const chunkLists = (lists: List[], size: number) => {
     return result;
 };
   
-export const HorizontalListWithRows = ({lists, listTypeID, userID, isListTab, numRows, redirectLink = '' }: {lists: List[], listTypeID: string, userID: string, isListTab: boolean, numRows: number, redirectLink: string}) => {
+export const HorizontalListWithRows = ({lists, listTypeID, userID, isListTab, numRows, redirectLink = '' , displayEmptyLists = true}: {lists: List[], listTypeID: string, userID: string, isListTab: boolean, numRows: number, redirectLink: string, displayEmptyLists?: boolean}) => {
     const colorScheme = useColorScheme();
     // Watched lists
     const watchedLists = lists != null ? reorderData(filterWatched(lists, true), Values.seenListID, Values.bookmarkListID) : [];
@@ -58,9 +58,14 @@ export const HorizontalListWithRows = ({lists, listTypeID, userID, isListTab, nu
             <View style={{flexDirection: 'column'}}>
             {chunkedData.map((row, rowIndex) => (
                 <View key={rowIndex} style={[styles.row, styles.rowSpacing]}>
-                {row.map(list => (
-                    <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={isListTab} userID={userID} index={0} redirectLink={redirectLink} />
-                ))}
+                {row.map(list => {
+                  if (!list.top_poster_path && !displayEmptyLists) {
+                    return null;
+                  } else {
+                    console.log('returninglist', list.name)
+                    return (<UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={isListTab} userID={userID} index={0} redirectLink={redirectLink} />)
+                  }
+                })}
                 </View>
             ))}
             </View>
@@ -72,9 +77,14 @@ export const HorizontalListWithRows = ({lists, listTypeID, userID, isListTab, nu
             <View style={{flexDirection: 'column'}}>
             {chunkedUnwatched.map((row, rowIndex) => (
                 <View key={rowIndex} style={[styles.row, styles.rowSpacing]}>
-                {row.map(list => (
-                  <UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={isListTab} userID={userID} index={-1} redirectLink={redirectLink} />
-                ))}
+                {row.map(list => {
+                  if (!list.top_poster_path && !displayEmptyLists) {
+                    return null;
+                  } else {
+                    return (<UserList key={list.list_id} list={list} listTypeID={listTypeID} isListTab={isListTab} userID={userID} index={-1} redirectLink={redirectLink} />
+                    )
+                  }
+                  })}
                 </View>
             ))}
             </View>
