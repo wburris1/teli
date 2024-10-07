@@ -75,7 +75,7 @@ PostListWithModalsProps) => {
             onEndReached={loadMorePosts}
             onEndReachedThreshold={0.75}
             ListFooterComponent={renderFooter}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={Colors['loading']}  colors={[Colors['loading']]}/>}
             style={{paddingTop: 10}}
           />
           <LikesModal post={post} onClose={() => setShowLikes(false)} visible={showLikes} redirectLink={redirectLink} />

@@ -62,7 +62,7 @@ export default function TabOneScreen() {
         <GestureHandlerRootView>
           <ScrollView
             contentContainerStyle={styles.emptyContainer}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={Colors['loading']} colors={[Colors['loading']]}/>}
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.emptyContainer}>

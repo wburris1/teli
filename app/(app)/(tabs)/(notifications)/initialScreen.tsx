@@ -107,7 +107,7 @@ export default function TabOneScreen() {
               onEndReached={loadMoreNoti}
               onEndReachedThreshold={0.5}
               ListFooterComponent={renderFooter}
-              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors['loading']}  colors={[Colors['loading']]} />}
             />
             {noti.length == 0 && (
               <View style={{justifyContent: 'flex-start', alignItems: 'center', flex: 1}}>
