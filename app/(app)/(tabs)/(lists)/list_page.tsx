@@ -190,9 +190,9 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
                   </TouchableOpacity>
                   <LinearGradient
                     colors={['black', 'transparent']}
-                    style={{position: 'absolute', top: 1,
-                      left: 1,
-                      right: 1,
+                    style={{position: 'absolute', top: 0,
+                      left: 0,
+                      right: 0,
                       height: 100,
                       borderTopLeftRadius: 10,
                       borderTopRightRadius: 10,}}
