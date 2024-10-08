@@ -60,7 +60,7 @@ export const useUserAdjustScores = () => {
 
         try {
             const allItems = (listTypeID == Values.movieListsID ? movies : shows) || [];
-            const otherItems = allItems.filter(item => item.score < 0 && !checkContained(item.item_id, updatedItems));
+            const otherItems = allItems.filter(item => (item.score < minScore || item.score > maxScore) && !checkContained(item.item_id, updatedItems));
             listTypeID == Values.movieListsID ? setMovies([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score)) : 
                 setShows([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score));
             await batch.commit();

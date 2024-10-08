@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/authContext";
 import { UpdateListPosters, updateSomeListPosters } from "./posterUpdates";
-import { useUserAdjustScores } from "./itemScores";
+import { AdjustReorderedScores, useUserAdjustScores } from "./itemScores";
 import Values from "@/constants/Values";
 import { FIREBASE_DB } from "@/firebaseConfig";
 import { addDoc, collection, doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
@@ -17,6 +17,7 @@ export const AddToDatabase = () => {
     const { user } = useAuth();
     const updateListFunc = UpdateListPosters();
     const adjustScoreFunc = useUserAdjustScores();
+    const reorderScoreFunc = AdjustReorderedScores();
     const {selectedLists, removeLists} = useTab();
     const { setLoading } = useLoading();
     const {movies, shows, setMovies, setShows} = useData();
