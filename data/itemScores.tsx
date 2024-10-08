@@ -35,7 +35,7 @@ export const useUserAdjustScores = () => {
         const scores = new Set();
         filteredItems.forEach(item => scores.add(item.score));
 
-        const count = scores.size + 1;
+        const count = minScore > 4 ? scores.size : scores.size + 1;
         var scoreIncrement = range / count;
 
         const batch = writeBatch(db);
@@ -140,7 +140,7 @@ export const AdjustReorderedScores = () => {
             prevScore = item.score;
         })
 
-        const goodInc = (10 - Values.maxMidScore) / (numUniqueGood + 1);
+        const goodInc = (10 - Values.maxMidScore) / (numUniqueGood);
         const midInc = (Values.maxMidScore - Values.minMidScore) / (numUniqueMid + 1);
         const badInc = Values.minMidScore / (numUniqueBad + 1);
         const batch = writeBatch(db);

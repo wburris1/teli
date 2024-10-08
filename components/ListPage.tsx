@@ -35,7 +35,7 @@ const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const itemWidth = (Dimensions.screenWidth - 12) / 3;
 
 const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, redirectLink = '/home' }, ref) => {
-    const score = item.score.toFixed(1);
+    const score = item.score == 10 ? '10' : item.score.toFixed(1);
     const isMovie = 'title' in item;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
     var date = "";

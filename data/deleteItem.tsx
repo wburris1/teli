@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/authContext";
-import { useUserAdjustScores } from "./itemScores";
+import { AdjustReorderedScores, useUserAdjustScores } from "./itemScores";
 import { UpdateListPosters, updateSomeListPosters } from "./posterUpdates";
 import { arrayRemove, collection, deleteDoc, doc, getDocs, query, updateDoc, where, writeBatch } from "firebase/firestore";
 import { FIREBASE_DB } from "@/firebaseConfig";
@@ -10,39 +10,63 @@ import { useCallback } from "react";
 
 const db = FIREBASE_DB;
 
+async function deleteItem(userID: string, post_id: string, item_id: string, listID: string, listTypeID: string) {
+    try {
+        const itemRef = doc(db, "users", userID, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);
+        await deleteDoc(itemRef);
+
+        const globalPostRef = doc(db, "globalPosts", post_id);
+        await deleteDoc(globalPostRef);
+
+        console.log(`Item ${item_id} deleted from all lists`);
+        console.log(`Item ${post_id} deleted from all globalPosts`);
+    } catch (error) {
+        console.error("Error removing document: ", error);
+    }
+};
+
 // Deletes watched item from all watched lists
 export const useUserItemDelete = () => {
     const { user } = useAuth();
     const adjustScoreFunc = useUserAdjustScores();
     const updateListFunc = UpdateListPosters();
-    const { requestListRefresh } = useData();
-    const {movies, shows, setMovies, setShows} = useData();
-
-    async function deleteItem(post_id: string, item_id: string, score: number, listID: string, listTypeID: string) {
-        if (user) {
-            try {
-                const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);
-                await deleteDoc(itemRef);
-
-                const globalPostRef = doc(db, "globalPosts", post_id);
-                await deleteDoc(globalPostRef);
-                //const updatedItems = listTypeID == Values.movieListsID ? (movies ? movies.filter(movie => movie.item_id == item_id && movie.score != -1) : []) :
-                //    (shows ? shows.filter(show => show.item_id == item_id && show.score != -1) : []);
-                //listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems);
-
-                console.log(`Item ${item_id} deleted from all lists`);
-                console.log(`Item ${post_id} deleted from all globalPosts`);
-                updateListFunc(listTypeID);
-            } catch (error) {
-                console.error("Error removing document: ", error);
-            }
-        }
-    };
 
     function reactToDelete(items: UserItem[], post_id: string, item_id: string, score: number, listID: string, listTypeID: string) {
         adjustScoreFunc(items, score, listID, listTypeID);
-        deleteItem(post_id, item_id, score, listID, listTypeID);
+        if (user) deleteItem(user.uid, post_id, item_id, listID, listTypeID).then(() => {
+            updateListFunc(listTypeID);
+        });
     }
+
+    return reactToDelete;
+}
+
+export const useUserSelectedDelete = () => {
+    const { user } = useAuth();
+    const adjustScoreFunc = AdjustReorderedScores();
+    const updateListFunc = UpdateListPosters();
+
+    function reactToDelete(
+        items: UserItem[],
+        selectedItems: { post_id: string; item_id: string }[],
+        listID: string,
+        listTypeID: string
+      ) {
+          // Adjust scores for all items
+          adjustScoreFunc(items, listID, listTypeID);
+          
+          if (user) {
+              const deletePromises = selectedItems.map(({ post_id, item_id }) => 
+                  deleteItem(user.uid, post_id, item_id, listID, listTypeID)
+              );
+  
+              Promise.all(deletePromises).then(() => {
+                  updateListFunc(listTypeID); // Update the list after all deletions
+              }).catch(error => {
+                  console.error('Error deleting items: ', error);
+              });
+          }
+      }
 
     return reactToDelete;
 }

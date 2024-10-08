@@ -112,7 +112,7 @@ export const AddToDatabase = () => {
                       seenItem.score = newScore;
                   }
                 });
-                await adjustScoreFunc(items, newScore, listID, listTypeID);
+                await reorderScoreFunc(items.sort((a, b) => b.score - a.score), listID, listTypeID);
                 updateListFunc(listTypeID);
               } catch (err: any) {
                 console.error("Error updating item: ", err);

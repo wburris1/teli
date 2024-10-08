@@ -9,7 +9,7 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-g
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withClamp, withSpring, withTiming } from 'react-native-reanimated';
 import Values from '@/constants/Values';
 import { useTab } from '@/contexts/listContext';
-import { removeFromList, removeSelected, useUserItemDelete } from '@/data/deleteItem';
+import { removeFromList, removeSelected, useUserItemDelete, useUserSelectedDelete } from '@/data/deleteItem';
 import { EditListScreen } from '@/components/EditList';
 import SearchInput from '@/components/Search/SearchInput';
 import { AnimatedSearch } from '@/components/AnimatedSearch';
@@ -40,7 +40,7 @@ const itemWidth = (screenWidth - 12) / 3;
 const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex,
   selectionMode, selectedItems, setselectedItems, posterPath}, ref) => {
     const { setItem } = useTab();
-    const score = item.score.toFixed(1);
+    const score = item.score == 10 ? '10' : item.score.toFixed(1);
     const isMovie = 'title' in item;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
     const isAll = listID == Values.seenListID ? true : false;
@@ -304,7 +304,7 @@ export default function TabOneScreen() {
   const [selectedItems, setselectedItems] = useState<UserItem[]>([]);
   const isAll = listID == Values.seenListID ? true : false;
   const [listsModalVisible, setListsModalVisible] = useState(false);
-  const deleteItem = useUserItemDelete();
+  const deleteItems = useUserSelectedDelete();
   const removeItems = removeSelected();
 
   useEffect(() => {
@@ -404,9 +404,9 @@ const handleClose = () => {
                     selectedItem => selectedItem.item_id === filteredItem.item_id
                   )
                 );
-                await Promise.all(selectedItems.map(async (item) => {
-                  await deleteItem(newList.filter(filterItem => filterItem.item_id !== item.item_id), item.post_id, item.item_id, item.score, Values.seenListID, listTypeID as string);
-                }));
+                deleteItems(newList.filter(filterItem => !selectedItems.includes(filterItem)),
+                  selectedItems.map(itm => ({ post_id: itm.post_id, item_id: itm.item_id })),
+                  listID as string, listTypeID as string);
               } else {
                 removeItems(listID as string, listTypeID as string, selectedItems.map(itm => itm.item_id));
               }

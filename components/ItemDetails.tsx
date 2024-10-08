@@ -106,7 +106,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
             if (seenItem.item_id == item.id.toString()) {
               exists = true;
               if (seenItem.score <= 10 && seenItem.score >= 0) {
-                setScore(seenItem.score.toFixed(1));
+                setScore(seenItem.score == 10 ? '10' : seenItem.score.toFixed(1));
                 setDupePostID(seenItem.post_id);
               }
             }

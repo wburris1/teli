@@ -223,7 +223,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                   bottom: 5,
                   right: 6,
                   backgroundColor: 'transparent'}]}>
-                    {item.score.toFixed(1)}
+                    {item.score == 10 ? '10' : item.score.toFixed(1)}
                 </Text>
               </>
               }
@@ -306,7 +306,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                   bottom: 5,
                   right: 6,
                   backgroundColor: 'transparent'}]}>
-                    {item.score.toFixed(1)}
+                    {item.score == 10 ? '10' : item.score.toFixed(1)}
                 </Text>
               </>
               }
