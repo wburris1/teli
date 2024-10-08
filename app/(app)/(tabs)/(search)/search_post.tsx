@@ -32,7 +32,7 @@ export default function HomePostScreen() {
     const display = useCallback(() => {
         return (
             <>
-                {post && <PostScreen post={post as FeedPost} redirectLink="home" />}
+                {post && <PostScreen post={post as FeedPost} redirectLink="/search" />}
             </>
         )
     }, [post])

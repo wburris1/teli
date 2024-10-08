@@ -8,6 +8,7 @@ import { FIREBASE_DB } from '@/firebaseConfig';
 import Values from '@/constants/Values';
 import { FetchFollowers, FetchFollowing, FetchItems, FetchMovieLists, FetchTVLists } from '@/components/Helpers/FetchFunctions';
 import { Asset } from 'expo-asset';
+import { Image } from 'react-native';
 
 type DataContextType = {
     movies: UserItem[] | null;
@@ -181,6 +182,7 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
       const prefetchMoviePosters = async () => {
         const prefetched = await Promise.all(
           (movies || []).map(async (item) => {
+            Image.prefetch(posterUrl + item.poster_path);
             const imageAsset = await Asset.fromURI(posterUrl + item.poster_path).downloadAsync();
             return { [item.item_id]: imageAsset.localUri };
           })
@@ -193,6 +195,7 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
       const prefetchShowPosters = async () => {
         const prefetched = await Promise.all(
           (shows || []).map(async (item) => {
+            Image.prefetch(posterUrl + item.poster_path);
             const imageAsset = await Asset.fromURI(posterUrl + item.poster_path).downloadAsync();
             return { [item.item_id]: imageAsset.localUri };
           })

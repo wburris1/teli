@@ -40,7 +40,7 @@ export default function DiscussionScreen() {
           handleLikes={handleLikes}
           setShowComments={setShowComments}
           setShowLikes={setShowLikes}
-          redirectLink='home'
+          redirectLink='/list'
           handleRefresh={handleRefresh}
           refreshing={refreshing}
           loadMorePosts={loadMorePosts}

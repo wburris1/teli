@@ -94,7 +94,7 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectL
     return (
       <View style={styles.emptyList}>
         <Animated.View style={[styles.plusIcon, { transform: [{ scale: pulseAnim }] }]}>
-          <Ionicons name="add-circle-outline" size={50} color="#aaa" />
+          <Ionicons name="add-circle-outline" size={50} color={Colors['theme']} />
         </Animated.View>
         <Text style={styles.addText}>Start your list!</Text>
       </View>
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
       plusIcon: {
         position: 'absolute',
         alignSelf: 'center',
-        top: '40%',
+        top: '25%',
       },
       addText2: {
         marginTop: '60%', // Position the text below the plus sign
@@ -214,9 +214,10 @@ const styles = StyleSheet.create({
       addText: {
         position: 'absolute',
         alignSelf: 'center',
-        top: '80%',
-        fontSize: 16,
-        color: '#aaa',
+        top: '70%',
+        fontSize: 14,
+        color: Colors['theme'],
+        fontWeight: '500'
       },
       imageContainer: {
         flexDirection: 'row',

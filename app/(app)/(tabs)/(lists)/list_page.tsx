@@ -29,17 +29,17 @@ type RowProps = {
     selectionMode: boolean;
     selectedItems: UserItem[];
     setselectedItems: (lists: UserItem[]) => void;
+    posterPath: string
 };
 
-const imgUrl = 'https://image.tmdb.org/t/p/w342';
+const imgUrl = 'https://image.tmdb.org/t/p/w500';
 const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
 const itemWidth = (screenWidth - 12) / 3;
 
-const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex,
-  selectionMode, selectedItems, setselectedItems}, ref) => {
+const RenderItem = React.memo(forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex,
+  selectionMode, selectedItems, setselectedItems, posterPath}, ref) => {
     const { setItem } = useTab();
-    const { storedMoviePosters, storedShowPosters } = useData();
     const score = item.score.toFixed(1);
     const isMovie = 'title' in item;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
@@ -91,7 +91,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
       }
     }, [scale.value, transY.value, transX.value]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
       if (popUpIndex !== index && scale.value > 1) {
         handleClose();
       }
@@ -164,7 +164,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
               
               {item.poster_path ? 
                 <Image
-                    source={{ uri: isMovie ? storedMoviePosters[item.item_id] : storedShowPosters[item.item_id] }}
+                    source={{ uri: imgUrl + item.poster_path }}
                     style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
                     /> : <DefaultPost style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }, ]}
                     text={isMovie ? item.title : item.name}/>}
@@ -216,7 +216,8 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
       {popUpIndex >= 0 && <Pressable onPress={() => setPopUpIndex(-1)} style={styles.overlay}></Pressable>}
       </>
     );
-});
+}), (prevProps, nextProps) => prevProps.posterPath === nextProps.posterPath
+);
 
 const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, selectedItems, setselectedItems }:
   {listID: string, listTypeID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[], selectionMode: boolean,
@@ -224,8 +225,9 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
     const colorScheme = useColorScheme();
     const [popUpIndex, setPopUpIndex] = useState(-1);
     const topPadding = useSharedValue(10);
+    const { storedMoviePosters, storedShowPosters } = useData();
 
-    useEffect(() => {
+    useLayoutEffect(() => {
       if (popUpIndex >= 0 && popUpIndex < 3) {
         topPadding.value = withSpring((itemWidth * 1.5) * 0.2);
       } else {
@@ -233,7 +235,7 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
       }
     }, [popUpIndex])
 
-    useEffect(() => {
+    useLayoutEffect(() => {
       if (items) {
         onItemsUpdate(items);
       }
@@ -244,6 +246,16 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
         paddingTop: topPadding.value,
       }
     }, [topPadding.value]);
+
+    const memoizedSelectedItems = useMemo(() => selectedItems, [selectedItems]);
+    const memoizedSetSelectedItems = useCallback(setselectedItems, [setselectedItems]);
+
+    const memoizedPosters = useMemo(() => {
+      return listTypeID === Values.movieListsID
+        ? storedMoviePosters
+        : storedShowPosters;
+    }, []);
+
     if (items) {
       return (
         <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
@@ -254,8 +266,8 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
           {items.length > 0 ?
               <Animated.FlatList
                 data={items}
-                renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} 
-                selectionMode={selectionMode} selectedItems={selectedItems} setselectedItems={setselectedItems}
+                renderItem={({ item, index }) => <RenderItem posterPath={memoizedPosters[item.item_id]} item={item} index={index} items={items} listID={listID} 
+                selectionMode={selectionMode} selectedItems={memoizedSelectedItems} setselectedItems={memoizedSetSelectedItems}
                   popUpIndex={popUpIndex} setPopUpIndex={setPopUpIndex} />}
                 keyExtractor={item => item.item_id}
                 numColumns={3}
