@@ -195,9 +195,10 @@ setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = n
 
   const gestureHandler = (event: PanGestureHandlerGestureEvent) => {
     setDragging(true);
-    if (event.nativeEvent.translationY >= Dimensions.screenHeight * 0.5) {
+    if (event.nativeEvent.velocityY > 800) {
       onClose();
-    } else if (event.nativeEvent.translationY > 0) {
+    }
+    if (event.nativeEvent.translationY > 0) {
       //translateY.value = withSpring(0, { damping: 20, stiffness: 90 });
       translateY.value = event.nativeEvent.translationY;
     }
@@ -237,7 +238,7 @@ setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = n
                 <Animated.View style={[styles.container, animatedStyle, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                     <View style={styles.handle} />
                     <Text style={styles.text}>Comments</Text>
-                    {(!loading && (isPostPage && cmts.length == 0) || (!isPostPage && displayComments.length == 0)) ? (
+                    {(!loading && ((isPostPage && cmts.length == 0) || (!isPostPage && displayComments.length == 0))) ? (
                       <View style={{justifyContent: 'flex-start', width: '100%', alignItems: 'center', flex: 1, marginTop: 100}}>
                         <Text style={{fontSize: 22, color: 'gray'}}>Noone has commented yet</Text>
                         <Text style={{fontSize: 22, color: 'gray', paddingTop: 5}}>Be the first!</Text>

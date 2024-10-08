@@ -31,9 +31,10 @@ const LikesModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, onC
 
   const gestureHandler = (event: PanGestureHandlerGestureEvent) => {
     setDragging(true);
-    if (event.nativeEvent.translationY >= Dimensions.screenHeight * 0.5) {
+    if (event.nativeEvent.velocityY > 800) {
       onClose();
-    } else if (event.nativeEvent.translationY > 0) {
+    }
+    if (event.nativeEvent.translationY > 0) {
       //translateY.value = withSpring(0, { damping: 20, stiffness: 90 });
       translateY.value = event.nativeEvent.translationY;
     }
