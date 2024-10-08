@@ -37,7 +37,7 @@ const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
 const itemWidth = (screenWidth - 12) / 3;
 
-const RenderItem = React.memo(forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex,
+const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex,
   selectionMode, selectedItems, setselectedItems, posterPath}, ref) => {
     const { setItem } = useTab();
     const score = item.score.toFixed(1);
@@ -154,7 +154,7 @@ const RenderItem = React.memo(forwardRef<View, RowProps>(({ item, index, items, 
   
     return (
       <>
-      <View style={{zIndex: popUpIndex === index ? 2 : 0}}>
+      <View style={{zIndex: popUpIndex == index ? 2 : 0}}>
       <ConditionalLink
         condition={selectionMode}
         href={{ pathname: "/list_item", params: { id: item.item_id, groupKey: isMovie ? "movie" : "tv" } }}
@@ -216,8 +216,7 @@ const RenderItem = React.memo(forwardRef<View, RowProps>(({ item, index, items, 
       {popUpIndex >= 0 && <Pressable onPress={() => setPopUpIndex(-1)} style={styles.overlay}></Pressable>}
       </>
     );
-}), (prevProps, nextProps) => prevProps.posterPath === nextProps.posterPath
-);
+});
 
 const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, selectedItems, setselectedItems }:
   {listID: string, listTypeID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[], selectionMode: boolean,
@@ -613,7 +612,7 @@ const styles = StyleSheet.create({
       //height: 209,
       width: '100%',
       aspectRatio: 1 / 1.5,
-      borderWidth: 1,
+      borderWidth: 0,
       borderRadius: 10,
     },
     textContainer: {
@@ -676,9 +675,9 @@ const styles = StyleSheet.create({
     },
     gradient: {
       position: 'absolute',
-      bottom: 1,
-      left: 1,
-      right: 1,
+      bottom: 0,
+      left: 0,
+      right: 0,
       height: 100,
       borderBottomLeftRadius: 10,
       borderBottomRightRadius: 10,
