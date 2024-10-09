@@ -6,7 +6,7 @@ import { FIREBASE_DB } from "@/firebaseConfig";
 import { useData } from "@/contexts/dataContext";
 import { UserItem } from "@/constants/ImportTypes";
 import Values from "@/constants/Values";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 const db = FIREBASE_DB;
 
@@ -30,9 +30,13 @@ export const useUserItemDelete = () => {
     const { user } = useAuth();
     const adjustScoreFunc = useUserAdjustScores();
     const updateListFunc = UpdateListPosters();
+    const [loading, setLoading] = useState(false);
 
     function reactToDelete(items: UserItem[], post_id: string, item_id: string, score: number, listID: string, listTypeID: string) {
-        adjustScoreFunc(items, score, listID, listTypeID);
+        setLoading(true);
+        adjustScoreFunc(items, score, listID, listTypeID).then(() => {
+            setLoading(false);
+        });
         if (user) deleteItem(user.uid, post_id, item_id, listID, listTypeID).then(() => {
             updateListFunc(listTypeID);
         });

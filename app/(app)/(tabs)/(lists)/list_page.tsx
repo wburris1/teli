@@ -18,6 +18,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useData } from '@/contexts/dataContext';
 import  AddToListsScreen  from '@/components/AddToListsModal';
 import { DefaultPost } from '@/components/LogoView';
+import { useLoading } from '@/contexts/loading';
+import Spinner from 'react-native-loading-spinner-overlay';
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 type RowProps = {
     item: UserItem;
@@ -55,35 +58,18 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
     const scale = useSharedValue(1);
     const transY = useSharedValue(0);
     const transX = useSharedValue(0);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
-    const onDelete = (item_id: string) => {
-      const alertHeaderText = !isAll ? "Confirm Remove" : "Confirm Delete";
-      const alertText = !isAll ? "Are you sure you want to remove this item from the list?" : 
-        "Deleting this item will remove it from all your lists. Are you sure you want to delete this item?";
-      const alertButtonText = !isAll ? "Remove" : "Delete";
-      Alert.alert(
-        alertHeaderText,
-        alertText,
-        [
-          {
-            text: "Cancel",
-            style: "cancel"
-          },
-          {
-            text: alertButtonText,
-            onPress: () => {
-              if (isAll) {
-                console.log("Delete Pressed, deleting item with ID:", item_id);
-                deleteItem(items.filter(filterItem => filterItem.item_id !== item.item_id), item.post_id ,item.item_id, item.score, Values.seenListID, listTypeID);
-              } else {
-                console.log("Remove Pressed, removing item with ID:", item_id);
-                removeItem(listID, listTypeID, item.item_id);
-              }
-            }
-          }
-        ]
-      );
-    };
+    const onConfirmDelete = () => {
+      setDeleteModalVisible(false);
+      if (isAll) {
+        console.log("Delete Pressed, deleting item with ID:", item.item_id);
+        deleteItem(items.filter(filterItem => filterItem.item_id !== item.item_id), item.post_id ,item.item_id, item.score, Values.seenListID, listTypeID);
+      } else {
+        console.log("Remove Pressed, removing item with ID:", item.item_id);
+        removeItem(listID, listTypeID, item.item_id);
+      }
+    }
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
@@ -154,6 +140,13 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
   
     return (
       <>
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        onClose={() => setDeleteModalVisible(false)}
+        onConfirm={onConfirmDelete}
+        isAll={isAll}
+        selectedItems={[item]}
+      />
       <View style={{zIndex: popUpIndex == index ? 2 : 0}}>
       <ConditionalLink
         condition={selectionMode}
@@ -171,15 +164,15 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
                {selectionMode && (
               <TouchableOpacity onPress={toggleSelect} style={styles.checkbox}>
                 <Ionicons
-                  name={selectedItems.includes(item) ? "checkmark-circle" : "ellipse-outline"}
-                  size={30}
-                  color="white" //{Colors['light'].text}
+                  name={selectedItems.includes(item) ? "checkmark" : "ellipse"}
+                  size={25}
+                  color={selectedItems.includes(item) ? 'white' : 'gray'}
                 />
               </TouchableOpacity>
             )}
               {popUpIndex === index && (
                 <Animated.View style={[animatedOpacity, {position: 'absolute', flexDirection: 'row', justifyContent: 'space-between', top: 0, width: '100%'}]}>
-                  <TouchableOpacity style={styles.popUpButton} onPress={() => onDelete(item.item_id)}>
+                  <TouchableOpacity style={styles.popUpButton} onPress={() => setDeleteModalVisible(true)}>
                     <Ionicons name={listID == Values.seenListID ? "trash" : "close"} size={25} color={'white'} />
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.popUpButton} onPress={() => {
@@ -306,6 +299,8 @@ export default function TabOneScreen() {
   const [listsModalVisible, setListsModalVisible] = useState(false);
   const deleteItems = useUserSelectedDelete();
   const removeItems = removeSelected();
+  const {loading, setLoading} = useLoading();
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   useEffect(() => {
     if (description) {
@@ -380,46 +375,28 @@ const handleClose = () => {
     </Modal>
   ), [listsModalVisible, selectedItems, setselectedItems]);
 
-  const onSelectionDelete = () => {
-    const alertHeaderText = !isAll ? "Confirm Remove" : "Confirm Delete";
-    const pluralText = selectedItems.length > 1 ? "these items" : "this item";
-    const alertText = !isAll ? "Are you sure you want to remove " + pluralText + " from the list?" : 
-      "Deleting " + pluralText + " will remove it from all your lists. Are you sure you want to delete " + pluralText + "?";
-    const alertButtonText = !isAll ? "Remove" : "Delete";
-    Alert.alert(
-      alertHeaderText,
-      alertText,
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: alertButtonText, 
-          onPress: async () => {
-            try {
-              if (isAll) {
-                const newList = filteredItems.filter(
-                  filteredItem => !selectedItems.some(
-                    selectedItem => selectedItem.item_id === filteredItem.item_id
-                  )
-                );
-                deleteItems(newList.filter(filterItem => !selectedItems.includes(filterItem)),
-                  selectedItems.map(itm => ({ post_id: itm.post_id, item_id: itm.item_id })),
-                  listID as string, listTypeID as string);
-              } else {
-                removeItems(listID as string, listTypeID as string, selectedItems.map(itm => itm.item_id));
-              }
-              setselectedItems([]); 
-              setSelectionMode(false);
-            } catch (error) {
-              console.error("Error deleting/removing items:", error);
-            }
-          }
-        }
-      ]
-    );
-  };
+  const onConfirmDelete = () => {
+    setDeleteModalVisible(false);
+    try {
+      if (isAll) {
+        const newList = filteredItems.filter(
+          filteredItem => !selectedItems.some(
+            selectedItem => selectedItem.item_id === filteredItem.item_id
+          )
+        );
+        setLoading(true);
+        deleteItems(newList.filter(filterItem => !selectedItems.includes(filterItem)),
+          selectedItems.map(itm => ({ post_id: itm.post_id, item_id: itm.item_id })),
+          listID as string, listTypeID as string);
+      } else {
+        removeItems(listID as string, listTypeID as string, selectedItems.map(itm => itm.item_id));
+      }
+      setselectedItems([]); 
+      setSelectionMode(false);
+    } catch (error) {
+      console.error("Error deleting/removing items:", error);
+    }
+  }
 
   const handleSelectionMode = () => {
     if (selectionMode) {
@@ -508,6 +485,7 @@ const handleClose = () => {
       transform: [{ translateY: slideAnim.value }],
     };
   });
+
   return (
     <GestureHandlerRootView>
       <View style={{ backgroundColor: '#fff', flex: 1 }}>
@@ -519,6 +497,11 @@ const handleClose = () => {
         <EditListScreen listID={listID as string} listTypeID={listTypeID as string} name={name as string} description={description as string}
           items={items} visible={editModalVisible} onClose={onClose} onEdit={onEditDetails} isRanked={isRanked as string == 'true'} />
         <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
+        {loading && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', zIndex: 2 }}>
+          <ActivityIndicator size="large" color={Colors['loading']}/>
+        </View>
+        )}
         {((listTypeID == Values.movieListsID && movies) || (listTypeID == Values.tvListsID && shows)) ? 
           <ItemList /> : (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors[colorScheme ?? 'light'].background }}>
@@ -527,23 +510,30 @@ const handleClose = () => {
         )}
       </View>
       {listsModal()}
+      <ConfirmationModal
+        visible={deleteModalVisible}
+        onClose={() => setDeleteModalVisible(false)}
+        onConfirm={onConfirmDelete}
+        isAll={isAll}
+        selectedItems={selectedItems}
+      />
       {selectionMode && selectedItems.length > 0 && (
         <Animated.View style={[styles.fabContainer, animatedStyle]}>
            <TouchableOpacity
-            style={styles.fabAdd}
+            style={[styles.fabAdd, { backgroundColor: Colors[colorScheme ?? 'light'].text }]}
             onPress={() => setListsModalVisible(true)}
           >
             <Ionicons name="add" 
             size={45}
-            color={"white"} />
+            color={Colors[colorScheme ?? 'light'].background} />
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.fab, { backgroundColor: 'black' }]}
-            onPress={onSelectionDelete}
+            style={[styles.fab, { backgroundColor: Colors[colorScheme ?? 'light'].text }]}
+            onPress={() => {setDeleteModalVisible(true)}}
           >
             <Ionicons name="trash" 
             size={30}
-            color={"white"} />
+            color={Colors[colorScheme ?? 'light'].background} />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -709,6 +699,11 @@ const styles = StyleSheet.create({
       top: 10,
       left: 10,
       zIndex: 1,
+      borderRadius: 50,
+      borderWidth: 1,
+      backgroundColor: 'gray',
+      borderColor: 'white',
+      padding: 3
     },
     fabContainer: {
       position: 'absolute',
@@ -733,7 +728,6 @@ const styles = StyleSheet.create({
       shadowRadius: 2,
     },
     fabAdd: {
-      backgroundColor: 'black',
       width: 60,
       height: 60,
       borderRadius: 30,

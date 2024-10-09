@@ -13,6 +13,7 @@ const db = FIREBASE_DB;
 export const useUserAdjustScores = () => {
     const { user, userData } = useAuth();
     const {movies, shows, setMovies, setShows} = useData();
+    const {loading, setLoading} = useLoading();
 
     async function adjustScores(items: UserItem[], minScore: number, maxScore: number, range: number, listID: string, listTypeID: string) {
         // Distribute scores evenly between minScore and maxScore
@@ -79,7 +80,7 @@ export const useUserAdjustScores = () => {
         return contained;
     }
 
-    const reactToScoresAdjust = useCallback((items: UserItem[], score: number, listID: string, listTypeID: string) => {
+    const reactToScoresAdjust = async (items: UserItem[], score: number, listID: string, listTypeID: string) => {
         var minScore = Values.minBadScore;
         var maxScore = 10;
         var range = Values.minMidScore;
@@ -94,8 +95,8 @@ export const useUserAdjustScores = () => {
         } else {
             maxScore = Values.minMidScore;
         }
-        adjustScores(items, minScore, maxScore, range, listID, listTypeID);
-    }, [movies, shows, user])
+        await adjustScores(items, minScore, maxScore, range, listID, listTypeID);
+    }
 
     return reactToScoresAdjust;
 }
