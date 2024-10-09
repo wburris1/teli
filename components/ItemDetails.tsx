@@ -19,7 +19,7 @@ import Toast from 'react-native-toast-message';
 import { CastList } from './CastList';
 import { DisplayItemInfo } from './DisplayItemInfo';
 import { Reccomendation } from './Reccomendation';
-import { drop } from 'lodash';
+import { drop, groupBy } from 'lodash';
 import { DefaultPost, Logo } from './LogoView';
 import { useAuth } from '@/contexts/authContext';
 import { FetchFollowedUsersRankings } from './Helpers/FetchFunctions';
@@ -412,7 +412,9 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                     </View>
                   )}
                 </View>}
-                <Link href={{pathname: redirectLink + '_discussion' as any, params: { itemID: item.id }}} asChild>
+                <Link href={{pathname: redirectLink + '_discussion' as any, params: { itemID: item.id, name: isMovie ? item.title : item.name, poster: item.poster_path,
+                    backdrop: item.backdrop_path, runtime: isMovie ? item.runtime : item.episode_run_time, groupKey: isMovie ? 'movies' : 'shows'
+                 }}} asChild>
                     <TouchableOpacity style={{flex: 1, justifyContent: 'flex-start', width: '100%'}}>
                         <View style={{flexDirection: 'row', justifyContent: 'flex-start', width: '100%', paddingVertical: 7,  alignItems: 'center'}}>
                             <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -436,7 +438,8 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                         </Link>
                     ))}
                 </ScrollView>}
-                <Link href={{pathname: redirectLink + '_discussion' as any, params: { itemID: item.id }}} asChild>
+                <Link href={{pathname: redirectLink + '_discussion' as any, params: { itemID: item.id, name: isMovie ? item.title : item.name, poster: item.poster_path,
+                    backdrop: item.backdrop_path, runtime: isMovie ? item.runtime : item.episode_run_time, groupKey: isMovie ? 'movies' : 'shows' }}} asChild>
                     <TouchableOpacity style={{flex: 1, borderColor: Colors[colorScheme ?? 'light'].gray, borderTopWidth: 1, borderBottomWidth: 1, marginVertical: 10}}>
                         <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingVertical: 10,  alignItems: 'center'}}>
                             <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10}}>

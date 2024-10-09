@@ -8,17 +8,30 @@ import PostFeedWithModals from '@/components/PostFeedWithModals';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import {  router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { WritePost } from '@/components/WritePost';
 
 export default function DiscussionScreen() {
   const { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment} = useModalState();
   const [refreshing, setRefreshing] = useState(false);
-  const { itemID } = useLocalSearchParams();
+  const { itemID, name, poster, backdrop, runtime, groupKey } = useLocalSearchParams();
   const { posts, loading, loadMorePosts, isLoadingMore } = makeFeed('Home', refreshing, setRefreshing, itemID as string);
   const colorScheme = useColorScheme();
+  const navigation = useNavigation();
+  const [postModalVisible, setPostModalVisible] = useState(false);
   
   const handleRefresh = () => {
     setRefreshing(true);
   };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity onPress={() => setPostModalVisible(true)} style={{borderRadius: 20, backgroundColor: Colors['theme'], paddingHorizontal: 10, paddingVertical: 5}}>
+          <Text style={{fontSize: 16, fontWeight: '500', color: 'white'}}>Post</Text>
+        </TouchableOpacity>
+      ),
+    })
+  }, [colorScheme])
 
   return (
     <View style={{
@@ -26,6 +39,17 @@ export default function DiscussionScreen() {
         alignItems: 'center',
         justifyContent: 'center'
     }}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={postModalVisible}
+        onRequestClose={() => setPostModalVisible(false)}
+        >
+        <WritePost id={itemID as string} name={name as string}
+            poster={poster as string} groupKey={groupKey as string} isHome={false}
+            onClose={() => setPostModalVisible(false)} backdrop={backdrop as string}
+            runtime={Number(runtime as string)} />
+        </Modal>
       {/* Show loading indicator while posts are being fetched */}
       {loading ? (
         <ActivityIndicator size="large" color={Colors['loading']} />
