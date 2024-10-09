@@ -275,7 +275,9 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
                     }]}>
                         <Link href={{pathname: redirectLink + '_user' as any, params: { userID: comment.user_id }}} asChild>
                           <TouchableOpacity onPress={onClose}>
-                            <Image source={{ uri: comment.profile_picture }} style={styles.profilePic} />
+
+                            <Image source={ comment.profile_picture ? {uri: comment.profile_picture,  cache: 'force-cache' } : require('../assets/images/emptyprofilepic.jpg')}
+                            style={styles.profilePic} />
                           </TouchableOpacity>
                         </Link>
                         <View style={{ flex: 1 }}>
@@ -441,6 +443,7 @@ const styles = StyleSheet.create({
     profilePic: {
       borderRadius: 50,
       width: 50,
+      height: 50,
       aspectRatio: 1,
       backgroundColor: 'gray',
       marginHorizontal: 10,

@@ -39,7 +39,7 @@ export const ItemPostList =  ({ itemPost }: { itemPost: FeedPost }) => {
         shadowColor: 'black', marginRight: 10}]} >
       <View onLayout={onLayout} style={{flexDirection: 'row', backgroundColor: 'transparent', alignItems: 'center'}}>
         <Image
-        source={{ uri: itemPost.profile_picture || undefined, cache: 'force-cache' }}
+        source={ itemPost.profile_picture ? {uri: itemPost.profile_picture,  cache: 'force-cache' } : require('../assets/images/emptyprofilepic.jpg')}
         style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
         />
         <Text style={{backgroundColor: 'transparent', fontSize: 16, fontWeight: '500', marginRight: 5}}>
@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
     },
     profilePic: {
         width: 45,
+        height: 45,
         aspectRatio: 1,
         borderRadius: 50,
         backgroundColor: 'gray',

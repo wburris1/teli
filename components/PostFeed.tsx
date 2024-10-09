@@ -113,8 +113,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
             <Link href={{pathname: redirectLink + '_user' as any, params: { userID: item.user_id }}} asChild>
               <TouchableOpacity>
                   <Image
-                    source={{ uri: item.profile_picture || undefined, cache: 'force-cache' }}
-                    style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
+                  source={ item.profile_picture ? {uri: item.profile_picture,  cache: 'force-cache' } : require('../assets/images/emptyprofilepic.jpg')}                    style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
                   />
               </TouchableOpacity>
             </Link>
@@ -249,7 +248,8 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
             <Link href={{pathname: redirectLink + '_user' as any, params: { userID: item.user_id }}} style={{alignSelf: 'flex-end', paddingBottom: 5}} asChild>
               <TouchableOpacity>
                   <Image
-                    source={{ uri: item.profile_picture || undefined, cache: 'force-cache' }}
+                    source={ item.profile_picture ? {uri: item.profile_picture,  cache: 'force-cache' } : require('../assets/images/emptyprofilepic.jpg')}
+
                     style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
                   />
               </TouchableOpacity>
@@ -350,6 +350,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
   const styles = StyleSheet.create({
     profilePic: {
         width: 60,
+        height: 60,
         aspectRatio: 1,
         borderRadius: 50,
         backgroundColor: 'gray',

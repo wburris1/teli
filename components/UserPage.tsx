@@ -327,10 +327,8 @@ const UserPage = ({ userID, redirectLink}: {userID: string, redirectLink: string
               alignItems: 'flex-start',
             }}
           >
-            <Image
-              source={{
-                uri: profileData.profile_picture === '' ? undefined : profileData.profile_picture,
-              }}
+            <Image source={ profileData.profile_picture ? {uri: profileData.profile_picture,  cache: 'force-cache' } 
+            : require('../assets/images/emptyprofilepic.jpg')}
               style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text }]}
             />
             <View>
@@ -408,6 +406,7 @@ const styles = StyleSheet.create({
   },
   profilePic: {
     width: 75,
+    height: 75,
     aspectRatio: 1,
     borderRadius: 50,
     borderWidth: 1,
