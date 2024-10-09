@@ -25,7 +25,7 @@ const OverlappingImages = ({ images, list, posterNames }: { images: string[], li
     return (
       <View style={styles.imageContainer}>
         {images.map((image, index) => (
-          !image.endsWith('null') ? 
+          !image.endsWith('.') ? 
             (<Image key={index} source={{ uri: image }}
                 style={[styles.image,
                   { left: index * -(itemWidth - 33), top: index * 10, zIndex: images.length - index,

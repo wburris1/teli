@@ -182,6 +182,9 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
       const prefetchMoviePosters = async () => {
         const prefetched = await Promise.all(
           (movies || []).map(async (item) => {
+            if (!item.poster_path) {
+              return {[item.item_id]: ''};
+            }
             Image.prefetch(posterUrl + item.poster_path);
             const imageAsset = await Asset.fromURI(posterUrl + item.poster_path).downloadAsync();
             return { [item.item_id]: imageAsset.localUri };
