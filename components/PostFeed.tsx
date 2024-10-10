@@ -87,7 +87,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
             const sendNotification = await checkShouldSendNotification(NotificationType.LikedPostNotification, item.user_id, userData);
             if (sendNotification) {
               createNotification(item.user_id, NotificationType.LikedPostNotification, userData, item, '', item.id)
-              sendPushNotification(item.user_id, "Liked Post", `${userData.first_name} liked your post`)
+              sendPushNotification(user.uid, item.user_id, "Liked Post", `${userData.first_name} liked your post`)
             }
           }
           

@@ -14,7 +14,8 @@ import { AuthProvider, useAuth } from '@/contexts/authContext';
 import { DataProvider } from '@/contexts/dataContext';
 import { ListProvider } from '@/contexts/listContext';
 import { LoadingProvider } from '@/contexts/loading';
-import Toast from 'react-native-toast-message';
+import Toast, { BaseToast, ToastConfigParams } from 'react-native-toast-message';
+import Colors from '@/constants/Colors';
 //import { ClerkProvider, useAuth } from '@clerk/clerk-expo';
 /*
 const CLERK_PUBLISHABLE_KEY = 'pk_test_cHJvcGVyLWphY2thbC04My5jbGVyay5hY2NvdW50cy5kZXYk';
@@ -93,6 +94,19 @@ const InitialLayout = () => {
     </ThemeProvider>;
 };
 
+const toastConfig = {
+  info: ({ text1, text2, ...rest }: ToastConfigParams<{}>) => (
+    <BaseToast
+        {...rest}
+        style={{ borderLeftColor: Colors['toastNotiColor'] }}
+        text1={text1}
+        text2={text2}
+      />
+  ),
+  // Add other custom types if needed
+};
+
+
 function RootLayoutNav() {
   const [animationloading, setAnimationLoading] = useState(true);
   return (
@@ -102,7 +116,7 @@ function RootLayoutNav() {
         <DataProvider>
           <ListProvider>
             <InitialLayout/>
-            <Toast/>
+            <Toast config={toastConfig}/>
           </ListProvider>
         </DataProvider>
       </AuthProvider>

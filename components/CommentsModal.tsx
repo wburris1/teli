@@ -178,7 +178,7 @@ setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = n
       }
       if (userData) {
         createNotification(post.user_id, NotificationType.CommentNotification, userData, post, userComment.comment, post.id)
-        sendPushNotification(post.user_id, `${userData.first_name} commented on your post`, userComment.comment)
+        sendPushNotification(user.uid ,post.user_id, `${userData.first_name} commented on your post`, userComment.comment)
       }
       setReply(null);
     }

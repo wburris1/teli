@@ -13,7 +13,7 @@ export const followUser = () => {
   async function follow(userID: string) {
     if (userData && userID) {
       createNotification(userID, NotificationType.FollowNotification, userData);
-      sendPushNotification(userID, "New Follower!", `${userData.first_name} now follows you`);
+      sendPushNotification(userData.user_id, userID, "New Follower!", `${userData.first_name} now follows you`);
       const userFollowingRef = doc(collection(db, "users", userData.user_id, "following"), userID);
       const followUserFollowersRef = doc(collection(db, "users", userID, "followers"), userData.user_id);
       try {

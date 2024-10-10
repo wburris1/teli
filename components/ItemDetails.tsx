@@ -432,7 +432,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                     {followedUsersPosts.map((post, index) => (
                         <Link href={{pathname: redirectLink + '_post' as any, params: { postID: post.post_id }}} key={index} asChild>
                         <TouchableOpacity key={index}>
-                            <ItemPostList itemPost={post} />
+                            <ItemPostList itemPost={post} redirectLink={redirectLink}/>
                         </TouchableOpacity>
                         </Link>
                     ))}

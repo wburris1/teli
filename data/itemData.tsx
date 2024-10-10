@@ -74,6 +74,9 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
       fetch(castURL)
         .then(res => res.json())
         .then(json => {
+          if (!json.cast) {
+            return;
+          }
           const actorsArray = json.cast
           //.sort((a: CastMember, b: CastMember) => b.popularity - a.popularity) // Sort by popularity (descending)
           .slice(0, 20) // Get the first 20 actors
@@ -102,10 +105,11 @@ export const useItemDetails = (id: string, isMovie: boolean) => {
       fetch(streamingAvailabilityURL)
         .then(res => res.json())
         .then(json => {
-          const data = json.results['US'];
-          if (!data) {
+          if (!json.results || !json.results['US']) {
             return;
           }
+          const data = json.results['US'];
+
           // const options: { provider: string; price: number }[] = [];
           const result: StreamingService[] = [];
           //console.log(data);

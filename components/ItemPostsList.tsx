@@ -11,7 +11,7 @@ const screenWidth = Dimensions.screenWidth
 const imgUrl = 'https://image.tmdb.org/t/p/w342';
 const itemWidth = (Dimensions.screenWidth / 3) - 20;
 
-export const ItemPostList =  ({ itemPost }: { itemPost: FeedPost }) => {
+export const ItemPostList =  ({ itemPost, redirectLink}: { itemPost: FeedPost, redirectLink: string }) => {
   const colorScheme = useColorScheme();
   const [headerWidth, setHeaderWidth] = useState<number | null>(null);
 
@@ -38,14 +38,27 @@ export const ItemPostList =  ({ itemPost }: { itemPost: FeedPost }) => {
     <View style={[styles.itemContainer, styles.shadow, {backgroundColor: colorScheme == 'light' ? '#f2f2f2' : '#121212',
         shadowColor: 'black', marginRight: 10}]} >
       <View onLayout={onLayout} style={{flexDirection: 'row', backgroundColor: 'transparent', alignItems: 'center'}}>
-        <Image
-        source={ itemPost.profile_picture ? {uri: itemPost.profile_picture,  cache: 'force-cache' } : require('../assets/images/emptyprofilepic.jpg')}
-        style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text, borderWidth: 0}]}
-        />
-        <Text style={{backgroundColor: 'transparent', fontSize: 16, fontWeight: '500', marginRight: 5}}>
-            {itemPost.first_name} <Text style={{fontWeight: '400'}}>ranked this <Text style={{fontWeight: 'bold', fontSize: 18}}>
+        <Link href={{pathname: redirectLink + '_user' as any, params: { userID: itemPost.user_id }}} asChild>
+        <TouchableOpacity>
+          <Image
+          source={ itemPost.profile_picture ? {uri: itemPost.profile_picture,  cache: 'force-cache' } : require('../assets/images/emptyprofilepic.jpg')}
+          style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text, borderWidth: 0}]}
+          />
+        </TouchableOpacity>
+        </Link>
+        <View style={{backgroundColor: 'transparent', flex: 1, alignItems: 'flex-start', flexDirection: 'row',}}>
+          <Link href={{pathname: redirectLink + '_user' as any, params: { userID: itemPost.user_id }}} asChild>
+              <TouchableOpacity>
+                <Text style={{backgroundColor: 'transparent', fontSize: 16, fontWeight: '500', marginRight: 5, lineHeight: 26.5}}>
+                  {itemPost.first_name} 
+                </Text>
+              </TouchableOpacity>
+          </Link>
+          <Text style={{backgroundColor: 'transparent', fontSize: 16, fontWeight: '500', marginRight: 5, lineHeight: 24}}>
+              <Text style={{fontWeight: '400',}}>ranked this <Text style={{fontWeight: 'bold', fontSize: 18, lineHeight: 24}}>
                 {itemPost.score.toFixed(1)}</Text></Text>
-        </Text>
+          </Text>
+        </View>
       </View>
       {/*itemPost.caption && (
             <>

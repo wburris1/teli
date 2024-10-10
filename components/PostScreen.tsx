@@ -157,7 +157,7 @@ export const PostScreen = ({post, redirectLink}: { post: any, redirectLink: stri
           }
           if (userData) {
             createNotification(post.user_id, NotificationType.CommentNotification, userData, post, userComment.comment, post.id)
-            sendPushNotification(post.user_id, `${userData.first_name} commented on your post`, userComment.comment)
+            sendPushNotification(user.uid, post.user_id, `${userData.first_name} commented on your post`, userComment.comment)
           }
           setReply(null);
         }
@@ -201,7 +201,7 @@ export const PostScreen = ({post, redirectLink}: { post: any, redirectLink: stri
               const sendNotification = await checkShouldSendNotification(NotificationType.LikedPostNotification, post.user_id, userData);
               if (sendNotification) {
                 createNotification(post.user_id, NotificationType.LikedPostNotification, userData, post, '', post.id)
-                sendPushNotification(post.user_id, "Liked Post", `${userData.first_name} liked your post`)
+                sendPushNotification(user.uid, post.user_id, "Liked Post", `${userData.first_name} liked your post`)
               }
             }
             setNumLikes(numLikes + 1);

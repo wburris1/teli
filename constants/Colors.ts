@@ -10,6 +10,7 @@ const themeColor = '#800020';
 export default {
   theme: themeColor,
   loading: themeColor,
+  toastNotiColor: themeColor,
   light: {
     text: '#000',
     background: '#fff',
