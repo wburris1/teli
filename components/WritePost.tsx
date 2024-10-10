@@ -71,7 +71,7 @@ export const WritePost = ({id, poster, backdrop, runtime, name, isHome, groupKey
           keyboardVerticalOffset={isHome ? (Platform.OS === 'ios' ? 90 : 60) : 0} // Adjust for iOS and Android
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={{flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background, height: Dimensions.screenHeight,}}>
-          <Spinner visible={loading} />
+          <Spinner visible={loading} color={Colors['loading']} />
           {!isHome && 
             <SafeAreaView>
             <View style={[styles.switchContainer, {paddingHorizontal: 5, justifyContent: 'space-between'}]}>

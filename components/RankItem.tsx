@@ -393,7 +393,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
                   </View>
                 <View style={styles.feedback}>
                   <Pressable onPress={() => {
-                    if (loading || !posterReady) return;
+                    if (loading) return;
                     setSelectedPref("like");
                     handleFeedback(initialLikeScore, 10.1, 10);
                   }}>
@@ -402,12 +402,11 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
                       name="checkmark-circle-outline"
                       size={60}
                       color={pressed ? "#00ff00" : Colors[colorScheme ?? 'light'].text}
-                      style={{opacity: !posterReady ? 0.5 : 1}}
                     />
                     )}
                   </Pressable>
                   <Pressable onPress={() => {
-                    if (loading || !posterReady) return;
+                    if (loading) return;
                     setSelectedPref("mid");
                     handleFeedback(initialDislikeScore - smallAssNumber, initialLikeScore + smallAssNumber, initialMehScore);
                   }}>
@@ -416,12 +415,11 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
                       name="remove-circle-outline"
                       size={60}
                       color={pressed ? 'gray' : Colors[colorScheme ?? 'light'].text}
-                      style={{opacity: !posterReady ? 0.5 : 1}}
                     />
                     )}
                   </Pressable>
                   <Pressable onPress={() => {
-                    if (loading || !posterReady) return;
+                    if (loading) return;
                     setSelectedPref("dislike");
                     handleFeedback(0, initialDislikeScore, initialDislikeScore - 1);
                   }}>
@@ -430,7 +428,6 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
                       name="close-circle-outline"
                       size={60}
                       color={pressed ? "#ff0000" : Colors[colorScheme ?? 'light'].text}
-                      style={{opacity: !posterReady ? 0.5 : 1}}
                     />
                     )}
                   </Pressable>

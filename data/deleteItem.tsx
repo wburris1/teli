@@ -7,6 +7,7 @@ import { useData } from "@/contexts/dataContext";
 import { UserItem } from "@/constants/ImportTypes";
 import Values from "@/constants/Values";
 import { useCallback, useState } from "react";
+import { useLoading } from "@/contexts/loading";
 
 const db = FIREBASE_DB;
 
@@ -30,13 +31,9 @@ export const useUserItemDelete = () => {
     const { user } = useAuth();
     const adjustScoreFunc = useUserAdjustScores();
     const updateListFunc = UpdateListPosters();
-    const [loading, setLoading] = useState(false);
 
     function reactToDelete(items: UserItem[], post_id: string, item_id: string, score: number, listID: string, listTypeID: string) {
-        setLoading(true);
-        adjustScoreFunc(items, score, listID, listTypeID).then(() => {
-            setLoading(false);
-        });
+        adjustScoreFunc(items, score, listID, listTypeID);
         if (user) deleteItem(user.uid, post_id, item_id, listID, listTypeID).then(() => {
             updateListFunc(listTypeID);
         });
@@ -49,6 +46,7 @@ export const useUserSelectedDelete = () => {
     const { user } = useAuth();
     const adjustScoreFunc = AdjustReorderedScores();
     const updateListFunc = UpdateListPosters();
+    const {setLoading} = useLoading();
 
     function reactToDelete(
         items: UserItem[],
@@ -121,7 +119,7 @@ export const removeSelected = () => {
     const updatePosterFunc = updateSomeListPosters();
     const {movies, shows, setMovies, setShows} = useData();
 
-    async function removeItems(listID: string, listTypeID: string, item_ids: string[]) {
+    async function removeItems(listID: string, listTypeID: string, item_ids: string[]): Promise<UserItem[]> {
         if (user) {
             let updatedItems = listTypeID == Values.movieListsID ? (movies || []).map((item) => ({ ...item })) : (shows || []).map((item) => ({ ...item }));
             updatedItems.forEach((item, index) => {
@@ -129,7 +127,6 @@ export const removeSelected = () => {
                     updatedItems[index].lists = item.lists.filter(id => id != listID);
                 }
             })
-            listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems); 
             //listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems);
             await Promise.all(item_ids.map(async (id) => {
                 const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", id);
@@ -146,8 +143,15 @@ export const removeSelected = () => {
             } catch (error) {
                 console.error("Error updating posters: ", error);
             }
-        }
+            return updatedItems;
+        } else return [];
     };
 
-    return removeItems;
+    const removeCallback = useCallback((listID: string, listTypeID: string, item_ids: string[]) => {
+        removeItems(listID, listTypeID, item_ids).then(updatedItems => {
+            listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems);
+        })
+    }, [movies, shows, user])
+
+    return removeCallback;
 }

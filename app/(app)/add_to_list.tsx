@@ -95,7 +95,7 @@ export default function AddToListsScreen() {
               <Ionicons
               name="checkmark-circle"
               size={35}
-              color={Colors['theme']}
+              color={'#32CD32'}
               style={{ opacity: pressed ? 0.5 : 1 }}
               />
           )}

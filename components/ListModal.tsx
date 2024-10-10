@@ -111,7 +111,7 @@ export const ListModalScreen = ({ listTypeID, visible, containedItems, onClose, 
             <Ionicons
                 name="checkmark-circle"
                 size={45}
-                color={Colors['theme']}
+                color={'#32CD32'}
             />
         </TouchableOpacity>
         <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>

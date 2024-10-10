@@ -137,7 +137,7 @@ const SignUpStart = () => {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ headerBackVisible: !pendingVerification }} />
-      <Spinner visible={loading} />
+      <Spinner visible={loading} color={Colors['loading']} />
       <KeyboardAvoidingView behavior='padding'>
         {!pendingVerification && (
           <>
@@ -187,7 +187,7 @@ const SignUpStart = () => {
               setBio(bio);
               setBioVisible(false);
             }}>
-              <Ionicons name="checkmark-circle" size={35} color={Colors['theme']} />
+              <Ionicons name="checkmark-circle" size={35} color={'#32CD32'} />
             </TouchableOpacity>
           </View>
           <TextInput multiline autoCapitalize="sentences" placeholder="About yourself..." value={bio} onChangeText={setBio}

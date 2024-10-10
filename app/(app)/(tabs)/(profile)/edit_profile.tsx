@@ -66,7 +66,7 @@ export default function EditProfileScreen () {
         navigation.setOptions({
             headerRight: () => (
                 <TouchableOpacity onPress={onSave}>
-                    <Ionicons name="checkmark-circle" size={35} color={Colors['theme']} />
+                    <Ionicons name="checkmark-circle" size={35} color={'#32CD32'} />
                 </TouchableOpacity>
             )
         })
@@ -74,7 +74,7 @@ export default function EditProfileScreen () {
 
     return (
         <View style={styles.container}>
-            <Spinner visible={loading} />
+            <Spinner visible={loading} color={Colors['loading']} />
             <KeyboardAvoidingView behavior='padding'>
                 <ImageUploader changeImage={setProfilePic} />
                 <TextInput autoCapitalize="none" placeholder="First name..." value={firstName} onChangeText={setFirstName}
@@ -108,7 +108,7 @@ export default function EditProfileScreen () {
                         setBio(bio);
                         setBioVisible(false);
                     }}>
-                    <Ionicons name="checkmark-circle" size={35} color={Colors['theme']} />
+                    <Ionicons name="checkmark-circle" size={35} color={'#32CD32'} />
                     </TouchableOpacity>
                 </View>
                 <TextInput multiline autoCapitalize="sentences" placeholder="About yourself..." value={bio} onChangeText={setBio}

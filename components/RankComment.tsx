@@ -42,7 +42,7 @@ export const CommentModalScreen = ({ onClose, onSave }: ScreenProps) => {
                     <Ionicons
                     name="checkmark-circle"
                     size={35}
-                    color={Colors['theme']}
+                    color={'#32CD32'}
                     style={{ opacity: pressed ? 0.5 : 1 }}
                     />
                 )}
@@ -50,7 +50,7 @@ export const CommentModalScreen = ({ onClose, onSave }: ScreenProps) => {
                 <Ionicons
                     name="checkmark-circle"
                     size={35}
-                    color={Colors['theme']}
+                    color={'#32CD32'}
                     style={{ opacity: 0.5 }}
                     />
                 </View>}

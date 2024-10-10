@@ -276,7 +276,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
 
     return (
         <View>
-            <Spinner visible={loading} />
+            <Spinner visible={loading} color={Colors['loading']} />
         {detailModalCallback()}
         <TouchableOpacity style={[styles.backButton, { backgroundColor: 'rgba(255, 255, 255, 0.7)', left: 10}]} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={35} color={'black'}/>
@@ -364,7 +364,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                                 />
                             </TouchableOpacity>}
                             {isDupe && score &&
-                            <View style={{borderWidth: 1, borderRadius: 50, borderColor: Colors[colorScheme ?? 'light'].text,
+                            <View style={{borderWidth: 2, borderRadius: 50, borderColor: Colors['theme'],
                                 height: 37, aspectRatio: 1, marginLeft: 5, alignItems: 'center', justifyContent: 'center'}}>
                                 <Text style={{fontSize: screenWidth * 0.04186047, fontWeight: 'bold'}}>{score}</Text>
                             </View>} 
@@ -447,10 +447,6 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                             </View>
                             
                             <View style={{flexDirection: 'row', alignItems: 'center', paddingLeft: 10, paddingRight: 5}}>
-                                <Text style={{fontSize: directorFontSize,fontWeight: '300', paddingRight: 3}}> 
-                                {item.vote_count > 500 ? `${(Math.round(item.vote_count / 1000) * 1000).toLocaleString()}+` :
-                                item.vote_count.toLocaleString()}
-                                </Text>
                                 <Ionicons name='chevron-forward' size={20} color={Colors[colorScheme ??  'light'].text} style={{paddingLeft: 0}} />
                             </View>
                         </View>

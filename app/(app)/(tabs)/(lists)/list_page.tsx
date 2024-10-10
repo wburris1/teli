@@ -422,16 +422,6 @@ const handleClose = () => {
               />
             )}
           </Pressable>
-          <Pressable onPress={handleSelectionMode} style={{ paddingLeft: 10 }}>
-            {({ pressed }) => (
-              <Ionicons
-                name="menu"
-                size={25}
-                color={Colors[colorScheme ?? 'light'].text}
-                style={{ opacity: pressed ? 0.5 : 1 }}
-              />
-            )}
-          </Pressable>
           {listID == Values.seenListID && (
             <Link href="/reorder" asChild>
               <Pressable style={{ paddingLeft: 10 }}>
@@ -446,6 +436,16 @@ const handleClose = () => {
               </Pressable>
             </Link>
           )}
+          <Pressable onPress={handleSelectionMode} style={{ paddingLeft: 10 }}>
+            {({ pressed }) => (
+              <Ionicons
+                name={selectionMode ? "close" : "menu"}
+                size={25}
+                color={Colors[colorScheme ?? 'light'].text}
+                style={{ opacity: pressed ? 0.5 : 1 }}
+              />
+            )}
+          </Pressable>
           {isCustomList && (
             <Pressable onPress={() => setEditModalVisible(true)} style={{ paddingLeft: 10 }}>
               {({ pressed }) => (

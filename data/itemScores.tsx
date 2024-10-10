@@ -15,10 +15,10 @@ export const useUserAdjustScores = () => {
     const {movies, shows, setMovies, setShows} = useData();
     const {loading, setLoading} = useLoading();
 
-    async function adjustScores(items: UserItem[], minScore: number, maxScore: number, range: number, listID: string, listTypeID: string) {
+    async function adjustScores(items: UserItem[], minScore: number, maxScore: number, range: number, listID: string, listTypeID: string): Promise<UserItem[]> {
         // Distribute scores evenly between minScore and maxScore
         if (!user || !userData) {
-            return;
+            return [];
         }
         var filteredItems: UserItem[] = [];
         if (minScore == 0) {
@@ -60,15 +60,12 @@ export const useUserAdjustScores = () => {
         }
 
         try {
-            const allItems = (listTypeID == Values.movieListsID ? movies : shows) || [];
-            const otherItems = allItems.filter(item => (item.score < minScore || item.score > maxScore) && !checkContained(item.item_id, updatedItems));
-            listTypeID == Values.movieListsID ? setMovies([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score)) : 
-                setShows([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score));
             await batch.commit();
-
             console.log('Score update successful');
+            return updatedItems;
         } catch (error) {
             console.error('Score update failed: ', error);
+            return [];
         }
     }
 
@@ -95,7 +92,14 @@ export const useUserAdjustScores = () => {
         } else {
             maxScore = Values.minMidScore;
         }
-        await adjustScores(items, minScore, maxScore, range, listID, listTypeID);
+        setLoading(true);
+        await adjustScores(items, minScore, maxScore, range, listID, listTypeID).then(updatedItems => {
+            const allItems = (listTypeID == Values.movieListsID ? movies : shows) || [];
+            const otherItems = allItems.filter(item => (item.score < minScore || item.score > maxScore) && !checkContained(item.item_id, updatedItems));
+            listTypeID == Values.movieListsID ? setMovies([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score)) : 
+                setShows([...updatedItems, ...otherItems].sort((a, b) => b.score - a.score));
+            setLoading(false);
+        })
     }
 
     return reactToScoresAdjust;

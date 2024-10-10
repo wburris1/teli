@@ -35,7 +35,7 @@ const Login = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
-      <Spinner visible={loading} />
+      <Spinner visible={loading} color={Colors['theme']} />
       <View style={styles.header}>
         <Text style={styles.headerText}>Welcome to</Text>
         <Text style={[styles.headerText, { fontWeight: 'bold', fontSize: 28 }]}>Take Two</Text>
