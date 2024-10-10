@@ -47,6 +47,8 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectL
   const editItemsFunc = editListItems();
   const { setLoading } = useLoading();
   const editItemsFuncUnseen = editUnwatchedItems();
+  const colorScheme = useColorScheme();
+  
 
   const posters = [
     storedListPosters[list.top_poster_path] ? storedListPosters[list.top_poster_path] : (list.top_poster_path ? imgUrl + list.top_poster_path : "/"),
@@ -98,7 +100,17 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectL
         </Animated.View>
         <Text style={styles.addText}>Start your list!</Text>
       </View>
-    )
+    ) 
+    // uncomment this code if we should use our default poster instead of grey background 
+    /*return (
+      <View>
+        <DefaultPost text={' '} style={[styles.emptyList, {borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden'}]} ></DefaultPost>
+        <Animated.View style={[styles.plusIcon, { transform: [{ scale: pulseAnim }] }]}>
+          <Ionicons name="add-circle-outline" size={50} color={Colors['theme']} />
+        </Animated.View>
+        <Text style={styles.addText}>Start your list!</Text>
+      </View>
+    ) */
   }
 
   const handleAddRemove = (addItems: UserItem[], removedItems: UserItem[]) => {
