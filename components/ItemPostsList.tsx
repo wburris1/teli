@@ -40,7 +40,7 @@ export const ItemPostList =  ({ itemPost }: { itemPost: FeedPost }) => {
       <View onLayout={onLayout} style={{flexDirection: 'row', backgroundColor: 'transparent', alignItems: 'center'}}>
         <Image
         source={ itemPost.profile_picture ? {uri: itemPost.profile_picture,  cache: 'force-cache' } : require('../assets/images/emptyprofilepic.jpg')}
-        style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
+        style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text, borderWidth: 0}]}
         />
         <Text style={{backgroundColor: 'transparent', fontSize: 16, fontWeight: '500', marginRight: 5}}>
             {itemPost.first_name} <Text style={{fontWeight: '400'}}>ranked this <Text style={{fontWeight: 'bold', fontSize: 18}}>
@@ -75,7 +75,6 @@ const styles = StyleSheet.create({
         aspectRatio: 1,
         borderRadius: 50,
         backgroundColor: 'gray',
-        borderWidth: 1,
         margin: 5,
     },
     score: {

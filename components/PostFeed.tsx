@@ -250,7 +250,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
                   <Image
                     source={ item.profile_picture ? {uri: item.profile_picture,  cache: 'force-cache' } : require('../assets/images/emptyprofilepic.jpg')}
 
-                    style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
+                    style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text, borderWidth: 0}]}
                   />
               </TouchableOpacity>
             </Link>
@@ -354,7 +354,6 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
         aspectRatio: 1,
         borderRadius: 50,
         backgroundColor: 'gray',
-        borderWidth: 1,
     },
     postFooter: {
       flexDirection: 'row',

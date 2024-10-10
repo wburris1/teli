@@ -409,7 +409,6 @@ const styles = StyleSheet.create({
     height: 75,
     aspectRatio: 1,
     borderRadius: 50,
-    borderWidth: 1,
     backgroundColor: 'gray',
   },
   listButton: {

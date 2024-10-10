@@ -76,6 +76,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
   const [direction, setDirection] = useState(0);
   const [nextActive, setNextActive] = useState(false);
   const {setSelectedLists} = useTab();
+  const [posterReady, setPosterReady] = useState(false);
  
   //Variable for keeping track of the selected lists
   const [localSelectedLists, setLocalSelectedLists] = useState<List[]>(isMovie ? movieLists.filter(list => {
@@ -348,10 +349,16 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
           <View style={styles.container}>
             <View style={[styles.modalView, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
               <View>
+                {!posterReady && (
+                <View style={{backgroundColor: 'transparent', position: 'absolute', justifyContent: 'center', top: 0, left: 0, right: 0, bottom: 0, zIndex: 2}}>
+                  <ActivityIndicator size="large" color={Colors['loading']} />
+                </View>
+                )}
                 <Image
                   source={item.poster_path ? { uri: poster } :
                   require('../assets/images/poster-placeholder.png')}
                   style={[styles.movieImage, {borderColor: Colors[colorScheme ?? 'light'].background}]}
+                  onLoadEnd={() => setPosterReady(true)}
                 />
                 <LinearGradient
                     colors={['transparent', 'black']}
@@ -386,7 +393,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
                   </View>
                 <View style={styles.feedback}>
                   <Pressable onPress={() => {
-                    if (loading) return;
+                    if (loading || !posterReady) return;
                     setSelectedPref("like");
                     handleFeedback(initialLikeScore, 10.1, 10);
                   }}>
@@ -395,11 +402,12 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
                       name="checkmark-circle-outline"
                       size={60}
                       color={pressed ? "#00ff00" : Colors[colorScheme ?? 'light'].text}
+                      style={{opacity: !posterReady ? 0.5 : 1}}
                     />
                     )}
                   </Pressable>
                   <Pressable onPress={() => {
-                    if (loading) return;
+                    if (loading || !posterReady) return;
                     setSelectedPref("mid");
                     handleFeedback(initialDislikeScore - smallAssNumber, initialLikeScore + smallAssNumber, initialMehScore);
                   }}>
@@ -408,11 +416,12 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
                       name="remove-circle-outline"
                       size={60}
                       color={pressed ? 'gray' : Colors[colorScheme ?? 'light'].text}
+                      style={{opacity: !posterReady ? 0.5 : 1}}
                     />
                     )}
                   </Pressable>
                   <Pressable onPress={() => {
-                    if (loading) return;
+                    if (loading || !posterReady) return;
                     setSelectedPref("dislike");
                     handleFeedback(0, initialDislikeScore, initialDislikeScore - 1);
                   }}>
@@ -421,6 +430,7 @@ const Rank = ({item, items, isDupe, setDupe, onClose, isIOS, dupePostID, poster}
                       name="close-circle-outline"
                       size={60}
                       color={pressed ? "#ff0000" : Colors[colorScheme ?? 'light'].text}
+                      style={{opacity: !posterReady ? 0.5 : 1}}
                     />
                     )}
                   </Pressable>

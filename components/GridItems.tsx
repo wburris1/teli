@@ -45,7 +45,7 @@ const RenderItem = ({ item, isPosting }: RowProps) => {
       { id: item.id, poster: item.poster_path, name: 'title' in item ? item.title : item.name,
       groupKey: isMovie ? "movie" : "tv", backdrop: item.backdrop_path, runtime: isMovie ? item.runtime : item.episode_run_time }}} asChild>
         <TouchableOpacity>
-          <Animated.View style={[styles.innerContainer, styles.shadow]}>
+          <Animated.View style={[styles.innerContainer]}>
             <Image
                 source={{ uri: imgUrl + item.poster_path, cache: 'force-cache'}}
                 style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     aspectRatio: 1 / 1.5,
-    borderWidth: 1,
+    borderWidth: 0,
     borderRadius: 10,
   },
   browseTextContainer: {

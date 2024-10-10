@@ -183,7 +183,7 @@ const ProfilePage = () => {
             ? { uri: userData.profile_picture }  // Remote image
             : require('../../../../assets/images/emptyprofilepic.jpg') // Local image
             }  
-          style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text,  }]}
+          style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text, borderWidth: 0}]}
         />
         <View>
           <Text style={styles.headerText}>{userData.first_name + " " + userData.last_name}</Text>
@@ -299,7 +299,6 @@ const styles = StyleSheet.create({
     width: 75,
     aspectRatio: 1,
     borderRadius: 50,
-    borderWidth: 1,
     backgroundColor: 'gray',
     marginRight: 10
   },

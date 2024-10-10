@@ -218,7 +218,6 @@ const styles = StyleSheet.create({
       aspectRatio: 1,
       borderRadius: 50,
       backgroundColor: 'gray',
-      borderWidth: 1,
   },
   itemImage: {
     width: 60,
