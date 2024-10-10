@@ -10,14 +10,14 @@ const db = FIREBASE_DB;
 
 // Function to send a push notification using Expo
 export async function sendPushNotification(
-  userID: string | undefined,
+  sender_id: string | undefined,
+  receiverUserID: string | undefined,
   title: string,
   body: string,
 ) : Promise<void> {
-  const { user } = useAuth();
-  if(userID && userID !== user?.uid) {
+  if(receiverUserID && receiverUserID !== sender_id) {
     try {
-      const receiverData = await fetchUserData(userID);
+      const receiverData = await fetchUserData(receiverUserID);
       const userPushToken = receiverData.userPushToken 
       if (!userPushToken) return;
       // Define the message to be sent

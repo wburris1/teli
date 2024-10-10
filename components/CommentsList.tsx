@@ -205,7 +205,7 @@ const RenderItem = React.memo(({ comments, comment, parentCommentID, post, handl
               const sendNotification = await checkShouldSendNotification(NotificationType.LikedCommentNotification, comment.user_id, userData);
               if (sendNotification) {
                 createNotification(comment.user_id, NotificationType.LikedCommentNotification, userData, post, comment.comment, post.id)
-                sendPushNotification(comment.user_id, "Liked Comment", `${userData.first_name} liked your comment`)
+                sendPushNotification(user.uid, comment.user_id, "Liked Comment", `${userData.first_name} liked your comment`)
               }
             }
         }
