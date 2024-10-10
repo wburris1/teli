@@ -81,7 +81,7 @@ export const removeFromList = () => {
     const updatePosterFunc = updateSomeListPosters();
     const {movies, shows, setMovies, setShows} = useData();
 
-    async function removeItem(listID: string, listTypeID: string, item_id: string) {
+    const removeItem = async (listID: string, listTypeID: string, item_id: string): Promise<UserItem[]> => {
         if (user) {
             let updatedItems = listTypeID == Values.movieListsID ? (movies || []).map((item) => ({ ...item })) : (shows || []).map((item) => ({ ...item }));
             updatedItems.forEach((item, index) => {
@@ -89,7 +89,6 @@ export const removeFromList = () => {
                     updatedItems[index].lists = item.lists.filter(id => id != listID);
                 }
             })
-            listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems); 
             //listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems);
             const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);  
             try {
@@ -102,10 +101,19 @@ export const removeFromList = () => {
             } catch (error) {
                 console.error("Error removing document: ", error);
             }
+            return updatedItems;
+        } else {
+            return [];
         }
     };
 
-    return removeItem;
+    const removeCallback = useCallback((listID: string, listTypeID: string, item_id: string) => {
+        removeItem(listID, listTypeID, item_id).then(updated => {
+            listTypeID == Values.movieListsID ? setMovies(updated) : setShows(updated);
+        });
+    }, [movies, shows, user])
+
+    return removeCallback;
 }
 
 export const removeSelected = () => {

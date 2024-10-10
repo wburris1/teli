@@ -166,7 +166,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
                 <Ionicons
                   name={selectedItems.includes(item) ? "checkmark" : "ellipse"}
                   size={25}
-                  color={selectedItems.includes(item) ? 'white' : 'gray'}
+                  color={selectedItems.includes(item) ? 'black' : 'white'}
                 />
               </TouchableOpacity>
             )}
@@ -701,8 +701,8 @@ const styles = StyleSheet.create({
       zIndex: 1,
       borderRadius: 50,
       borderWidth: 1,
-      backgroundColor: 'gray',
-      borderColor: 'white',
+      backgroundColor: 'white',
+      borderColor: 'gray',
       padding: 3
     },
     fabContainer: {

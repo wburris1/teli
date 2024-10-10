@@ -345,7 +345,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                                           });
                                     } else {
                                         setBookmarked(false);
-                                        removeFunc(Values.bookmarkListID, listTypeID, item.id.toString()).then(() => {
+                                        removeFunc(Values.bookmarkListID, listTypeID, item.id.toString());
                                           Toast.show({
                                             type: 'info',
                                             text1: "Removed from bookmarks",
@@ -354,14 +354,13 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                                             visibilityTime: 3000,
                                             bottomOffset: 100
                                           });
-                                        })
                                     }
                                 }}
                             >
                                 <Ionicons
                                 name={bookmarked ? "bookmark" : "bookmark-outline"}
                                 size={30}
-                                color={bookmarked ? Colors['theme'] : Colors[colorScheme ?? 'light'].text}
+                                color={Colors['theme']}
                                 />
                             </TouchableOpacity>}
                             {isDupe && score &&
@@ -440,8 +439,8 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                 </ScrollView>}
                 <Link href={{pathname: redirectLink + '_discussion' as any, params: { itemID: item.id, name: isMovie ? item.title : item.name, poster: item.poster_path,
                     backdrop: item.backdrop_path, runtime: isMovie ? item.runtime : item.episode_run_time, groupKey: isMovie ? 'movies' : 'shows' }}} asChild>
-                    <TouchableOpacity style={{flex: 1, borderColor: Colors[colorScheme ?? 'light'].gray, borderTopWidth: 1, borderBottomWidth: 1, marginVertical: 10}}>
-                        <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingVertical: 10,  alignItems: 'center'}}>
+                    <TouchableOpacity style={{flex: 1, borderColor: Colors[colorScheme ?? 'light'].gray, borderTopWidth: 1, borderBottomWidth: 1, marginBottom: 10, marginTop: (followedUsersPosts || []).length > 0 ? 5 : 0}}>
+                        <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingVertical: 10, alignItems: 'center'}}>
                             <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10}}>
                                 <Ionicons name="chatbubbles-outline" size={30} color={Colors[colorScheme ?? 'light'].text} />
                                 <Text style={{fontSize: 20, fontWeight: '600', paddingLeft: 5}}>Discussion</Text>
