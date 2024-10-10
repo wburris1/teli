@@ -25,22 +25,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const db = FIREBASE_DB;
 
-const confirmLogout = () => {
-  Alert.alert('Log Out?', 'Are you sure you want to Log out?', [
-    {
-      text: 'Cancel',
-      style: 'cancel',
-    },
-    {text: 'Log Out', onPress: () => FIREBASE_AUTH.signOut()},
-  ]);
-};
-
 const ProfilePage = () => {
   const { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment } = useModalState();
   const {user, userData } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const { posts, loadMorePosts, isLoadingMore, loading} = makeFeed(user ? user.uid : '', refreshing, setRefreshing);
-  const { followers, following } = useData();
+  const { followers, following, setFollowing, setFollowers } = useData();
   const router = useRouter();
   const navigation = useNavigation<ScreenNavigationProp>();
   const colorScheme = useColorScheme();
@@ -58,6 +48,20 @@ const ProfilePage = () => {
   if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
+
+  const confirmLogout = () => {
+    Alert.alert('Log Out?', 'Are you sure you want to Log out?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {text: 'Log Out', onPress: () => {
+        FIREBASE_AUTH.signOut();
+        setFollowing(undefined);
+        setFollowers([]);
+      } },
+    ]);
+  };
 
   useEffect(() => {
     if (movies) {
