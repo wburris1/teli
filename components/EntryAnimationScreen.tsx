@@ -78,14 +78,15 @@ export default function EntryAnimationScreen({ setAnimationLoading }: SplashScre
         <Text
           style={{
             position: 'absolute', // Position the text absolutely
-            fontSize: 32,
+            fontSize: 40,
             fontWeight: 'bold',
             textAlign: 'center',
+            fontFamily: 'Copperplate',
             top: 100,
             color: Colors[colorScheme === 'light' ? 'dark' : 'light'].background, // 'black', // Adjust color as needed for visibility
           }}
         >
-          Take Two
+          Take2
         </Text>
       </View>
     </SafeAreaView> 

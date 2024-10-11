@@ -22,6 +22,7 @@ import { ScreenNavigationProp } from '@/constants/ImportTypes';
 import { ExpandableText } from '@/components/AnimatedViews.tsx/ExpandableText';
 import Dimensions from '@/constants/Dimensions';
 import { LinearGradient } from 'expo-linear-gradient';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 const db = FIREBASE_DB;
 
@@ -40,6 +41,7 @@ const ProfilePage = () => {
   const [totalMovieRuntime, setTotalMovieRuntime] = useState(0);
   const [totalShowWatchtime, setTotalShowWatchtime] = useState(0);
   const [settingsModalVisible, setSettingsModalVisible] = useState(false);
+  const [loadLogout, setLoadLogout] = useState(false);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -55,11 +57,18 @@ const ProfilePage = () => {
         text: 'Cancel',
         style: 'cancel',
       },
-      {text: 'Log Out', onPress: () => {
-        FIREBASE_AUTH.signOut();
-        setFollowing(undefined);
-        setFollowers([]);
-      } },
+      {text: 'Log Out', onPress: async () => {
+        setLoadLogout(true); // Show loader
+        try {
+          await FIREBASE_AUTH.signOut();
+          setFollowing(undefined);
+          setFollowers([]);
+        } catch (error) {
+          console.error('Error signing out: ', error);
+        } finally {
+          setLoadLogout(false); // Hide loader after logout process is done
+        }
+      }, },
     ]);
   };
 
@@ -141,6 +150,7 @@ const ProfilePage = () => {
         style={{ margin: 0, justifyContent: 'flex-end', alignItems: 'flex-end' }}
       >
         <SafeAreaView style={{width: Dimensions.screenWidth * 0.75, height: Dimensions.screenHeight, backgroundColor: Colors[colorScheme ?? 'light'].background}}>
+          <Spinner visible={loadLogout} color={Colors['loading']} />
           <View style={{flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, justifyContent: 'flex-start', paddingBottom: 10}}>
             <Text style={{alignSelf: 'center', fontSize: 22, fontWeight: '600'}}>Menu</Text>
           </View>
