@@ -81,8 +81,6 @@ const Login = () => {
         </Link>
         </View>
       <View style={{flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background, justifyContent: 'flex-start', alignItems: 'center', padding: 50 }}>
-      <Logo width={120} height={120} />
-
       </View>
     </View>
   );
