@@ -54,6 +54,7 @@ export default function DiscussionScreen() {
       {loading ? (
         <ActivityIndicator size="large" color={Colors['loading']} />
       ) : (
+        <>
         <PostFeedWithModals
           posts={posts}
           loading={loading}
@@ -73,6 +74,13 @@ export default function DiscussionScreen() {
           incrementComment={incrementComment}
           isHome={true}
         />
+        {posts.length == 0 && (
+          <View style={{justifyContent: 'flex-start', alignItems: 'center', flex: 1}}>
+            <Text style={{fontSize: 20, color: 'gray', paddingBottom: 5}}>Noone has posted about this yet</Text>
+            <Text style={{fontSize: 20, color: 'gray'}}>Be the first!</Text>
+          </View>
+        )}
+        </>
       )}
     </View>
   );

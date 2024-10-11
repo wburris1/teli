@@ -77,9 +77,9 @@ export default function EditProfileScreen () {
             <Spinner visible={loading} color={Colors['loading']} />
             <KeyboardAvoidingView behavior='padding'>
                 <ImageUploader changeImage={setProfilePic} />
-                <TextInput autoCapitalize="none" placeholder="First name..." value={firstName} onChangeText={setFirstName}
+                <TextInput autoCapitalize="words" placeholder="First name..." value={firstName} onChangeText={setFirstName}
                 style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray, color: Colors[colorScheme ?? 'light'].text,}]} />
-                <TextInput autoCapitalize="none" placeholder="Last name..." value={lastName} onChangeText={setLastName}
+                <TextInput autoCapitalize="words" placeholder="Last name..." value={lastName} onChangeText={setLastName}
                 style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray, color: Colors[colorScheme ?? 'light'].text,}]} />
                 <TextInput autoCapitalize="none" placeholder="Username..." value={username} onChangeText={setUsername}
                 style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray, color: Colors[colorScheme ?? 'light'].text,}]} />

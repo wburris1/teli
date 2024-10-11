@@ -46,7 +46,6 @@ export const useUserSelectedDelete = () => {
     const { user } = useAuth();
     const adjustScoreFunc = AdjustReorderedScores();
     const updateListFunc = UpdateListPosters();
-    const {setLoading} = useLoading();
 
     function reactToDelete(
         items: UserItem[],
@@ -78,6 +77,7 @@ export const removeFromList = () => {
     const { user } = useAuth();
     const updatePosterFunc = updateSomeListPosters();
     const {movies, shows, setMovies, setShows} = useData();
+    const {setLoading} = useLoading();
 
     const removeItem = async (listID: string, listTypeID: string, item_id: string): Promise<UserItem[]> => {
         if (user) {
@@ -106,8 +106,10 @@ export const removeFromList = () => {
     };
 
     const removeCallback = useCallback((listID: string, listTypeID: string, item_id: string) => {
+        setLoading(true);
         removeItem(listID, listTypeID, item_id).then(updated => {
             listTypeID == Values.movieListsID ? setMovies(updated) : setShows(updated);
+            setLoading(false);
         });
     }, [movies, shows, user])
 
@@ -118,6 +120,7 @@ export const removeSelected = () => {
     const { user } = useAuth();
     const updatePosterFunc = updateSomeListPosters();
     const {movies, shows, setMovies, setShows} = useData();
+    const {setLoading} = useLoading();
 
     async function removeItems(listID: string, listTypeID: string, item_ids: string[]): Promise<UserItem[]> {
         if (user) {
@@ -148,8 +151,10 @@ export const removeSelected = () => {
     };
 
     const removeCallback = useCallback((listID: string, listTypeID: string, item_ids: string[]) => {
+        setLoading(true);
         removeItems(listID, listTypeID, item_ids).then(updatedItems => {
             listTypeID == Values.movieListsID ? setMovies(updatedItems) : setShows(updatedItems);
+            setLoading(false);
         })
     }, [movies, shows, user])
 

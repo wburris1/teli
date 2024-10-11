@@ -21,6 +21,7 @@ const PublicLayout = () => {
         name="login"
         options={{
           headerTitle: '',
+          headerShown: false,
         }}></Stack.Screen>
       <Stack.Screen
         name="signup"

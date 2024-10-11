@@ -199,13 +199,13 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
           </View>
         </View>
       </View>
-        <Link style={{height: 130}} href={{pathname: redirectLink + "_item" as any, params: { id: item.item_id, groupKey: isMovie ? 'movie' : 'tv' }}} asChild>
+        <Link style={{height: 130, alignSelf: 'center'}} href={{pathname: redirectLink + "_item" as any, params: { id: item.item_id, groupKey: isMovie ? 'movie' : 'tv' }}} asChild>
           <TouchableOpacity>
           {item.poster_path ? 
-                            <Image
-                                source={{ uri: imgUrl + item.poster_path }}
-                                style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }]}
-                                /> : <DefaultPost style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }]}/>}
+            <Image
+                source={{ uri: imgUrl + item.poster_path }}
+                style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }]}
+                /> : <DefaultPost style={[styles.itemImage, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }]}/>}
             {item.score && item.score >= 0 &&
               <>
                 <LinearGradient

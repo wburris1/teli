@@ -28,7 +28,7 @@ export const uploadImage = async (userID: string, image: string) => {
   }
 }
 
-const ImageUploader = ({changeImage}: { changeImage: (imgUri: string) => void}) => {
+const ImageUploader = ({changeImage}: { changeImage: (imgUri: string) => void }) => {
   const {userData} = useAuth()
   const [image, setImage] = useState(userData?.profile_picture ?? '');
   
@@ -53,26 +53,6 @@ const ImageUploader = ({changeImage}: { changeImage: (imgUri: string) => void}) 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
       changeImage(result.assets[0].uri);
-    }
-  };
-
-  const uploadImage = async () => {
-    if (!image) {
-      Alert.alert('No Image Selected', 'Please select an image first.');
-      return;
-    }
-
-    try {
-      const fileUri = image;
-      const fileInfo = await FileSystem.getInfoAsync(fileUri);
-
-      if (fileInfo.exists) {
-
-    } else {
-        Alert.alert('File Not Found', 'The selected file does not exist.');
-      }
-    } catch (error) {
-      Alert.alert('Upload Error');
     }
   };
 

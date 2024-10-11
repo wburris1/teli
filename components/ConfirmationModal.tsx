@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Text, View } from './Themed';
 import { UserItem } from '@/constants/ImportTypes';
@@ -10,6 +10,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 const ConfirmationModal = ({ visible, onClose, onConfirm, isAll, selectedItems }: {
     visible: boolean, onClose: () => void, onConfirm: () => void, isAll: boolean, selectedItems: UserItem[]
 }) => {
+  const colorScheme = useColorScheme();
   const pluralText = selectedItems.length > 1 ? "these items" : "this item";
   const alertText = !isAll ? 
     `Are you sure you want to remove ${pluralText} from the list?` : 
@@ -26,11 +27,11 @@ const ConfirmationModal = ({ visible, onClose, onConfirm, isAll, selectedItems }
       onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, {backgroundColor: Colors[colorScheme ?? 'light'].gray}]}>
           <Text style={styles.modalTitle}>{alertHeaderText}</Text>
           <Text style={styles.modalText}>{alertText}</Text>
           
-          <View style={styles.buttonRow}>
+          <View style={[styles.buttonRow, {backgroundColor: Colors[colorScheme ?? 'light'].gray}]}>
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
@@ -52,19 +53,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainer: {
     width: '80%',
-    padding: 20,
+    paddingTop: 20,
     borderRadius: 20,
     alignItems: 'center',
-    borderWidth: 1,
-    elevation: 4,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 1,
-    shadowOpacity: 1,
-    shadowColor: 'gray'
   },
   modalTitle: {
     fontSize: 18,
@@ -75,35 +70,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 20,
+    paddingHorizontal: 20,
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    borderTopWidth: 1,
+    borderColor: 'gray'
   },
   cancelButton: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
-    marginRight: 10,
-    borderRadius: 20,
-    backgroundColor: 'gray'
+    paddingVertical: 15,
+    borderBottomLeftRadius: 20,
+    borderRightWidth: 0.5,
+    borderColor: 'gray'
   },
   cancelButtonText: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: 'white'
   },
   confirmButton: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: 'red'
+    paddingVertical: 15,
+    borderBottomRightRadius: 20,
+    borderLeftWidth: 0.5,
+    borderColor: 'gray'
   },
   confirmButtonText: {
     fontWeight: 'bold',
     fontSize: 16,
-    color: 'white'
+    color: 'red'
   },
 });
