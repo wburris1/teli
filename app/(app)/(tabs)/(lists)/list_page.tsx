@@ -30,6 +30,7 @@ type RowProps = {
     listID: string;
     popUpIndex: number;
     setPopUpIndex: (index: number) => void;
+    setImagesLoaded: () => void;
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
@@ -37,7 +38,7 @@ const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
 const itemWidth = (screenWidth - 12) / 3;
 
-const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex}, ref) => {
+const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex, setImagesLoaded}, ref) => {
     const { setItem } = useTab();
     const { selectionMode, selectedItems, setselectedItems } = useData();
     const score = item.score == 10 ? '10' : item.score.toFixed(1);
@@ -142,6 +143,10 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
     }) => {
       return condition ? <>{children}</> : <Link href={href} asChild>{children}</Link>;
     };
+
+    useEffect(() => {
+      if (!item.poster_path) setImagesLoaded();
+    }, [])
   
     return (
       <>
@@ -164,6 +169,7 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
                 <Image
                     source={{ uri: imgUrl + item.poster_path }}
                     style={styles.image}
+                    onLoadEnd={() => setImagesLoaded()}
                     /> : <DefaultPost style={[styles.image, {overflow: 'hidden'}, ]}
                     text={isMovie ? item.title : item.name}/>}
                {selectionMode && (
@@ -217,8 +223,8 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
     );
 });
 
-const MakeList = ({ listID, onItemsUpdate, items}:
-  {listID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[], selectionMode: boolean,
+const MakeList = ({ listID, onItemsUpdate, items, setImagesLoaded}:
+  {listID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[], selectionMode: boolean, setImagesLoaded: () => void
   }) => {
     const colorScheme = useColorScheme();
     const [popUpIndex, setPopUpIndex] = useState(-1);
@@ -256,7 +262,7 @@ const MakeList = ({ listID, onItemsUpdate, items}:
               <Animated.FlatList
                 data={items}
                 renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} 
-                  popUpIndex={popUpIndex} setPopUpIndex={setPopUpIndex} />}
+                  popUpIndex={popUpIndex} setPopUpIndex={setPopUpIndex} setImagesLoaded={setImagesLoaded}/>}
                 keyExtractor={item => item.item_id}
                 numColumns={3}
                 removeClippedSubviews={true}
@@ -295,6 +301,7 @@ export default function TabOneScreen() {
   const removeItems = removeSelected();
   const {loading, setLoading} = useLoading();
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(0);
 
   useEffect(() => {
     if (description) {
@@ -469,8 +476,10 @@ const handleClose = () => {
 
   var ItemList = useCallback(() => (
     <MakeList listID={listID as string} onItemsUpdate={onItemsUpdate} items={filteredItems} 
-      selectionMode={selectionMode}/>
-  ), [currDescription, filteredItems, items]);
+      selectionMode={selectionMode} setImagesLoaded={() => {
+        setImagesLoaded(prev => prev + 1);
+      }}/>
+  ), [currDescription, filteredItems, items, imagesLoaded]);
 
   const slideAnim = useSharedValue(200);
 
@@ -503,6 +512,11 @@ const handleClose = () => {
         <AnimatedSearch searchVisible={searchVisible} search={search} handleSearch={handleSearch} />
         {loading && (
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent', zIndex: 2 }}>
+          <ActivityIndicator size="large" color={Colors['loading']}/>
+        </View>
+        )}
+        {imagesLoaded < items.length && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', backgroundColor: Colors[colorScheme ?? 'light'].background, justifyContent: 'center', zIndex: 2 }}>
           <ActivityIndicator size="large" color={Colors['loading']}/>
         </View>
         )}

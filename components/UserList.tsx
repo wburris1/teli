@@ -174,7 +174,7 @@ export const UserList = ({ list, listTypeID, isListTab, userID, index, redirectL
             }            
           } else {
             // Redirect to list_page when the list is not empty
-            router.push({pathname: '/list_page', params: {
+            router.push({pathname: redirectLink ? redirectLink + '_list_page' as any : '/list_page', params: {
               listTypeID: listTypeID,
               listID: list.list_id,
               description: list.description,

@@ -12,6 +12,7 @@ import { EditListScreen } from '@/components/EditList';
 import { AnimatedSearch } from '@/components/AnimatedSearch';
 import { UserItem } from '@/constants/ImportTypes';
 import { LinearGradient } from 'expo-linear-gradient';
+import { DefaultPost } from './LogoView';
 
 type RowProps = {
     item: UserItem;
@@ -19,6 +20,7 @@ type RowProps = {
     items: UserItem[];
     listID: string;
     redirectLink?: string;
+    setImagesLoaded: () => void;
 };
 
 type ScreenProps = {
@@ -34,7 +36,7 @@ const imgUrl = 'https://image.tmdb.org/t/p/w342';
 
 const itemWidth = (Dimensions.screenWidth - 12) / 3;
 
-const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, redirectLink = '/home' }, ref) => {
+const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, redirectLink = '/home', setImagesLoaded }, ref) => {
     const score = item.score == 10 ? '10' : item.score.toFixed(1);
     const isMovie = 'title' in item;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
@@ -43,16 +45,22 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, red
   
     date = isMovie ? item.release_date : item.first_air_date;
     date = date.slice(0,4);
+
+    // useEffect(() => {
+    //   if (!item.poster_path) setImagesLoaded();
+    // }, [])
   
     return (
       <View>
         <Link href={{pathname: redirectLink + "_item" as any, params: { id: item.item_id, groupKey: isMovie ? "movie" : "tv" }}} style={styles.linkStyle} asChild>
           <TouchableOpacity>
             <View style={[styles.innerContainer, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
-              <Image
+              {item.poster_path ? <Image
                   source={{ uri: imgUrl + item.poster_path }}
                   style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
-              />
+                  onLoadEnd={() => setImagesLoaded()}
+              /> : <DefaultPost style={[styles.image, {overflow: 'hidden'}, ]}
+              text={isMovie ? item.title : item.name}/>}
               {item.score && item.score >= 0 &&
               <>
                 <LinearGradient
@@ -73,31 +81,33 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, red
 const MakeList = ({ listID, listTypeID, onItemsUpdate, items, redirectLink = '/home' }:
   {listID: string, listTypeID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[], redirectLink?: string }) => {
     const colorScheme = useColorScheme();
+    const [imagesLoaded, setImagesLoaded] = useState(0);
 
     useEffect(() => {
       if (items) {
-        onItemsUpdate(items);
+        onItemsUpdate(items.sort((a: UserItem, b: UserItem) => b.score - a.score));
       }
     }, [items])
 
     if (items) {
-      items.sort((a: UserItem, b: UserItem) => b.score - a.score);
-
       return (
         <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
+          {imagesLoaded < items.length && (
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', backgroundColor: Colors[colorScheme ?? 'light'].background, justifyContent: 'center', zIndex: 2 }}>
+              <ActivityIndicator size="large" color={Colors['loading']}/>
+            </View>
+          )}
           <LinearGradient
           colors={[Colors[colorScheme ?? 'light'].gray, colorScheme == 'light' ? 'rgba(255,255,255,0)' : 'transparent']}
           style={{position: 'absolute', top: 0, left: 0, right: 0, height: 5, zIndex: 1}}
           />
-          {items.length > 0 ? 
           <FlatList
             data={items}
-            renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} redirectLink={redirectLink} />}
+            renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} redirectLink={redirectLink} setImagesLoaded={() => setImagesLoaded(prev => prev + 1)} />}
             keyExtractor={item => item.item_id}
             numColumns={3}
             style={{paddingTop: 10}}
-          /> : 
-          <Text>Rank something!</Text>}
+          />
         </View>
       )
     } else {
@@ -179,7 +189,7 @@ export const ListPage = ({listTypeID, listID, description, name, userID, redirec
     }, [navigation, listID, currName, searchVisible])
 
     var ItemList = useCallback(() =>  (
-        <MakeList listID={listID as string} listTypeID={listTypeID as string} onItemsUpdate={onItemsUpdate} items={filteredItems} redirectLink={redirectLink}/>
+        <MakeList listID={listID as string} listTypeID={listTypeID as string} onItemsUpdate={onItemsUpdate} items={filteredItems} redirectLink={redirectLink} />
     ), [currDescription, filteredItems]);
   
     return (
@@ -252,7 +262,6 @@ const styles = StyleSheet.create({
     image: {
       width: '100%',
       aspectRatio: 1 / 1.5,
-      borderWidth: 1,
       borderRadius: 10,
     },
     textContainer: {
