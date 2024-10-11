@@ -21,6 +21,7 @@ import { DefaultPost } from '@/components/LogoView';
 import { useLoading } from '@/contexts/loading';
 import Spinner from 'react-native-loading-spinner-overlay';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import { useFocusEffect } from '@react-navigation/native';
 
 type RowProps = {
     item: UserItem;
@@ -29,10 +30,6 @@ type RowProps = {
     listID: string;
     popUpIndex: number;
     setPopUpIndex: (index: number) => void;
-    selectionMode: boolean;
-    selectedItems: UserItem[];
-    setselectedItems: (lists: UserItem[]) => void;
-    posterPath: string
 };
 
 const imgUrl = 'https://image.tmdb.org/t/p/w500';
@@ -40,9 +37,9 @@ const screenWidth = Dimensions.screenWidth;
 const screenHeight = Dimensions.screenHeight;
 const itemWidth = (screenWidth - 12) / 3;
 
-const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex,
-  selectionMode, selectedItems, setselectedItems, posterPath}, ref) => {
+const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, popUpIndex, setPopUpIndex}, ref) => {
     const { setItem } = useTab();
+    const { selectionMode, selectedItems, setselectedItems } = useData();
     const score = item.score == 10 ? '10' : item.score.toFixed(1);
     const isMovie = 'title' in item;
     const listTypeID = isMovie ? Values.movieListsID : Values.tvListsID;
@@ -59,6 +56,9 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
     const transY = useSharedValue(0);
     const transX = useSharedValue(0);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    // displaycheckmark is a local variable which controls if an item is selected. 
+    //Did this to improve speed since selectedItems is a global variable and takes time for UI to recognize when it updates.
+    const [displayCheckMark, setDisplayCheckMark] = useState(false)
 
     const onConfirmDelete = () => {
       setDeleteModalVisible(false);
@@ -70,6 +70,12 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
         removeItem(listID, listTypeID, item.item_id);
       }
     }
+
+    useEffect(() => {
+      if (!selectionMode) {
+        setDisplayCheckMark(false)
+      }
+    }, [selectionMode])
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
@@ -113,18 +119,17 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
       }
     }, [opacity.value])
 
-    const toggleSelect = () => {
+    const toggleSelect = async () => {
       if (!selectionMode) {
         return;
       }
+      setDisplayCheckMark(prev => !prev);
       if (selectedItems.includes(item)) {
         setselectedItems(selectedItems.filter(filterItem => filterItem.item_id !== item.item_id));
-
       } else {
           setselectedItems([...selectedItems, item]);
-
-        }
-    };
+      }
+     }
 
     const ConditionalLink = ({
       condition,
@@ -163,12 +168,12 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
                     text={isMovie ? item.title : item.name}/>}
                {selectionMode && (
               <TouchableOpacity onPress={toggleSelect} style={styles.checkbox}>
-                <Ionicons
-                  name={selectedItems.includes(item) ? "checkmark" : "ellipse"}
+              <Ionicons
+                  name={displayCheckMark ? "checkmark" : "ellipse"}
                   size={25}
-                  color={selectedItems.includes(item) ? 'black' : 'white'}
-                />
-              </TouchableOpacity>
+                  color={displayCheckMark ? 'black' : 'white'}
+              />
+            </TouchableOpacity>
             )}
               {popUpIndex === index && (
                 <Animated.View style={[animatedOpacity, {position: 'absolute', flexDirection: 'row', justifyContent: 'space-between', top: 0, width: '100%'}]}>
@@ -211,9 +216,9 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
     );
 });
 
-const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, selectedItems, setselectedItems }:
-  {listID: string, listTypeID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[], selectionMode: boolean,
-  selectedItems: UserItem[], setselectedItems: (lists: UserItem[]) => void }) => {
+const MakeList = ({ listID, onItemsUpdate, items}:
+  {listID: string, onItemsUpdate: (items: UserItem[]) => void, items: UserItem[], selectionMode: boolean,
+  }) => {
     const colorScheme = useColorScheme();
     const [popUpIndex, setPopUpIndex] = useState(-1);
     const topPadding = useSharedValue(10);
@@ -239,15 +244,6 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
       }
     }, [topPadding.value]);
 
-    const memoizedSelectedItems = useMemo(() => selectedItems, [selectedItems]);
-    const memoizedSetSelectedItems = useCallback(setselectedItems, [setselectedItems]);
-
-    const memoizedPosters = useMemo(() => {
-      return listTypeID === Values.movieListsID
-        ? storedMoviePosters
-        : storedShowPosters;
-    }, []);
-
     if (items) {
       return (
         <View style={{backgroundColor: Colors[colorScheme ?? 'light'].background, flex: 1}}>
@@ -258,8 +254,7 @@ const MakeList = ({ listID, listTypeID, onItemsUpdate, items, selectionMode, sel
           {items.length > 0 ?
               <Animated.FlatList
                 data={items}
-                renderItem={({ item, index }) => <RenderItem posterPath={memoizedPosters[item.item_id]} item={item} index={index} items={items} listID={listID} 
-                selectionMode={selectionMode} selectedItems={memoizedSelectedItems} setselectedItems={memoizedSetSelectedItems}
+                renderItem={({ item, index }) => <RenderItem item={item} index={index} items={items} listID={listID} 
                   popUpIndex={popUpIndex} setPopUpIndex={setPopUpIndex} />}
                 keyExtractor={item => item.item_id}
                 numColumns={3}
@@ -291,10 +286,8 @@ export default function TabOneScreen() {
   const [searchVisible, setSearchVisible] = useState(false);
   const [filteredItems, setFilteredItems] = useState<UserItem[]>([]);
   const [search, setSearch] = useState('');
-  const { movies, shows } = useData();
+  const { movies, shows, selectionMode, setSelectionMode, selectedItems, setselectedItems } = useData();
   const [items, setItems] = useState<UserItem[]>([]);
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedItems, setselectedItems] = useState<UserItem[]>([]);
   const isAll = listID == Values.seenListID ? true : false;
   const [listsModalVisible, setListsModalVisible] = useState(false);
   const deleteItems = useUserSelectedDelete();
@@ -310,6 +303,18 @@ export default function TabOneScreen() {
       setCurrName(name as string);
     }
   }, [name, description]);
+
+  // Use useFocusEffect to detect when the list_page loses focus
+  useFocusEffect(
+    useCallback(() => {
+      // The screen is focused
+      return () => {
+        // User left screen. The screen is unfocused
+        setSelectionMode(false)
+        setselectedItems([]);
+      };
+    }, [])
+  );
 
   const onItemsUpdate = (newItems: UserItem[]) => {
     setFilteredItems(newItems);
@@ -399,12 +404,10 @@ const handleClose = () => {
   }
 
   const handleSelectionMode = () => {
-    if (selectionMode) {
-      setSelectionMode(false);
-      setselectedItems([]);
-    } else {
-      setSelectionMode(true);
+    if (!selectionMode) {
+      setselectedItems([])
     }
+    setSelectionMode((prev: boolean) => !prev);
   };
 
   useLayoutEffect(() => {
@@ -464,9 +467,9 @@ const handleClose = () => {
   }, [navigation, listID, selectionMode, currName, searchVisible, selectedItems]);
 
   var ItemList = useCallback(() => (
-    <MakeList listID={listID as string} listTypeID={listTypeID as string} onItemsUpdate={onItemsUpdate} items={filteredItems} 
-      selectionMode={selectionMode} selectedItems={selectedItems} setselectedItems={setselectedItems} />
-  ), [currDescription, filteredItems, selectionMode, selectedItems, items]);
+    <MakeList listID={listID as string} onItemsUpdate={onItemsUpdate} items={filteredItems} 
+      selectionMode={selectionMode}/>
+  ), [currDescription, filteredItems, items]);
 
   const slideAnim = useSharedValue(200);
 
