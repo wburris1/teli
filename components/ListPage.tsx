@@ -46,9 +46,9 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, red
     date = isMovie ? item.release_date : item.first_air_date;
     date = date.slice(0,4);
 
-    // useEffect(() => {
-    //   if (!item.poster_path) setImagesLoaded();
-    // }, [])
+    useEffect(() => {
+      if (!item.poster_path) setImagesLoaded();
+    }, [])
   
     return (
       <View>
