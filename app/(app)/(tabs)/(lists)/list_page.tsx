@@ -163,17 +163,18 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
               {item.poster_path ? 
                 <Image
                     source={{ uri: imgUrl + item.poster_path }}
-                    style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text }]}
-                    /> : <DefaultPost style={[styles.image, { borderColor: Colors[colorScheme ?? 'light'].text, overflow: 'hidden' }, ]}
+                    style={styles.image}
+                    /> : <DefaultPost style={[styles.image, {overflow: 'hidden'}, ]}
                     text={isMovie ? item.title : item.name}/>}
                {selectionMode && (
-              <TouchableOpacity onPress={toggleSelect} style={styles.checkbox}>
-              <Ionicons
-                  name={displayCheckMark ? "checkmark" : "ellipse"}
+              <TouchableOpacity onPress={toggleSelect} style={[styles.checkbox, {width: 30, aspectRatio: 1, borderWidth: 1, borderColor: 'gray', borderRadius: 50, backgroundColor: !displayCheckMark ? 'rgba(237, 231, 225, 0.5)' : 'white'}]}>
+              {displayCheckMark && <Ionicons
+                  name={"checkmark"}
                   size={25}
-                  color={displayCheckMark ? 'black' : 'white'}
-              />
-            </TouchableOpacity>
+                  color={'black'}
+                  
+              />}
+              </TouchableOpacity>
             )}
               {popUpIndex === index && (
                 <Animated.View style={[animatedOpacity, {position: 'absolute', flexDirection: 'row', justifyContent: 'space-between', top: 0, width: '100%'}]}>
@@ -702,11 +703,9 @@ const styles = StyleSheet.create({
       top: 10,
       left: 10,
       zIndex: 1,
-      borderRadius: 50,
-      borderWidth: 1,
-      backgroundColor: 'white',
-      borderColor: 'gray',
-      padding: 3
+      backgroundColor: 'transparent',
+      justifyContent: 'center',
+      alignItems: 'center'
     },
     fabContainer: {
       position: 'absolute',
