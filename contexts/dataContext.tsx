@@ -44,6 +44,10 @@ type DataContextType = {
     storedMoviePosters: { [key: string]: any },
     storedShowPosters: { [key: string]: any },
     storedListPosters: { [key: string]: any },
+    selectionMode: boolean, 
+    setSelectionMode: React.Dispatch<React.SetStateAction<boolean>>;
+    selectedItems: UserItem[],
+    setselectedItems: (items: UserItem[]) => void,
 };
 
 type Props = {
@@ -64,6 +68,9 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
     const [tvLists, setTVLists] = useState<List[]>([]);
     const [movieLists, setMovieLists] = useState<List[]>([]);
     const [refreshFlag, setRefreshFlag] = useState(false);
+    const [selectionMode, setSelectionMode] = useState(false);
+    const [selectedItems, setselectedItems] = useState<UserItem[]>([]);
+
     const [refreshListFlag, setRefreshListFlag] = useState(false);
     const [currPostID, setCurrPostID] = useState('');
     const [currNumComments, setCurrNumComments] = useState(0);
@@ -244,7 +251,8 @@ export const DataProvider: React.FC<Props> = ({ children }: Props) => {
                 refreshFlag, requestRefresh, refreshListFlag, requestListRefresh,
                 replyID, requestReply, userPushToken, notification, currPostID, setCurrPostID,
                 currNumComments, setCurrNumComments, currLikePostID, setCurrLikePostID, currNumLikes, setCurrNumLikes,
-                currIsLiked, setCurrIsLiked, storedMoviePosters, storedShowPosters, storedListPosters
+                currIsLiked, setCurrIsLiked, storedMoviePosters, storedShowPosters, storedListPosters, selectionMode, setSelectionMode,
+                selectedItems, setselectedItems
             }}
         >
             {children}
