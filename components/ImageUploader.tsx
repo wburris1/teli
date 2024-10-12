@@ -28,9 +28,9 @@ export const uploadImage = async (userID: string, image: string) => {
   }
 }
 
-const ImageUploader = ({changeImage}: { changeImage: (imgUri: string) => void }) => {
+const ImageUploader = ({changeImage, isSignUp = false}: { changeImage: (imgUri: string) => void, isSignUp?: boolean }) => {
   const {userData} = useAuth()
-  const [image, setImage] = useState(userData?.profile_picture ?? '');
+  const [image, setImage] = useState(isSignUp ? '' : userData?.profile_picture ?? '');
   
   const colorScheme = useColorScheme();
 

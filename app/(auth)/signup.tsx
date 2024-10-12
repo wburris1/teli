@@ -141,7 +141,7 @@ const SignUpStart = () => {
       <KeyboardAvoidingView behavior='padding'>
         {!pendingVerification && (
           <>
-            <ImageUploader changeImage={setProfilePic} />
+            <ImageUploader changeImage={setProfilePic} isSignUp={true} />
             <TextInput autoCapitalize="words" placeholder="First name..." value={firstName} onChangeText={setFirstName}
               style={[styles.inputField, {borderColor: Colors[colorScheme ?? 'light'].gray, color: Colors[colorScheme ?? 'light'].text,}]} />
             <TextInput autoCapitalize="words" placeholder="Last name..." value={lastName} onChangeText={setLastName}
