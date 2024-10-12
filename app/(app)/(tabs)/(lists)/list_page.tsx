@@ -173,14 +173,15 @@ const RenderItem = forwardRef<View, RowProps>(({ item, index, items, listID, pop
                     /> : <DefaultPost style={[styles.image, {overflow: 'hidden'}, ]}
                     text={isMovie ? item.title : item.name}/>}
                {selectionMode && (
-              <TouchableOpacity onPress={toggleSelect} style={[styles.checkbox, {width: 30, aspectRatio: 1, borderWidth: 1, borderColor: 'gray', borderRadius: 50, backgroundColor: !displayCheckMark ? 'rgba(237, 231, 225, 0.5)' : 'white'}]}>
-              {displayCheckMark && <Ionicons
-                  name={"checkmark"}
-                  size={25}
-                  color={'black'}
-                  
-              />}
-              </TouchableOpacity>
+              <TouchableOpacity onPress={toggleSelect} style={[styles.checkbox, {width: 28, aspectRatio: 1, borderWidth: 1, borderColor: 'white', 
+                borderRadius: 50, backgroundColor: !displayCheckMark ? 'rgba(237, 231, 225, 0.5)' : 'white'}]}>
+                {displayCheckMark && <Ionicons
+                    name={"checkmark"}
+                    size={25}
+                    color={'black'}
+                    
+                />}
+                </TouchableOpacity>
             )}
               {popUpIndex === index && (
                 <Animated.View style={[animatedOpacity, {position: 'absolute', flexDirection: 'row', justifyContent: 'space-between', top: 0, width: '100%'}]}>
