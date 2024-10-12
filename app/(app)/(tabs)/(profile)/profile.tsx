@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable, Alert, SafeAreaView, ScrollView } from 'react-native';
+import { FlatList, StyleSheet, ActivityIndicator, useColorScheme, TouchableOpacity, Image, Platform, UIManager, Animated, LayoutAnimation, Pressable, Alert, SafeAreaView, ScrollView, Appearance } from 'react-native';
 import Modal from 'react-native-modal';
 
 import { useAuth } from "@/contexts/authContext";
@@ -27,6 +27,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
 const db = FIREBASE_DB;
 
 const ProfilePage = () => {
+  const [colorScheme, setColorScheme] = useState(Appearance.getColorScheme());
   const { incrementComment, showComments, showLikes, post, handleComments, handleLikes, setShowComments, setShowLikes, handleIncrementComment } = useModalState();
   const {user, userData } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
@@ -34,7 +35,7 @@ const ProfilePage = () => {
   const { followers, following, setFollowing, setFollowers } = useData();
   const router = useRouter();
   const navigation = useNavigation<ScreenNavigationProp>();
-  const colorScheme = useColorScheme();
+  // const colorScheme = useColorScheme();
   const [numMovies, setNumMovies] = useState(0);
   const [numShows, setNumShows] = useState(0);
   const {movies, shows} = useData();
@@ -137,6 +138,17 @@ const ProfilePage = () => {
     `${runTime}m` : 
     `${Math.floor(runTime / 60)}h ${runTime % 60}m`
   }
+  const toggleColorScheme = () => {
+    console.log('toggle')
+    const newScheme = colorScheme === 'light' ? 'dark' : 'light';
+    
+    // Set the new color scheme
+    Appearance.setColorScheme(newScheme);
+
+    // Update the local state to reflect the change
+    setColorScheme(newScheme);
+    console.log('new colorscheme', newScheme)
+  };
 
   return (
     <SafeAreaView style={[styles.container, {backgroundColor: Colors[colorScheme ?? 'light'].background}]}>
@@ -161,6 +173,13 @@ const ProfilePage = () => {
               <Text></Text>
             </TouchableOpacity>
           </Link>
+          {true && <TouchableOpacity onPress={ // ABLE TO TOGGLE LIGHT AND DARK MODE FOR TESTING PURPOSES
+            toggleColorScheme
+          }>
+            <Ionicons name="information-circle" size={30} color={Colors[colorScheme ?? 'light'].text} />
+            <Text style={styles.settingsButtonText}>DarkMode</Text>
+            <Text></Text>
+          </TouchableOpacity> }
           <Link href={{ pathname: '/credits' }} style={[styles.settingsButton, { borderColor: Colors[colorScheme ?? 'light'].gray }]} asChild>
             <TouchableOpacity onPress={() => setSettingsModalVisible(false)}>
               <Ionicons name="information-circle" size={30} color={Colors[colorScheme ?? 'light'].text} />
