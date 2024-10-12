@@ -147,7 +147,7 @@ const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
           <Link href={{pathname: 'notification_user' as any, params: { userID: noti.sender_id }}} asChild>
               <TouchableOpacity>
                   <Image
-                      source={{ uri: profilePic === "" ? undefined : profilePic }}
+                      source={ profilePic ? {uri: profilePic,  cache: 'force-cache' } : require('../assets/images/emptyprofilepic.jpg')}
                       style={[styles.profilePic, { borderColor: Colors[colorScheme ?? 'light'].text}]}
                       onError={handleImageLoadError} 
                   />
@@ -215,6 +215,7 @@ const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
 const styles = StyleSheet.create({
   profilePic: {
       width: 60,
+      height: 60,
       aspectRatio: 1,
       borderRadius: 50,
       backgroundColor: 'gray',
