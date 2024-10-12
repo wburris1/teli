@@ -11,8 +11,10 @@ import { Text, View } from '@/components/Themed';
 import Colors from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import ImageUploader, { uploadImage } from '@/components/ImageUploader';
+import { useData } from '@/contexts/dataContext';
 
 const SignUpStart = () => {
+  const { requestRefresh } = useData();
   const [profilePic, setProfilePic] = useState('');
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -71,7 +73,8 @@ const SignUpStart = () => {
       userData.profile_picture = profileURL;
       await setDoc(userRef, userData);
       
-      createSeenLists(user.uid);
+      await createSeenLists(user.uid);
+      requestRefresh();
     } catch (err: any) {
       alert(err.message);
     }
