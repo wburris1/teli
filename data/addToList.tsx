@@ -163,3 +163,94 @@ export const addAndRemoveItemFromLists = () => {
 
     return addAndRemove;
 }
+
+export const addAndRemoveSelectedFromLists = () => {
+    const { user } = useAuth();
+    const updateListFunc = UpdateListPosters();
+    const { setSelectedLists, setRemoveLists } = useTab();
+    const { movies, shows, setMovies, setShows } = useData();
+
+    async function addAndRemove(
+      item_ids: string[], 
+      addLists: List[], 
+      removeLists: List[], 
+      listTypeID: string
+    ) {
+        const isMovie = listTypeID == Values.movieListsID;
+        
+        if (user) {
+            try {
+                const tasks = item_ids.map(async (item_id, index) => {
+                    const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", item_id);
+
+                    const existingDoc = await getDoc(itemRef);
+                    const existingLists = existingDoc.exists() ? existingDoc.data().lists || [] : [];
+                    const removeListIDs = new Set(removeLists.map(list => list.list_id));
+                    let newLists = existingLists.filter((list: string) => !removeListIDs.has(list));
+
+                    if (addLists.length > 0) {
+                        const addListIDs = addLists.map(addList => addList.list_id);
+                        if (addLists[0].is_ranked) {
+                            newLists = [Values.seenListID, ...addListIDs, ...newLists];
+                        } else {
+                            newLists = [...addListIDs, ...newLists];
+                        }
+                    } else if (removeLists.length > 0 && addLists.length === 0) {
+                        newLists = removeLists[0].is_ranked ? [Values.seenListID] : [];
+                    }
+
+                    if (existingLists.sort().join(',') !== newLists.sort().join(',')) {
+                        await updateDoc(itemRef, { lists: newLists });
+
+                        return { ...existingDoc.data(), lists: newLists } as UserItem;
+                    }
+                    return existingDoc.data() as UserItem;
+                });
+
+                const results = await Promise.all(tasks);
+
+                // Merge updated items into the existing movies/shows state
+                const updatedState = [
+                    ...results,
+                    ...((isMovie ? movies : shows) || []).filter(item => !item_ids.includes(item.item_id))
+                ].sort((a, b) => b.score - a.score);
+
+                // Update the UI with the new state
+                isMovie ? setMovies(updatedState) : setShows(updatedState);
+
+                // Handle toast notifications
+                if (addLists.length > 0) {
+                    Toast.show({
+                        type: 'info',
+                        text1: `Added ${item_ids.length} ${item_ids.length > 1 ? 'items' : 'item'}`,
+                        text2: `You successfully added ${item_ids.length} ${item_ids.length > 1 ? 'items' : 'item'}`,
+                        position: 'bottom',
+                        visibilityTime: 3000,
+                        bottomOffset: 100
+                    });
+                }
+                if (removeLists.length > 0) {
+                    Toast.show({
+                        type: 'info',
+                        text1: `Removed ${item_ids.length} ${item_ids.length > 1 ? 'items' : 'item'}`,
+                        text2: `You successfully removed ${item_ids.length} ${item_ids.length > 1 ? 'items' : 'item'}`,
+                        position: 'bottom',
+                        visibilityTime: 3000,
+                        bottomOffset: 100
+                    });
+                }
+
+                setSelectedLists([]);
+                setRemoveLists([]);
+                updateListFunc(listTypeID);
+
+                console.log('Items added and removed successfully.');
+
+            } catch (error: any) {
+                console.error('Error when adding/removing items from lists: ', error);
+            }
+        }
+    }
+
+    return addAndRemove;
+};

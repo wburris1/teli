@@ -8,7 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useTab } from '@/contexts/listContext';
 import { useData } from '@/contexts/dataContext';
 import Values from '@/constants/Values';
-import { addAndRemoveItemFromLists, useGetItemLists } from '@/data/addToList';
+import { addAndRemoveItemFromLists, addAndRemoveSelectedFromLists, useGetItemLists } from '@/data/addToList';
 import { Text, View } from './Themed';
 import { AddList } from './AddList';
 import { useLoading } from '@/contexts/loading';
@@ -44,6 +44,7 @@ export default function AddToListsScreen({item_id, item_name, newItem, listTypeI
     const [initialSelectedLists, setInitialSelectedLists] = useState<List[]>(selectedLists);
     const colorScheme = useColorScheme();
     const addToListsFunc = addAndRemoveItemFromLists();
+    const addSelectedFunc = addAndRemoveSelectedFromLists();
     const { requestRefresh } = useData();
     const { loading, setLoading } = useLoading();
 
@@ -137,17 +138,11 @@ export default function AddToListsScreen({item_id, item_name, newItem, listTypeI
                           });
                       } else {
                         // Multiple items processing
-                        const promises = items.map((item) => {
-                          return addToListsFunc(item.item_id, item.item_name, newItem, selectedLists, [],
-                            activeTab == 0 ? Values.movieListsID : Values.tvListsID);
-                        });
-                  
-                        Promise.all(promises).then(() => {
-                          //requestRefresh();
+                        addSelectedFunc(items.map(itm => itm.item_id), selectedLists, removeLists, listTypeID).then(() => {
                           setLoading(false);
                           handleYes();
                           onClose();
-                        });
+                        })
                       }
                     } else {
                       onClose();
