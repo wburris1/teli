@@ -60,7 +60,7 @@ const ImageUploader = ({changeImage, isSignUp = false}: { changeImage: (imgUri: 
     <> 
         <View style={{alignSelf: 'center', margin: 5}}>
             <TouchableOpacity onPress={pickImage}>
-                <Image source={{ uri: image ? image : '/' }} style={styles.image} />
+                <Image source={image ? {uri: image,  cache: 'force-cache' } : require('../assets/images/emptyprofilepic.jpg') } style={styles.image} />
             </TouchableOpacity>
         </View>
         
