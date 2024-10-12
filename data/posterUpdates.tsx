@@ -59,7 +59,7 @@ export const updateSomeListPosters = () => {
                     bottom_item_name: posters.bottom_item_name,
                     last_modified: serverTimestamp(),
                 });
-                requestListRefresh();
+                //requestListRefresh();
             } catch (err: any) {
                 console.error("Error updating specific list posters: ", err);
             }
@@ -102,7 +102,7 @@ export const UpdateListPosters = () => {
                 
                 try {
                     await batch.commit();
-                    requestListRefresh();
+                    //requestListRefresh();
                     console.log("List posters updated");
                 } catch (err: any) {
                     console.error("List posters update failed: ", err);
