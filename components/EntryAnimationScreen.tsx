@@ -83,7 +83,6 @@ export default function EntryAnimationScreen({ setAnimationLoading }: SplashScre
             textAlign: 'center',
             fontFamily: 'Copperplate',
             top: 100,
-            color: Colors[colorScheme === 'light' ? 'dark' : 'light'].background, // 'black', // Adjust color as needed for visibility
           }}
         >
           Take2
