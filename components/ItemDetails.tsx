@@ -334,7 +334,9 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                             <TouchableOpacity style={{paddingLeft: 5}} onPress={() => {
                                     if (!bookmarked) {
                                         setBookmarked(true);
+                                        setLoading(true)
                                         bookmarkFunc(item, isMovie);
+                                        setLoading(false)
                                         Toast.show({
                                             type: 'info',
                                             text1: "Added to bookmarks",
@@ -345,7 +347,9 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                                           });
                                     } else {
                                         setBookmarked(false);
+                                        setLoading(true)
                                         removeFunc(Values.bookmarkListID, listTypeID, item.id.toString());
+                                        setLoading(false)
                                           Toast.show({
                                             type: 'info',
                                             text1: "Removed from bookmarks",
