@@ -89,6 +89,10 @@ const LikesModal = ({post, onClose, visible, redirectLink}: {post: FeedPost, onC
     }
   }, [visible, getLikedUsers]);
 
+  const loadMoreUsers = () => {
+    //to be implemented
+  }
+
   return (
         <Modal
             animationType="slide"
