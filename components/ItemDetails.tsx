@@ -189,7 +189,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
             }
         }
         setLoading(false);
-    }, []) // this dependency array used to be movies, shows, refreshFlag
+    }, [movies, shows]) // this dependency array used to be movies, shows, refreshFlag
 
     useEffect(() => {
       const fetchposts = async () => {
