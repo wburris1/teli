@@ -1,5 +1,5 @@
-import { View, StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, ScrollView, PixelRatio, Platform, TouchableWithoutFeedback, UIManager, LayoutAnimation } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import { View, StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, ScrollView, PixelRatio, Platform, TouchableWithoutFeedback, UIManager, LayoutAnimation, InteractionManager } from 'react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
@@ -12,7 +12,7 @@ import { useData } from '@/contexts/dataContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { addToBookmarked } from '@/data/addItem';
 import { removeFromList } from '@/data/deleteItem';
-import { CastMember, FeedPost, Post, UserItem } from '@/constants/ImportTypes';
+import { CastMember, FeedPost, UserItem } from '@/constants/ImportTypes';
 import { ExpandableText } from './AnimatedViews.tsx/ExpandableText';
 import AddToListsScreen from './AddToListsModal';
 import Toast from 'react-native-toast-message';
@@ -83,6 +83,8 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
     const [storedPoster, setStoredPoster] = useState<any>();
     const [storedBackdrop, setStoredBackdrop] = useState<any>();
     const [imagesReady, setImagesReady] = useState(false);
+    const lastPress = useRef<NodeJS.Timeout | null>(null); // timer for last bookmark press
+    const updateBookmark = useRef(false); // useRef to track the number of presses. if user preses bookmark twice or 4 times in short span than we don't want to do anything
 
     var releaseYear = "";
     var title = "";
@@ -99,6 +101,34 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     };
 
+    const handleBookmarkPress = () => {
+      Toast.show({
+        type: 'info',
+        text1: `${!bookmarked ? 'Added to' : 'Removed from'} bookmarks`,
+        text2: (isMovie ? item.title : item.name) + ` has been ${!bookmarked ? 'added to' : 'removed from'} bookmarks`,
+        position: "bottom",
+        visibilityTime: 3000,
+        bottomOffset: 100
+      })
+      updateBookmark.current = !updateBookmark.current
+      // Clear previous timer if there's any
+      if (lastPress.current) {
+        clearTimeout(lastPress.current);
+      }
+      // Set a new timer for debounce
+      lastPress.current = setTimeout(() => {
+        InteractionManager.runAfterInteractions(() => {
+          if (!bookmarked && updateBookmark.current) {
+            bookmarkFunc(item, isMovie); // this makes ui lag for a little because we use SetMovies
+            updateBookmark.current = !updateBookmark.current
+          } else if (bookmarked && updateBookmark.current) {
+            removeFunc(Values.bookmarkListID, listTypeID, item.id.toString()); //this makes ui lag for a little because we use SetMovies
+            updateBookmark.current = !updateBookmark.current
+          }
+        });
+      }, 750); // Debounce time 
+    };
+ 
     function checkDupe(localItems: UserItem[]) {
         var exists = false;
         if (item && localItems) {
@@ -159,7 +189,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
             }
         }
         setLoading(false);
-    }, [movies, shows, refreshFlag])
+    }, []) // this dependency array used to be movies, shows, refreshFlag
 
     useEffect(() => {
       const fetchposts = async () => {
@@ -332,35 +362,9 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                             </TouchableOpacity>
                             {((isMovie && movies) || (!isMovie && shows)) && !isDupe &&
                             <TouchableOpacity style={{paddingLeft: 5}} onPress={() => {
-                                    if (!bookmarked) {
-                                        setBookmarked(true);
-                                        setLoading(true)
-                                        bookmarkFunc(item, isMovie);
-                                        setLoading(false)
-                                        Toast.show({
-                                            type: 'info',
-                                            text1: "Added to bookmarks",
-                                            text2: (isMovie ? item.title : item.name) + " has been added to your bookmarks",
-                                            position: "bottom",
-                                            visibilityTime: 3000,
-                                            bottomOffset: 100
-                                          });
-                                    } else {
-                                        setBookmarked(false);
-                                        setLoading(true)
-                                        removeFunc(Values.bookmarkListID, listTypeID, item.id.toString());
-                                        setLoading(false)
-                                          Toast.show({
-                                            type: 'info',
-                                            text1: "Removed from bookmarks",
-                                            text2: (isMovie ? item.title : item.name) + " has been removed from your bookmarks",
-                                            position: "bottom",
-                                            visibilityTime: 3000,
-                                            bottomOffset: 100
-                                          });
-                                    }
-                                }}
-                            >
+                              setBookmarked((prev) => !prev)
+                              handleBookmarkPress();
+                              }}>
                                 <Ionicons
                                 name={bookmarked ? "bookmark" : "bookmark-outline"}
                                 size={30}

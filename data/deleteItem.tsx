@@ -106,10 +106,8 @@ export const removeFromList = () => {
     };
 
     const removeCallback = useCallback((listID: string, listTypeID: string, item_id: string) => {
-        setLoading(true);
         removeItem(listID, listTypeID, item_id).then(updated => {
-            listTypeID == Values.movieListsID ? setMovies(updated) : setShows(updated);
-            setLoading(false);
+          listTypeID == Values.movieListsID ? setMovies(updated) : setShows(updated);
         });
     }, [movies, shows, user])
 
@@ -135,8 +133,8 @@ export const removeSelected = () => {
                 const itemRef = doc(db, "users", user.uid, listTypeID == Values.movieListsID ? "movies" : "shows", id);
                 try {
                     await updateDoc(itemRef, {
-                        lists: arrayRemove(listID)
-                    });
+                      lists: arrayRemove(listID)
+                  });
                 } catch (error) {
                     console.error("Error removing document: ", error);
                 }
