@@ -76,7 +76,7 @@ export default function DiscussionScreen() {
         />
         {posts.length == 0 && (
           <View style={{justifyContent: 'flex-start', alignItems: 'center', flex: 1}}>
-            <Text style={{fontSize: 20, color: 'gray', paddingBottom: 5}}>Noone has posted about this yet</Text>
+            <Text style={{fontSize: 20, color: 'gray', paddingBottom: 5}}>No one has posted about this yet</Text>
             <Text style={{fontSize: 20, color: 'gray'}}>Be the first!</Text>
           </View>
         )}

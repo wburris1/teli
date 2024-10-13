@@ -240,7 +240,7 @@ setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = n
                     <Text style={styles.text}>Comments</Text>
                     {!loading && displayComments.length == 0 ? (
                       <View style={{justifyContent: 'flex-start', width: '100%', alignItems: 'center', flex: 1, marginTop: 100}}>
-                        <Text style={{fontSize: 22, color: 'gray'}}>Noone has commented yet</Text>
+                        <Text style={{fontSize: 22, color: 'gray'}}>No one has commented yet</Text>
                         <Text style={{fontSize: 22, color: 'gray', paddingTop: 5}}>Be the first!</Text>
                       </View>
                     ) :
@@ -300,8 +300,7 @@ setCommentID = () => {}, setParentID = () => {}, setUsername = () => {}, rep = n
                 <View style={[styles.postPageContainer, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                     {!loading && cmts.length == 0 ? (
                       <View style={{justifyContent: 'flex-start', width: '100%', alignItems: 'center', flex: 1, marginTop: 100}}>
-                        <Text style={{fontSize: 22, color: 'gray'}}>Noone has commented yet</Text>
-                        <Text style={{fontSize: 22, color: 'gray', paddingTop: 5}}>Be the first!</Text>
+                        <Text style={{fontSize: 22, color: 'gray'}}>Be the first to comment!</Text>
                       </View>
                     ) :
                     !loading ? commentsList() : (
