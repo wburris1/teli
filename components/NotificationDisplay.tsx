@@ -13,6 +13,7 @@ import { useCallback, useState } from 'react';
 import { useData } from '@/contexts/dataContext';
 import { useLoading } from '@/contexts/loading';
 import { fetchUserData } from '@/data/getComments';
+import Dimensions from '@/constants/Dimensions';
 
 
 type notiProps = {
@@ -24,7 +25,7 @@ const NotificationDisplay = ({ noti, setDeleteNoti}: notiProps) => {
   const { loading, setLoading } = useLoading();
   const [profilePic, setProfilePicture] = useState(noti.profile_picture);
   const imgUrl = 'https://image.tmdb.org/t/p/w342';
-  const homeFeedFontSize = 18
+  const homeFeedFontSize = Dimensions.screenWidth > 400 ? 18 : 16;
   const colorScheme = useColorScheme();
   const formattedDate = formatDate(noti.created_at as Timestamp);
   const id = noti.noti_id;

@@ -1,4 +1,4 @@
-import { View, StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, ScrollView, PixelRatio, Platform, TouchableWithoutFeedback, UIManager, LayoutAnimation, InteractionManager } from 'react-native'
+import { View, StyleSheet, Image, TouchableOpacity, Animated, Pressable, Modal, Button, ActivityIndicator, ScrollView, PixelRatio, Platform, TouchableWithoutFeedback, UIManager, LayoutAnimation, InteractionManager, SafeAreaView } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Dimensions from '@/constants/Dimensions';
 import { Ionicons } from '@expo/vector-icons';
@@ -305,15 +305,19 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
     }
 
     return (
-        <View>
-            <Spinner visible={loading} color={Colors['loading']} />
-        {detailModalCallback()}
+        <>
+        <SafeAreaView style={{flexDirection: 'row', position: 'absolute', top: 10, justifyContent: 'space-between', zIndex: 2, backgroundColor: 'transparent', alignItems: 'center', width: screenWidth}}>
         <TouchableOpacity style={[styles.backButton, { backgroundColor: 'rgba(255, 255, 255, 0.7)', left: 10}]} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={35} color={'black'}/>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.backButton, { backgroundColor: 'rgba(255, 255, 255, 0.7)', right: 10}]} onPress={() => setDetailModalVisible(true)}>
             <Ionicons name="ellipsis-horizontal" size={35} color={'black'}/>
         </TouchableOpacity>
+        </SafeAreaView>
+        <View>
+            <Spinner visible={loading} color={Colors['loading']} />
+        {detailModalCallback()}
+        
         <ScrollView showsVerticalScrollIndicator={false} style={{flex: 1, backgroundColor: Colors[colorScheme ?? 'light'].background}}>
             <View style={[styles.container, { backgroundColor: Colors[colorScheme ?? 'light'].background }]}>
                 <View style={{position: 'absolute'}}>
@@ -374,7 +378,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                             {isDupe && score &&
                             <View style={{borderWidth: 2, borderRadius: 50, borderColor: Colors['theme'],
                                 height: 37, aspectRatio: 1, marginLeft: 5, alignItems: 'center', justifyContent: 'center'}}>
-                                <Text style={{fontSize: screenWidth * 0.04186047, fontWeight: 'bold'}}>{score}</Text>
+                                <Text style={{fontSize: rerankButtonFontSize, fontWeight: 'bold'}}>{score}</Text>
                             </View>} 
                         </View>
                     </View>
@@ -385,7 +389,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                 />
                 {item.overview &&
                 <View style={styles.overviewContainer}>
-                    {item.tagline != "" && <Text style={{fontSize: directorFontSize, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 2, fontWeight: '300'}}>{item.tagline}</Text>}
+                    {item.tagline != "" && <Text style={{fontSize: directorFontSize, textAlign: 'left', width: screenWidth, paddingHorizontal: 10, paddingBottom: 5, fontWeight: '600', color: Colors[colorScheme == 'light' ? 'dark' : 'light'].gray}}>{item.tagline}</Text>}
                     <ExpandableText text={item.overview} maxHeight={65} textStyle={styles.overview} startExpanded={false} isDesc={true}/>
                 </View>}
                 {(director || item.genres) &&
@@ -474,6 +478,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                     </ScrollView>
                     </>
                 )}
+                {cast && cast.length > 0 && <>
                 <View style={styles.castContainer}>
                   <Text style={styles.castText}>Cast</Text>
                 </View>
@@ -481,7 +486,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                   {cast.map((row, rowIndex) => (
                     <CastList key={rowIndex} cast={row} />
                   ))}
-                </ScrollView>
+                </ScrollView></>}
                 {recomendations && recomendations.length > 0 && <>
                 <View style={styles.castContainer}>
                   <Text style={styles.castText}>More Like This</Text>
@@ -514,6 +519,7 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
           </TouchableWithoutFeedback >
         }
         </View>
+        </>
     )
 }; 
 
@@ -538,15 +544,13 @@ const styles = StyleSheet.create({
       zIndex: 1,
     },
     backButton: {
-        position: 'absolute',
         zIndex: 1,
-        top: 50,
         borderWidth: 2,
         borderRadius: 50,
         padding: 1,
     },
     info: {
-        marginTop: (screenWidth / 1.5) - 120,
+        marginTop: (screenWidth / 1.5) - 110,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -562,7 +566,7 @@ const styles = StyleSheet.create({
         paddingRight: 10,
         paddingBottom: 2,
         justifyContent: 'flex-end',
-        height: 140 * 1.5, //202.5
+        height: (screenWidth / 3) * 1.5, //202.5
     },
     posterContainer: {
         zIndex: 1,
@@ -571,7 +575,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 1,
         shadowOpacity: 1,
-        shadowColor: 'black'
+        shadowColor: 'black',
+        alignSelf: 'flex-end'
     },
     image: {
         height: screenHeight * 0.2306867, //  215,

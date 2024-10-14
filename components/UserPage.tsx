@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     marginLeft: 10
   },
   follow: {
-    fontSize: 16,
+    fontSize: Dimensions.screenWidth > 400 ? 16 : 14,
     fontWeight: '300',
   },
   profilePic: {

@@ -1,7 +1,7 @@
 import { AppNotification, FeedPost, NotificationType } from "@/constants/ImportTypes";
 import { Timestamp, addDoc, arrayRemove, arrayUnion, collection, doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, Image, Pressable, ScrollView, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
+import { Alert, Image, Pressable, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, useColorScheme } from "react-native";
 import { Text, View } from "./Themed";
 import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
@@ -232,10 +232,12 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
       </TouchableOpacity>
       </Link> : 
       <View>
-        <View style={{padding: 10}}>
+        <SafeAreaView style={{position: 'absolute' , top: 10, left: 10, zIndex: 1}}>
         <TouchableOpacity style={[styles.backButton, { backgroundColor: 'rgba(255, 255, 255, 0.7)'}]} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={35} color={'black'}/>
         </TouchableOpacity>
+        </SafeAreaView>
+        <View style={{padding: 10}}>
         <View style={{position: 'absolute'}}>
                     <Image source={item.backdrop_path ? { uri: imgUrl780 + item.backdrop_path } :
                       require('../assets/images/linear_gradient.png')} style={styles.backdropImage} />
@@ -436,10 +438,7 @@ export const PostFeed = ({item, index, handleComments, handleLikes, redirectLink
         height: Dimensions.screenWidth > 400 ? 120 : 100,
     },
     backButton: {
-      position: 'absolute',
       zIndex: 1,
-      top: 50,
-      left: 10,
       borderWidth: 2,
       borderRadius: 50,
       padding: 1,

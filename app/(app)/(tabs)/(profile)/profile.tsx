@@ -347,11 +347,11 @@ const styles = StyleSheet.create({
   },
   statText: {
     fontSize: 14,
-    fontWeight: '400'
+    fontWeight: '600'
   },
   statNum: {
     fontSize: 14,
-    fontWeight: '500'
+    fontWeight: '700'
   },
   settingsButton: {
     width: '100%',
