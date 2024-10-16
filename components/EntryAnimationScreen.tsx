@@ -14,6 +14,10 @@ export default function EntryAnimationScreen({ setAnimationLoading }: SplashScre
   const { height } = Dimensions.get('window');
   const colorScheme = useColorScheme();
   const backgroundColor = Colors[colorScheme ?? 'light'].background;
+  // Choose the correct animation based on the color scheme
+  const animationSource = colorScheme === 'light'
+    ? require('../assets/animations/clapper.json')
+    : require('../assets/animations/DarkModeSplashScreen.json');
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -62,7 +66,7 @@ export default function EntryAnimationScreen({ setAnimationLoading }: SplashScre
         }}
       >
         <LottieView
-          source={require('../assets/animations/clapper.json')}
+          source={animationSource}
           autoPlay={true}
           loop={false}
           resizeMode="cover"
