@@ -139,7 +139,6 @@ const ProfilePage = () => {
     `${Math.floor(runTime / 60)}h ${runTime % 60}m`
   }
   const toggleColorScheme = () => {
-    console.log('toggle')
     const newScheme = colorScheme === 'light' ? 'dark' : 'light';
     
     // Set the new color scheme
@@ -147,7 +146,6 @@ const ProfilePage = () => {
 
     // Update the local state to reflect the change
     setColorScheme(newScheme);
-    console.log('new colorscheme', newScheme)
   };
 
   return (
