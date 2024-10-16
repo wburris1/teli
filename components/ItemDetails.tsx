@@ -355,12 +355,12 @@ const ItemDetails = ({item, director, cast, recomendations, streamingServices, r
                         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end' }}>
                             <TouchableOpacity onPress={() => setRankVisible(true)} style={{
                                 flexDirection: 'row', alignItems: 'center', height: 35, borderWidth: 1.5,
-                                backgroundColor: 'white', borderRadius: 20, paddingHorizontal: 5,
+                                backgroundColor: colorScheme === 'light' ? 'white' : 'black', borderRadius: 20, paddingHorizontal: 5,
                                 borderColor: Colors['theme'],
                             }}>
                                 {<Logo width={logoWidthHeight} height={logoWidthHeight} />
                                 }
-                                <Text style={[styles.buttonText, {color: 'black', paddingLeft: 5}]}>
+                                <Text style={[styles.buttonText, {color: colorScheme === 'light' ? 'black' : 'white', paddingLeft: 5}]}>
                                     {isDupe ? 'Rerank' : 'Rank'}
                                 </Text>
                             </TouchableOpacity>

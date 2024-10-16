@@ -1,12 +1,16 @@
-import { Image, ImageBackground, ImageStyle, StyleProp, StyleSheet } from "react-native"
+import { Image, ImageBackground, ImageStyle, StyleProp, StyleSheet, useColorScheme } from "react-native"
 import { Text, View } from './Themed';
 import Dimensions from "@/constants/Dimensions";
 const screenWidth = Dimensions.screenWidth;
 
 export const Logo = ({width, height}: { width: number, height: number }) => {
+  const colorScheme = useColorScheme();
+  const logoSource = colorScheme === 'light' ? 
+  require('../assets/images/clapperboard.png') : 
+  require('../assets/images/DarkModeLogo.png')
     return (
         <Image
-            source={require('../assets/images/clapperboard.png')}
+            source={logoSource}
             style={{width: width, height: height, resizeMode: 'contain'}}
         />
     )
