@@ -124,7 +124,7 @@ const ProfilePage = () => {
         fontWeight: '500',
       },
     })
-  }, [user, userData])
+  }, [user, userData, colorScheme])
 
   const handleNavigate = (whichTab: number) => {
     navigation.push('profile_follower' as keyof RootStackParamList, {
